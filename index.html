@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DriveEasy – Cab Booking in Siwan</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C9973A' stroke='%23E8B84B' stroke-width='2'/%3E%3Ctext x='50' y='72' font-size='52' text-anchor='middle' fill='%230D0D0D' font-family='monospace'%3E🚗%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9973A;--gold-light:#E8B84B;
+  --dark:#0D0D0D;--dark2:#111;--dark3:#181818;
+  --card:#1A1A1A;--card2:#1C1C1C;
+  --border:rgba(201,151,58,0.22);--border2:rgba(255,255,255,0.07);
+  --text:#F0EDE8;--muted:#777;
+  --green:#25D366;--green2:#2ecc71;
+  --red:#e74c3c;--blue:#3498db;--orange:#e67e22;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+
+/* AUTH SCREEN */
+#authScreen{position:fixed;inset:0;z-index:9000;background:var(--dark);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
+#customerApp,#adminApp{display:none}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:2.5rem 2rem;width:100%;max-width:420px;box-shadow:0 40px 90px rgba(0,0,0,.65);animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.auth-logo{display:flex;align-items:center;justify-content:center;gap:.65rem;margin-bottom:1.6rem}
+.auth-logo-icon{width:42px;height:42px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.auth-logo-text{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900}
+.auth-logo-text span{color:var(--gold)}
+.auth-tabs{display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:.22rem;margin-bottom:1.8rem}
+.auth-tab{flex:1;text-align:center;padding:.6rem;border-radius:8px;font-size:.86rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;user-select:none}
+.auth-tab.active{background:var(--gold);color:var(--dark)}
+.auth-panel{display:none}
+.auth-panel.active{display:block}
+.auth-field{margin-bottom:1rem}
+.auth-field label{display:block;font-size:.73rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.38rem}
+.auth-field input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:.82rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.92rem;outline:none;transition:border-color .2s}
+.auth-field input:focus{border-color:var(--gold);background:rgba(201,151,58,.04)}
+.auth-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.auth-row .auth-field{margin-bottom:0}
+.abtn{width:100%;border:none;border-radius:10px;padding:.92rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s,opacity .2s;margin-top:.25rem}
+.abtn:disabled{opacity:.55;cursor:not-allowed}
+.abtn-gold{background:var(--gold);color:var(--dark)}
+.abtn-gold:hover:not(:disabled){background:var(--gold-light)}
+.abtn-green{background:var(--green2);color:#fff}
+.abtn-green:hover:not(:disabled){background:#27ae60}
+.abtn-dark{background:rgba(255,255,255,.07);color:var(--gold);border:1px solid var(--border)}
+.abtn-dark:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.auth-err{color:var(--red);font-size:.78rem;margin-top:.6rem;display:none;text-align:center;line-height:1.5;padding:.5rem;background:rgba(231,76,60,.08);border-radius:7px;border:1px solid rgba(231,76,60,.2)}
+.auth-link-row{text-align:center;margin-top:1rem;font-size:.78rem;color:var(--muted)}
+.auth-link{background:none;border:none;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;text-decoration:underline}
+.admin-hint{text-align:center;margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border2);font-size:.75rem;color:var(--muted)}
+
+/* SHARED */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes roadMove{from{transform:translateX(110%)}to{transform:translateX(-110%)}}
+@keyframes pulse{0%,100%{box-shadow:0 6px 20px rgba(37,211,102,.4)}50%{box-shadow:0 6px 36px rgba(37,211,102,.65)}}
+@keyframes ringPulse{0%,100%{box-shadow:0 0 0 0 rgba(52,152,219,.4)}50%{box-shadow:0 0 0 14px rgba(52,152,219,0)}}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:#1a1a1a;color:#fff;padding:.82rem 1.8rem;border-radius:10px;font-weight:600;font-size:.84rem;z-index:99999;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 30px rgba(0,0,0,.5);pointer-events:none;white-space:nowrap;border:1px solid rgba(255,255,255,.1)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+.overlay{display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1.5rem}
+.overlay.show{display:flex}
+.ov-card{background:var(--card);border-radius:20px;padding:2.4rem 2rem;max-width:460px;width:100%;text-align:center;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);border:1px solid var(--border)}
+.ov-icon{font-size:3.2rem;margin-bottom:.9rem;display:block}
+.ov-icon.spinning{animation:spin 2s linear infinite;display:inline-block}
+.ov-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:.5rem}
+.ov-sub{font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:1.3rem}
+.ref-box{background:rgba(201,151,58,.1);border:1px solid rgba(201,151,58,.3);border-radius:10px;padding:.9rem;margin-bottom:1.3rem}
+.ref-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.22rem}
+.ref-val{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--gold);font-weight:700}
+.ov-actions{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center}
+.obtn{flex:1;min-width:130px;border:none;border-radius:9px;padding:.82rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s}
+.obtn-green{background:var(--green2);color:#fff}
+.obtn-green:hover{background:#27ae60}
+.obtn-red{background:transparent;color:var(--red);border:1px solid var(--red)}
+.obtn-red:hover{background:var(--red);color:#fff}
+.obtn-gold{width:100%;background:var(--gold);color:var(--dark);margin-top:.9rem;border-radius:10px;padding:.9rem}
+.obtn-gold:hover{background:var(--gold-light)}
+.obtn-outline{width:100%;background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:.9rem;margin-top:.5rem;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.obtn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.ov-cancel{display:block;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;text-decoration:underline;margin-top:.75rem}
+.cd-row{display:flex;justify-content:space-between;align-items:center;padding:.38rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.84rem}
+.cd-row:last-child{border:none}
+.cd-lbl{color:var(--muted)}
+.cd-val{font-weight:600}
+.cd-val.gold{color:var(--gold-light);font-family:'Playfair Display',serif}
+
+/* CUSTOMER WEBSITE */
+header{position:sticky;top:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.1rem 2.5rem;border-bottom:1px solid var(--border);background:rgba(13,13,13,.95);backdrop-filter:blur(14px)}
+.logo{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+.logo-icon{width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.logo-text{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--text)}
+.logo-text span{color:var(--gold)}
+nav a{color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:500;margin-left:1.6rem;transition:color .2s}
+nav a:hover{color:var(--gold)}
+.user-menu{display:flex;align-items:center;gap:.65rem}
+.user-avatar{width:34px;height:34px;background:rgba(201,151,58,.2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--gold);cursor:default}
+.user-name{font-size:.82rem;font-weight:600;color:var(--text)}
+.btn-signout{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:.33rem .72rem;font-family:'DM Sans',sans-serif;font-size:.74rem;cursor:pointer;transition:all .2s}
+.btn-signout:hover{border-color:var(--red);color:var(--red)}
+
+/* HERO */
+.hero{position:relative;z-index:1;min-height:88vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 60%,rgba(201,151,58,.10) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 20% 20%,rgba(201,151,58,.06) 0%,transparent 60%)}
+.road-lines{position:absolute;bottom:0;left:0;right:0;height:100px;overflow:hidden;opacity:.15}
+.road-line{position:absolute;bottom:25px;height:4px;background:var(--gold);border-radius:2px;animation:roadMove 2.5s linear infinite}
+.hero-content{position:relative;z-index:2;max-width:780px}
+.badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(201,151,58,.12);border:1px solid var(--border);border-radius:99px;padding:.38rem 1rem;font-size:.76rem;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.4rem;animation:fadeUp .6s ease both}
+h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6.5vw,4.8rem);font-weight:900;line-height:1.05;margin-bottom:1.4rem;animation:fadeUp .7s ease .1s both}
+h1 em{font-style:italic;color:var(--gold)}
+.hero-desc{font-size:1rem;color:var(--muted);max-width:500px;margin:0 auto 2.2rem;line-height:1.7;font-weight:300;animation:fadeUp .7s ease .2s both}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeUp .7s ease .3s both}
+.btn-gold{display:inline-flex;align-items:center;gap:.5rem;background:var(--gold);color:var(--dark);font-weight:700;font-size:.92rem;padding:.82rem 1.7rem;border-radius:8px;text-decoration:none;border:none;cursor:pointer;transition:background .2s,transform .15s;font-family:'DM Sans',sans-serif}
+.btn-gold:hover{background:var(--gold-light);transform:translateY(-2px)}
+.btn-outline-hero{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--text);font-weight:600;font-size:.92rem;padding:.82rem 1.7rem;border-radius:8px;text-decoration:none;border:1px solid var(--border);transition:border-color .2s,color .2s,transform .15s}
+.btn-outline-hero:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
+
+/* STATS */
+.stats{display:flex;justify-content:center;gap:3.5rem;padding:2.3rem 2rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(201,151,58,.04);position:relative;z-index:1;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--gold)}
+.stat-label{font-size:.78rem;color:var(--muted);margin-top:.18rem;text-transform:uppercase;letter-spacing:.06em}
+
+/* SECTIONS */
+.sec-label{text-align:center;font-size:.74rem;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);font-weight:600;margin-bottom:.65rem}
+.sec-title{text-align:center;font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;margin-bottom:2.8rem}
+
+/* FEATURES */
+.features{padding:5rem 2rem;position:relative;z-index:1;max-width:1100px;margin:0 auto}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.3rem}
+.feat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.7rem;transition:border-color .3s,transform .2s;position:relative;overflow:hidden}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .3s}
+.feat-card:hover{border-color:var(--gold);transform:translateY(-4px)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{font-size:1.8rem;margin-bottom:.7rem;display:block}
+.feat-title{font-size:.96rem;font-weight:600;margin-bottom:.38rem}
+.feat-text{font-size:.83rem;color:var(--muted);line-height:1.6;font-weight:300}
+
+/* CALENDAR */
+.avail-section{padding:5rem 2rem;background:var(--dark2);position:relative;z-index:1}
+.avail-wrap{max-width:820px;margin:0 auto}
+.cal-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2rem}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem}
+.cal-month-lbl{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700}
+.cal-nav-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.42rem .82rem;cursor:pointer;font-size:1rem;transition:background .2s}
+.cal-nav-btn:hover{background:rgba(201,151,58,.15)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.38rem}
+.cal-dname{text-align:center;font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;padding:.38rem 0}
+.cal-day{text-align:center;padding:.52rem .28rem;border-radius:8px;font-size:.84rem;font-weight:500;transition:all .2s}
+.cal-day.empty{visibility:hidden}
+.cal-day.avail{background:rgba(37,211,102,.1);color:#2ecc71;border:1px solid rgba(37,211,102,.25);cursor:pointer}
+.cal-day.avail:hover{background:rgba(37,211,102,.22);transform:scale(1.08)}
+.cal-day.taken{background:rgba(231,76,60,.12);color:var(--red);border:1px solid rgba(231,76,60,.25);cursor:not-allowed;text-decoration:line-through}
+.cal-day.ctoday{border:2px solid var(--gold);color:var(--gold-light);font-weight:700}
+.cal-day.past{opacity:.28;cursor:not-allowed}
+.cal-legend{display:flex;gap:1.4rem;margin-top:1.2rem;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:.42rem;font-size:.76rem;color:var(--muted)}
+.leg-dot{width:9px;height:9px;border-radius:50%}
+.cal-note{margin-top:1.1rem;background:rgba(201,151,58,.07);border:1px solid rgba(201,151,58,.18);border-radius:10px;padding:.85rem 1.1rem;font-size:.8rem;color:var(--muted);line-height:1.6}
+
+/* PRICING */
+.pricing-sec{padding:5rem 2rem;position:relative;z-index:1}
+.pricing-wrap{max-width:900px;margin:0 auto}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:1.1rem;margin-bottom:2rem}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.7rem 1.3rem;text-align:center;transition:border-color .3s,transform .2s}
+.price-card:hover{border-color:var(--gold);transform:translateY(-3px)}
+.price-card.popular{border-color:var(--gold);background:rgba(201,151,58,.07)}
+.pop-tag{display:inline-block;background:var(--gold);color:var(--dark);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:.2rem .65rem;border-radius:99px;margin-bottom:.75rem}
+.price-name{font-size:.95rem;font-weight:600;margin-bottom:.45rem}
+.price-amt{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--gold)}
+.price-unit{font-size:.74rem;color:var(--muted);margin-top:.18rem}
+.price-note{font-size:.74rem;color:var(--muted);margin-top:.45rem;line-height:1.5}
+.estimator{background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:1.8rem}
+.estimator h3{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1.1rem;color:var(--gold-light)}
+.est-row{display:flex;gap:.9rem;align-items:flex-end;flex-wrap:wrap}
+.est-grp{flex:1;min-width:120px}
+.est-grp label{display:block;font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.36rem}
+.est-grp input,.est-grp select{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.7rem .85rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.est-grp input:focus,.est-grp select:focus{border-color:var(--gold)}
+.est-calc-btn{background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:.72rem 1.4rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:background .2s;white-space:nowrap}
+.est-calc-btn:hover{background:var(--gold-light)}
+.est-result{margin-top:1.1rem;background:rgba(201,151,58,.08);border:1px solid rgba(201,151,58,.28);border-radius:10px;padding:.9rem 1.3rem;display:none}
+.est-result.show{display:block}
+.est-result-lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.26rem}
+.est-result-amt{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--gold-light)}
+.est-result-note{font-size:.74rem;color:var(--muted);margin-top:.26rem}
+
+/* BOOKING FORM */
+.booking-sec{padding:5rem 2rem;background:var(--dark2);position:relative;z-index:1}
+.booking-wrap{max-width:720px;margin:0 auto;position:relative;z-index:2}
+.booking-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2.5rem;box-shadow:0 40px 80px rgba(0,0,0,.4)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.form-grp{margin-bottom:1rem}
+.form-grp label{display:block;font-size:.74rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.38rem}
+.form-grp input,.form-grp select,.form-grp textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.78rem .95rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;transition:border-color .2s;outline:none;-webkit-appearance:none}
+.form-grp input:focus,.form-grp select:focus,.form-grp textarea:focus{border-color:var(--gold);background:rgba(201,151,58,.04)}
+.form-grp select option{background:var(--dark3)}
+.form-grp textarea{resize:vertical;min-height:72px}
+.fare-field{border-color:rgba(201,151,58,.4)!important;color:var(--gold-light)!important;font-weight:600!important}
+.map-grp{margin-bottom:1rem}
+.map-grp label{display:block;font-size:.74rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.38rem}
+.map-input-row{display:flex;gap:.5rem;align-items:center}
+.map-input-row input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.78rem .95rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s}
+.map-input-row input:focus{border-color:var(--gold)}
+.map-pin-btn{background:rgba(201,151,58,.15);border:1px solid var(--border);color:var(--gold);border-radius:8px;padding:.78rem .9rem;cursor:pointer;font-size:.9rem;white-space:nowrap;transition:background .2s;flex-shrink:0;font-family:'DM Sans',sans-serif}
+.map-pin-btn:hover{background:rgba(201,151,58,.28)}
+.submit-btn{width:100%;background:var(--green);color:#fff;border:none;border-radius:10px;padding:.96rem;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;margin-top:.5rem;transition:background .2s,transform .15s}
+.submit-btn:hover{background:#1ebe5d;transform:translateY(-2px)}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* OFFLINE */
+.offline-block-msg{display:none;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.28);border-radius:12px;padding:1.1rem 1.4rem;margin-bottom:1.2rem;text-align:center;font-size:.88rem;line-height:1.6}
+.offline-block-msg.show{display:block}
+.offline-block-msg strong{color:var(--red)}
+
+/* CAR MARKER */
+.uber-car{width:52px;height:52px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 4px 10px rgba(0,0,0,.55))}
+.leaflet-marker-shadow{display:none!important}
+.leaflet-container{font-family:'DM Sans',sans-serif!important;background:#1a1a1a!important}
+.leaflet-tile{filter:brightness(.85) contrast(1.1) saturate(.9)}
+.wa-note{text-align:center;font-size:.74rem;color:var(--muted);margin-top:.82rem;line-height:1.6}
+
+/* CUSTOMER LIVE TRACKING */
+#custTrackSec{display:none;padding:3rem 2rem;background:var(--dark3);position:relative;z-index:1}
+.ctrack-inner{max-width:800px;margin:0 auto}
+.ctrack-top{display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem}
+.ctrack-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700}
+.ctrack-status{font-size:.82rem;color:var(--green2);font-weight:600;margin-top:.2rem}
+#custTrackMap{height:360px;border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+
+/* OTP BOX — customer sees this after driver accepts */
+.ride-otp-box{background:rgba(201,151,58,.1);border:2px solid rgba(201,151,58,.4);border-radius:14px;padding:1.3rem 1.5rem;margin:.9rem 0;text-align:center}
+.ride-otp-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.4rem}
+.ride-otp-code{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;color:var(--gold);letter-spacing:.3rem;text-shadow:0 0 20px rgba(201,151,58,.4)}
+.ride-otp-note{font-size:.76rem;color:var(--muted);margin-top:.4rem;line-height:1.5}
+
+/* CALL SECTION */
+.call-sec{padding:5rem 2rem;position:relative;z-index:1}
+.call-wrap{max-width:660px;margin:0 auto}
+.call-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2.8rem 2rem;text-align:center}
+.call-ring{width:76px;height:76px;background:rgba(52,152,219,.1);border:2px solid rgba(52,152,219,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.3rem;font-size:2rem;animation:ringPulse 2s ease infinite}
+.call-num{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,5.5vw,2.7rem);font-weight:900;color:var(--blue);margin:1rem 0;letter-spacing:.04em}
+.call-desc{font-size:.86rem;color:var(--muted);line-height:1.7;max-width:400px;margin:0 auto 1.8rem}
+.call-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-call{display:inline-flex;align-items:center;gap:.5rem;background:var(--blue);color:#fff;text-decoration:none;font-weight:700;font-size:.92rem;padding:.88rem 1.7rem;border-radius:10px;transition:background .2s,transform .15s}
+.btn-call:hover{background:#2980b9;transform:translateY(-2px)}
+.btn-wa{display:inline-flex;align-items:center;gap:.5rem;background:var(--green);color:#fff;text-decoration:none;font-weight:700;font-size:.92rem;padding:.88rem 1.7rem;border-radius:10px;transition:background .2s,transform .15s}
+.btn-wa:hover{background:#1ebe5d;transform:translateY(-2px)}
+.online-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.25);border-radius:99px;padding:.32rem .85rem;font-size:.74rem;font-weight:600;color:var(--green2);margin-top:1.4rem}
+.dot-live{width:7px;height:7px;border-radius:50%;background:var(--green2);animation:blink 1.2s ease infinite}
+
+footer{text-align:center;padding:2.3rem 2rem;border-top:1px solid var(--border);color:var(--muted);font-size:.8rem;position:relative;z-index:1}
+footer strong{color:var(--gold)}
+.wa-float{position:fixed;bottom:2rem;right:2rem;background:var(--green);color:#fff;border-radius:50px;padding:.75rem 1.2rem;font-weight:700;font-size:.84rem;text-decoration:none;display:flex;align-items:center;gap:.42rem;box-shadow:0 6px 20px rgba(37,211,102,.4);z-index:500;animation:pulse 2.5s ease infinite;transition:transform .2s}
+.wa-float:hover{transform:scale(1.05)}
+.call-float{position:fixed;bottom:5rem;right:2rem;background:var(--blue);color:#fff;border-radius:50px;padding:.75rem 1.2rem;font-weight:700;font-size:.84rem;text-decoration:none;display:flex;align-items:center;gap:.42rem;box-shadow:0 6px 20px rgba(52,152,219,.4);z-index:500;transition:transform .2s}
+.call-float:hover{transform:scale(1.05)}
+
+/* MAP MODAL */
+.map-modal{display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem}
+.map-modal.show{display:flex}
+.map-modal-inner{background:var(--card);border:1px solid var(--border);border-radius:18px;width:100%;max-width:680px;overflow:hidden;animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
+.map-modal-hdr{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.map-modal-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
+.map-close{background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;line-height:1;padding:.2rem .5rem}
+.map-close:hover{color:var(--text)}
+#leafletMap{height:380px;width:100%}
+.map-tip{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(13,13,13,.92);border:1px solid var(--border);border-radius:8px;padding:.48rem .95rem;font-size:.78rem;color:var(--gold);z-index:1000;white-space:nowrap;pointer-events:none}
+.map-modal-ftr{padding:1rem 1.4rem;border-top:1px solid var(--border);display:flex;gap:.7rem;justify-content:flex-end;align-items:center}
+.map-addr-display{font-size:.78rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.map-confirm{background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:.65rem 1.4rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:background .2s;flex-shrink:0}
+.map-confirm:hover{background:var(--gold-light)}
+
+/* ADMIN PANEL */
+.sidebar{position:fixed;top:0;left:0;width:220px;height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transition:transform .3s}
+.sb-logo{padding:1.3rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.65rem}
+.sb-logo-icon{width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700}
+.sb-logo-text span{color:var(--gold)}
+.sb-nav{flex:1;padding:1.1rem .75rem;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:.65rem;padding:.7rem .85rem;border-radius:9px;cursor:pointer;font-size:.86rem;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:.18rem;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.nav-item.active{background:rgba(201,151,58,.15);color:var(--gold);font-weight:600}
+.nav-icon{font-size:1.05rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.66rem;font-weight:700;padding:.1rem .42rem;border-radius:99px;min-width:17px;text-align:center}
+.sb-footer{padding:.9rem .75rem;border-top:1px solid var(--border)}
+.sb-logout{width:100%;background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.22);border-radius:8px;padding:.6rem;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;transition:background .2s}
+.sb-logout:hover{background:rgba(231,76,60,.2)}
+.admin-main{margin-left:220px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{padding:1rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,.96);backdrop-filter:blur(10px);position:sticky;top:0;z-index:150}
+.tb-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700}
+.tb-title span{color:var(--gold)}
+.tb-right{display:flex;align-items:center;gap:.75rem}
+.status-toggle{display:flex;align-items:center;gap:.42rem;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.44rem .85rem;cursor:pointer;font-size:.8rem;font-weight:600;transition:background .2s;user-select:none}
+.status-toggle:hover{background:rgba(255,255,255,.08)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green2);animation:blink 1.4s ease infinite;flex-shrink:0}
+.status-dot.offline{background:var(--muted);animation:none}
+.sb-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.35rem;cursor:pointer;padding:.3rem}
+.admin-content{flex:1;padding:1.8rem}
+.apage{display:none}
+.apage.active{display:block}
+.notif-banner{display:none;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.26);border-radius:11px;padding:.9rem 1.2rem;margin-bottom:1.1rem;align-items:center;gap:.75rem;flex-wrap:wrap}
+.notif-banner.show{display:flex}
+.notif-text{flex:1;font-size:.83rem}
+.notif-text strong{color:var(--orange)}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:1rem;margin-bottom:1.8rem}
+.dash-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:1.3rem 1.4rem}
+.dash-lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.34rem}
+.dash-val{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900}
+.dash-sub{font-size:.74rem;color:var(--muted);margin-top:.18rem}
+.c-gold{color:var(--gold)}.c-green{color:var(--green2)}.c-red{color:var(--red)}.c-blue{color:var(--blue)}.c-orange{color:var(--orange)}
+.section-h{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:1.1rem}
+.bk-list{display:flex;flex-direction:column;gap:.75rem}
+.bk-item{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:1.1rem 1.4rem;transition:border-color .2s}
+.bk-item:hover{border-color:rgba(201,151,58,.35)}
+.bk-item.pending{border-left:3px solid var(--orange)}
+.bk-item.accepted{border-left:3px solid var(--green2)}
+.bk-item.declined{border-left:3px solid var(--red);opacity:.6}
+.bk-item.cancelled{border-left:3px solid var(--orange);opacity:.65}
+.bk-item.completed{border-left:3px solid var(--blue)}
+.bk-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.7rem}
+.bk-ref{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:700;color:var(--gold)}
+.bk-time{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+.bk-badge{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:.2rem .6rem;border-radius:99px}
+.bk-badge.pending{background:rgba(230,126,34,.13);color:var(--orange);border:1px solid rgba(230,126,34,.28)}
+.bk-badge.accepted{background:rgba(46,204,113,.1);color:var(--green2);border:1px solid rgba(46,204,113,.22)}
+.bk-badge.declined{background:rgba(231,76,60,.08);color:var(--red);border:1px solid rgba(231,76,60,.18)}
+.bk-badge.cancelled{background:rgba(230,126,34,.1);color:var(--orange);border:1px solid rgba(230,126,34,.22)}
+.bk-badge.completed{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.22)}
+.bk-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:.38rem .82rem;margin-bottom:.78rem}
+.bk-field{font-size:.79rem}
+.bk-field .fl{color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.07rem}
+.bk-field .fv{font-weight:500}
+.bk-field .fv.gold{color:var(--gold-light)}
+.bk-actions{display:flex;gap:.52rem;flex-wrap:wrap}
+.btn-sm{font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;padding:.44rem .9rem;border-radius:7px;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:.32rem}
+.btn-sm.acc{background:rgba(46,204,113,.12);color:var(--green2);border:1px solid rgba(46,204,113,.26)}
+.btn-sm.acc:hover{background:var(--green2);color:#fff}
+.btn-sm.dec{background:rgba(231,76,60,.08);color:var(--red);border:1px solid rgba(231,76,60,.2)}
+.btn-sm.dec:hover{background:var(--red);color:#fff}
+.btn-sm.map{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.2)}
+.btn-sm.map:hover{background:var(--blue);color:#fff}
+.btn-sm.wa{background:rgba(37,211,102,.1);color:var(--green);border:1px solid rgba(37,211,102,.2)}
+.btn-sm.wa:hover{background:var(--green);color:#fff}
+.empty-state{text-align:center;padding:2.5rem;color:var(--muted);font-size:.88rem}
+.empty-icon{font-size:2.2rem;margin-bottom:.65rem}
+
+/* ADMIN CALENDAR */
+.acal-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:1.7rem;margin-bottom:1.3rem}
+.acal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.32rem}
+.acal-dname{text-align:center;font-size:.64rem;font-weight:600;color:var(--muted);text-transform:uppercase;padding:.3rem 0}
+.acal-day{text-align:center;padding:.46rem .2rem;border-radius:7px;font-size:.78rem;font-weight:500;border:1px solid transparent;transition:all .18s}
+.acal-day.empty{visibility:hidden}
+.acal-day.past{opacity:.26;cursor:not-allowed}
+.acal-day.atoday{border-color:var(--gold);color:var(--gold-light);font-weight:700}
+.acal-day.afree{cursor:pointer;color:var(--text)}
+.acal-day.afree:hover{background:rgba(46,204,113,.13);border-color:rgba(46,204,113,.28);color:var(--green2)}
+.acal-day.ablocked{background:rgba(231,76,60,.08);border-color:rgba(231,76,60,.2);color:var(--red);cursor:pointer}
+.acal-day.abooked{background:rgba(52,152,219,.08);border-color:rgba(52,152,219,.16);color:var(--blue);cursor:not-allowed}
+.acal-legend{display:flex;gap:1.15rem;margin-top:.95rem;flex-wrap:wrap}
+.aleg{display:flex;align-items:center;gap:.36rem;font-size:.72rem;color:var(--muted)}
+.aleg-dot{width:8px;height:8px;border-radius:50%}
+.acal-hint{background:rgba(201,151,58,.06);border:1px solid rgba(201,151,58,.15);border-radius:8px;padding:.7rem .92rem;font-size:.76rem;color:var(--muted);margin-top:.88rem;line-height:1.6}
+
+/* ADMIN MAP / TRACKING */
+#adminMapWrap{background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;margin-bottom:1.1rem}
+#adminMap{height:420px;width:100%}
+.map-info-bar{padding:.9rem 1.3rem;background:var(--card2);border-top:1px solid var(--border);display:flex;align-items:center;gap:.95rem;flex-wrap:wrap}
+.mib{font-size:.78rem;display:flex;align-items:center;gap:.36rem}
+.mib .ml{color:var(--muted)}
+.mib .mv{font-weight:600}
+.track-panel{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:1.2rem}
+.track-panel h3{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;margin-bottom:.88rem;color:var(--gold-light)}
+.track-sel{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.7rem .85rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;-webkit-appearance:none;margin-bottom:.85rem}
+.track-sel:focus{border-color:var(--gold)}
+.tbtn{width:100%;border:none;border-radius:9px;padding:.8rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.84rem;cursor:pointer;transition:all .2s;margin-bottom:.52rem}
+.tbtn-blue{background:var(--blue);color:#3533b9}
+.tbtn-blue:hover{background:#2980b9}
+.tbtn-red{background:rgba(231,76,60,.12);color:var(--red);border:1px solid rgba(231,76,60,.25)}
+.tbtn-red:hover{background:var(--red);color:#fff}
+.tbtn-green{background:rgba(37,211,102,.1);color:var(--green);border:1px solid rgba(37,211,102,.2)}
+.tbtn-green:hover{background:var(--green);color:#fff}
+.track-status{margin-top:.72rem;background:rgba(52,152,219,.07);border:1px solid rgba(52,152,219,.17);border-radius:8px;padding:.7rem;font-size:.76rem;color:var(--blue);display:none;line-height:1.6}
+.track-status.show{display:block}
+
+/* OTP VERIFY SECTION — Admin enters OTP to start ride */
+.otp-verify-box{background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.25);border-radius:12px;padding:1.2rem;margin-bottom:.85rem}
+.otp-verify-box h4{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--green2);margin-bottom:.7rem}
+.otp-inp-row{display:flex;gap:.6rem;align-items:center}
+.otp-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.72rem .9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:700;text-align:center;letter-spacing:.3rem;outline:none;transition:border-color .2s}
+.otp-inp:focus{border-color:var(--green2)}
+.otp-verify-btn{background:var(--green2);color:#fff;border:none;border-radius:8px;padding:.72rem 1.2rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.84rem;cursor:pointer;white-space:nowrap;transition:background .2s}
+.otp-verify-btn:hover{background:#27ae60}
+
+/* SETTINGS */
+.set-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:1.35rem;margin-bottom:.9rem}
+.set-card h3{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;margin-bottom:.95rem;color:var(--gold-light)}
+.set-row{padding:.6rem 0;border-bottom:1px solid var(--border2)}
+.set-row:last-child{border:none}
+.set-lbl{font-size:.84rem;font-weight:500}
+.set-desc{font-size:.72rem;color:var(--muted);margin-top:.12rem}
+.set-inp{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.68rem .85rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;transition:border-color .2s;margin-top:.42rem;-webkit-appearance:none}
+.set-inp:focus{border-color:var(--gold)}
+.btn-save{background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:.62rem 1.3rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .2s;margin-top:.75rem}
+.btn-save:hover{background:var(--gold-light)}
+
+/* RIDE STATUS */
+.ride-status-bar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.4rem;margin-top:.9rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.ride-status-indicator{display:flex;align-items:center;gap:.6rem;font-size:.88rem;font-weight:600}
+.ride-dot{width:10px;height:10px;border-radius:50%;animation:blink 1.2s ease infinite}
+.ride-dot.waiting{background:var(--orange)}
+.ride-dot.started{background:var(--green2)}
+.ride-dot.ended{background:var(--blue);animation:none}
+.cancel-reason-box{background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.2);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.cancel-reason-box label{display:block;font-size:.76rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.cancel-reason-select{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.75rem .9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;-webkit-appearance:none;margin-bottom:.7rem}
+.cancel-reason-select:focus{border-color:var(--red)}
+.cancel-note-inp{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.72rem .9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;resize:vertical;min-height:65px}
+.cancel-note-inp:focus{border-color:var(--red)}
+.ride-started-banner{display:none;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1rem;align-items:center;gap:.8rem}
+.ride-started-banner.show{display:flex}
+.btn-cancel-ride{background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.25);border-radius:8px;padding:.55rem 1.1rem;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-cancel-ride:hover{background:var(--red);color:#2e4ae6}
+.ride-ended-banner{display:none;background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.28);border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1rem;align-items:center;gap:.8rem}
+.ride-ended-banner.show{display:flex}
+.admin-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a1a;color:#dd3232;padding:.78rem 1.4rem;border-radius:10px;font-weight:600;font-size:.8rem;z-index:99999;opacity:0;transform:translateY(14px);transition:all .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:300px;border:1px solid rgba(255,255,255,.1)}
+.admin-toast.show{opacity:1;transform:translateY(0)}
+
+/* FILTER BTNS */
+.filter-row{display:flex;gap:.52rem;margin-bottom:1.05rem;flex-wrap:wrap}
+.fbtn{font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;padding:.44rem .9rem;border-radius:7px;cursor:pointer;border:none;transition:all .2s}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .admin-main{margin-left:0}
+  .sb-toggle{display:block}
+  .admin-content{padding:1.1rem}
+  .dash-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:580px){
+  .form-row{grid-template-columns:1fr}
+  .booking-card{padding:1.7rem 1.2rem}
+  nav{display:none}
+  .est-row{flex-direction:column}
+  .call-float{bottom:4.8rem}
+  .wa-float,.call-float{font-size:.8rem;padding:.7rem .95rem}
+  .auth-row{grid-template-columns:1fr}
+  .auth-card{padding:2rem 1.5rem}
+  header{padding:1rem 1.2rem}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🚗</div>
+      <div class="auth-logo-text">Drive<span>Easy</span></div>
+    </div>
+
+    <div class="auth-tabs" id="mainAuthTabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+      <div class="auth-tab" onclick="switchTab('signup')">Sign Up</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="panelLogin">
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <div style="position:relative">
+          <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:2.8rem">
+          <button type="button" onclick="togglePwd('loginPass',this)" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">👁</button>
+        </div>
+      </div>
+      <button class="abtn abtn-gold" id="loginBtn" onclick="doLogin()">🚗 Login & Book a Ride</button>
+      <div class="auth-err" id="loginErr"></div>
+      <div class="auth-link-row" style="margin-top:.8rem">
+        New here? <button class="auth-link" onclick="switchTab('signup')">Create free account</button>
+      </div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div class="auth-panel" id="panelSignup">
+      <div class="auth-row">
+        <div class="auth-field"><label>First Name</label><input type="text" id="signupFirst" placeholder="Anmol" autocomplete="given-name"></div>
+        <div class="auth-field"><label>Last Name</label><input type="text" id="signupLast" placeholder="Kumar" autocomplete="family-name"></div>
+      </div>
+      <div class="auth-field"><label>Email Address</label><input type="email" id="signupEmail" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="auth-field"><label>Phone Number</label><input type="tel" id="signupPhone" placeholder="9876543210" autocomplete="tel" maxlength="10"></div>
+      <div class="auth-field">
+        <label>Password <span style="font-weight:400;text-transform:none;font-size:.7rem">(min 6 chars)</span></label>
+        <div style="position:relative">
+          <input type="password" id="signupPass" placeholder="••••••••" style="padding-right:2.8rem" oninput="checkPwdStrength(this.value)">
+          <button type="button" onclick="togglePwd('signupPass',this)" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">👁</button>
+        </div>
+      </div>
+      <div class="auth-field"><label>Confirm Password</label><input type="password" id="signupConfirm" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignup()"></div>
+      <div id="pwdStrengthWrap" style="margin:-0.3rem 0 .8rem">
+        <div style="height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden">
+          <div id="pwdStrengthBar" style="height:100%;width:0%;border-radius:4px;transition:all .3s"></div>
+        </div>
+        <div id="pwdStrengthLbl" style="font-size:.7rem;color:var(--muted);margin-top:.3rem"></div>
+      </div>
+      <button class="abtn abtn-green" id="signupBtn" onclick="doSignup()">✅ Create Account</button>
+      <div class="auth-err" id="signupErr"></div>
+      <div class="auth-link-row" style="margin-top:.8rem">Already have an account? <button class="auth-link" onclick="switchTab('login')">Login</button></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="auth-panel" id="panelAdmin">
+      <div style="text-align:center;margin-bottom:1.3rem">
+        <div style="font-size:2.2rem;margin-bottom:.5rem">🔐</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700">Driver Admin Access</div>
+        <div style="font-size:.76rem;color:var(--muted);margin-top:.28rem">Enter your admin credentials</div>
+      </div>
+      <div class="auth-field"><label>Admin Username</label><input type="text" id="adminUser" placeholder="driver" autocomplete="username" onkeydown="if(event.key==='Enter')doAdminLogin()"></div>
+      <div class="auth-field">
+        <label>Admin Password</label>
+        <div style="position:relative">
+          <input type="password" id="adminPass" placeholder="••••••••" autocomplete="current-password" style="padding-right:2.8rem" onkeydown="if(event.key==='Enter')doAdminLogin()">
+          <button type="button" onclick="togglePwd('adminPass',this)" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">👁</button>
+        </div>
+      </div>
+      <button class="abtn abtn-dark" onclick="doAdminLogin()">🔐 Open Admin Panel</button>
+      <div class="auth-err" id="adminErr"></div>
+      <div class="auth-link-row" style="margin-top:.8rem"><button class="auth-link" onclick="switchTab('login')">← Back to Customer Login</button></div>
+    </div>
+
+    <div class="admin-hint">Driver / Admin? <button class="auth-link" onclick="switchTab('admin')">Open Admin Panel →</button></div>
+  </div>
+</div>
+
+<!-- CUSTOMER WEBSITE -->
+<div id="customerApp">
+  <header>
+    <a class="logo" href="#"><div class="logo-icon">🚗</div><div class="logo-text">Drive<span>Easy</span></div></a>
+    <nav>
+      <a href="#availability">Availability</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#booking">Book</a>
+      <a href="#call">Call Us</a>
+    </nav>
+    <div class="user-menu">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span class="user-name" id="userName">User</span>
+      <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- DRIVER OFFLINE BANNER -->
+  <div id="driverOfflineBanner" style="display:none;background:rgba(231,76,60,.12);border-bottom:1px solid rgba(231,76,60,.3);padding:.75rem 2rem;text-align:center;position:sticky;top:64px;z-index:190;backdrop-filter:blur(8px)">
+    <span style="font-size:.88rem;font-weight:600;color:var(--red)">🔴 Driver is currently offline. Booking is temporarily unavailable. Please check back soon or call directly.</span>
+    <a href="tel:+918757348847" style="margin-left:1rem;font-size:.82rem;color:var(--gold);font-weight:600;text-decoration:none">📞 Call Now</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="road-lines">
+      <div class="road-line" style="width:110px;left:8%;animation-delay:0s"></div>
+      <div class="road-line" style="width:75px;left:33%;animation-delay:.8s"></div>
+      <div class="road-line" style="width:140px;left:58%;animation-delay:.4s"></div>
+      <div class="road-line" style="width:55px;left:80%;animation-delay:1.2s"></div>
+    </div>
+    <div class="hero-content">
+      <div class="badge">⭐ Trusted Local Driver &nbsp;·&nbsp; Available 24/7</div>
+      <h1>Your Journey,<br>Our <em>Promise.</em></h1>
+      <p class="hero-desc">Safe, comfortable rides to any destination. Pin your location, pick your date, get confirmed — all in one place.</p>
+      <div class="hero-btns">
+        <a href="#booking" class="btn-gold">📅 Book a Ride</a>
+        <a href="tel:+918757348847" class="btn-outline-hero">📞 Call Now</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-num">1000+</div><div class="stat-label">Happy Passengers</div></div>
+    <div class="stat"><div class="stat-num">5★</div><div class="stat-label">Average Rating</div></div>
+    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Available</div></div>
+    <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Years Experience</div></div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="sec-label">Why Choose Us</div>
+    <h2 class="sec-title">Ride with Confidence</h2>
+    <div class="feat-grid">
+      <div class="feat-card"><span class="feat-icon">🛡️</span><div class="feat-title">Safe & Verified Driver</div><p class="feat-text">Licensed, experienced driver with a clean record. Your safety is our top priority.</p></div>
+      <div class="feat-card"><span class="feat-icon">🗺️</span><div class="feat-title">Map-Based Pickup</div><p class="feat-text">Pin your exact pickup & drop on the map. No confusion about addresses ever.</p></div>
+      <div class="feat-card"><span class="feat-icon">📅</span><div class="feat-title">Live Availability</div><p class="feat-text">See exactly which dates are free or booked — synced live with Firebase.</p></div>
+      <div class="feat-card"><span class="feat-icon">💰</span><div class="feat-title">Transparent Fare</div><p class="feat-text">Fare estimated before booking. No hidden charges — ever.</p></div>
+      <div class="feat-card"><span class="feat-icon">🔐</span><div class="feat-title">OTP-Verified Start</div><p class="feat-text">You receive a 4-digit OTP when driver accepts. Share it only at pickup to start the ride.</p></div>
+      <div class="feat-card"><span class="feat-icon">📍</span><div class="feat-title">Rapido-Style Tracking</div><p class="feat-text">Watch the driver's 🚗 move toward you live on the map after confirmation.</p></div>
+    </div>
+  </section>
+
+  <!-- AVAILABILITY CALENDAR -->
+  <section class="avail-section" id="availability">
+    <div class="avail-wrap">
+      <div class="sec-label">Check Before You Book</div>
+      <h2 class="sec-title">Vehicle Availability</h2>
+      <div class="cal-card">
+        <div class="cal-nav-row">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8592;</button>
+          <div class="cal-month-lbl" id="calMonthLbl">Loading…</div>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">&#8594;</button>
+        </div>
+        <div class="cal-grid" id="calGrid"><div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted)">Loading calendar…</div></div>
+        <div class="cal-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#2ecc71"></div> Available</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div> Booked / Unavailable</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div> Today</div>
+        </div>
+        <div class="cal-note">ℹ️ <strong>Green = Available.</strong> Tap any green date to auto-fill the booking form.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing-sec" id="pricing">
+    <div class="pricing-wrap">
+      <div class="sec-label">Clear & Honest</div>
+      <h2 class="sec-title">Our Pricing</h2>
+      <div class="price-grid">
+        <div class="price-card"><div class="price-name">🏙️ City / Local</div><div class="price-amt">₹12</div><div class="price-unit">per km</div><div class="price-note">Min ₹80 · 15 min waiting free</div></div>
+        <div class="price-card popular"><div class="pop-tag">Most Booked</div><div class="price-name">🛣️ Outstation</div><div class="price-amt">₹10</div><div class="price-unit">per km</div><div class="price-note">Min 80 km · Toll & parking extra</div></div>
+        <div class="price-card"><div class="price-name">✈️ Airport Drop</div><div class="price-amt">₹500</div><div class="price-unit">flat base</div><div class="price-note">+ ₹12/km beyond 10 km</div></div>
+        <div class="price-card"><div class="price-name">🕐 Hourly</div><div class="price-amt">₹150</div><div class="price-unit">per hour</div><div class="price-note">Min 2 hrs · 10 km/hr included</div></div>
+      </div>
+      <div class="estimator">
+        <h3>🧮 Estimate Your Fare</h3>
+        <div class="est-row">
+          <div class="est-grp"><label>Distance (km)</label><input type="number" id="estKm" placeholder="e.g. 25" min="1"></div>
+          <div class="est-grp"><label>Trip Type</label>
+            <select id="estType" onchange="toggleEstHrs()">
+              <option value="city">City / Local (₹12/km)</option>
+              <option value="outstation">Outstation (₹10/km)</option>
+              <option value="airport">Airport (₹500 base)</option>
+              <option value="hourly">Hourly (₹150/hr)</option>
+            </select>
+          </div>
+          <div class="est-grp" id="estHrsGrp" style="display:none"><label>Hours</label><input type="number" id="estHrs" placeholder="min 2" min="2"></div>
+          <button class="est-calc-btn" onclick="calcFare()">Calculate</button>
+        </div>
+        <div class="est-result" id="estResult">
+          <div class="est-result-lbl">Estimated Fare</div>
+          <div class="est-result-amt" id="estAmt">₹0</div>
+          <div class="est-result-note" id="estNote"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING FORM -->
+  <section class="booking-sec" id="booking">
+    <div class="booking-wrap">
+      <div class="sec-label" style="text-align:center">Book Your Ride</div>
+      <h2 class="sec-title">Fill in Your Details</h2>
+      <div class="booking-card">
+        <div class="offline-block-msg" id="offlineBlockMsg">
+          🔴 <strong>Driver is currently offline.</strong><br>
+          Booking is temporarily unavailable. Please check back soon or <a href="tel:+918757348847" style="color:var(--gold);font-weight:600">call the driver directly</a>.
+        </div>
+        <div id="bookingFormFields">
+          <div class="form-grp"><label>Your Full Name *</label><input type="text" id="bName" placeholder="e.g. Rahul Sharma"></div>
+          <div class="form-grp"><label>Phone Number *</label><input type="tel" id="bPhone" placeholder="e.g. 9876543210"></div>
+        </div>
+        <div class="map-grp">
+          <label>📍 Pickup Location * <span style="color:var(--muted);font-size:.68rem;text-transform:none;font-weight:400">(type or use map)</span></label>
+          <div class="map-input-row">
+            <input type="text" id="bPickup" placeholder="Type address or click 📍 Map button">
+            <button class="map-pin-btn" onclick="openMap('pickup')">📍 Map</button>
+          </div>
+          <input type="hidden" id="bPickupLat"><input type="hidden" id="bPickupLng">
+        </div>
+        <div class="map-grp">
+          <label>🏁 Drop Location * <span style="color:var(--muted);font-size:.68rem;text-transform:none;font-weight:400">(type or use map)</span></label>
+          <div class="map-input-row">
+            <input type="text" id="bDrop" placeholder="Type address or click 📍 Map button">
+            <button class="map-pin-btn" onclick="openMap('drop')">📍 Map</button>
+          </div>
+          <input type="hidden" id="bDropLat"><input type="hidden" id="bDropLng">
+        </div>
+        <div class="form-row">
+          <div class="form-grp"><label>Travel Date *</label><input type="date" id="bDate"></div>
+          <div class="form-grp"><label>Travel Time *</label><input type="time" id="bTime"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-grp"><label>Trip Type</label>
+            <select id="bTripType" onchange="autoFare()">
+              <option value="City / Local">City / Local (₹12/km)</option>
+              <option value="Outstation">Outstation (₹10/km)</option>
+              <option value="Round Trip">Round Trip</option>
+              <option value="Airport Transfer">Airport Transfer (from ₹500)</option>
+              <option value="Hourly Use">Hourly Use (₹150/hr)</option>
+            </select>
+          </div>
+          <div class="form-grp"><label>No. of Passengers</label>
+            <select id="bPassengers"><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-grp"><label>Approx. Distance (km)</label><input type="number" id="bKm" placeholder="e.g. 20" min="1" oninput="autoFare()"></div>
+          <div class="form-grp"><label>Estimated Fare</label><input type="text" id="bFare" class="fare-field" placeholder="Auto-calculated" readonly></div>
+        </div>
+        <div class="form-grp"><label>Additional Notes</label><textarea id="bNotes" placeholder="Luggage, special stops, special requirment etc."></textarea></div>
+        <button class="submit-btn" id="submitBtn" onclick="submitBooking()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Send Booking via WhatsApp
+        </button>
+        <p class="wa-note">📲 Booking saved & sent to driver. <strong>This screen auto-updates when driver accepts or declines.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOMER LIVE TRACKING -->
+  <section id="custTrackSec">
+    <div class="ctrack-inner">
+      <div class="ctrack-top">
+        <div style="font-size:2rem">🚗</div>
+        <div>
+          <div class="ctrack-title">Live Ride Tracking</div>
+          <div class="ctrack-status" id="custTrackStatus">Waiting for driver to start…</div>
+        </div>
+      </div>
+
+      <!-- OTP BOX — shown to customer after driver accepts -->
+      <div class="ride-otp-box" id="custOtpBox" style="display:none">
+        <div class="ride-otp-lbl">🔐 Your Ride OTP — Share with driver at pickup</div>
+        <div class="ride-otp-code" id="custOtpDisplay">----</div>
+        <div class="ride-otp-note">This 4-digit OTP will be entered by the driver to start your ride. Do not share with anyone else.</div>
+      </div>
+
+      <!-- RIDE STATUS BAR -->
+      <div class="ride-status-bar">
+        <div class="ride-status-indicator">
+          <div class="ride-dot waiting" id="rideStatusDot"></div>
+          <span id="rideStatusText">Waiting for driver…</span>
+        </div>
+        <button class="btn-cancel-ride" onclick="openCustCancel()" id="custCancelBtn">✕ Cancel Ride</button>
+      </div>
+
+      <!-- RIDE STARTED BANNER -->
+      <div class="ride-started-banner" id="rideStartedBanner">
+        <span style="font-size:1.5rem">🚗💨</span>
+        <div>
+          <strong style="color:var(--green2)">Ride has started!</strong><br>
+          <span style="font-size:.8rem;color:var(--muted)">Driver picked you up. Tracking your journey live.</span>
+        </div>
+      </div>
+      <!-- RIDE ENDED BANNER -->
+      <div class="ride-ended-banner" id="rideEndedBanner">
+        <span style="font-size:1.5rem">🏁</span>
+        <div>
+          <strong style="color:var(--blue)">Ride completed!</strong><br>
+          <span style="font-size:.8rem;color:var(--muted)">You have reached your destination.</span>
+        </div>
+      </div>
+      <div id="custTrackMap"></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.3rem;margin-top:.9rem;display:flex;gap:1.5rem;flex-wrap:wrap">
+        <div style="font-size:.84rem"><span style="color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;display:block">Pickup</span><span id="ctPickup">—</span></div>
+        <div style="font-size:.84rem"><span style="color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;display:block">Drop</span><span id="ctDrop">—</span></div>
+        <div style="font-size:.84rem"><span style="color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;display:block">Driver</span><span style="color:var(--gold)">On the way 🚗</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALL SECTION -->
+  <section class="call-sec" id="call">
+    <div class="call-wrap">
+      <div class="sec-label" style="text-align:center">Direct Contact</div>
+      <h2 class="sec-title">Prefer to Call?</h2>
+      <div class="call-card">
+        <div class="call-ring">📞</div>
+        <p style="color:var(--muted);font-size:.86rem">Speak directly with the driver — no apps, no middlemen.</p>
+        <div class="call-num">+91 87573 48847</div>
+        <p class="call-desc">Call to check availability, discuss your route, or negotiate fare. Available <strong>every day, 6 AM – 10 PM.</strong></p>
+        <div class="call-btns">
+          <a href="tel:+918757348847" class="btn-call">📞 Call Now</a>
+          <a href="https://wa.me/918757348847" target="_blank" class="btn-wa">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp Chat
+          </a>
+        </div>
+        <div class="online-badge"><div class="dot-live"></div> Online Now · Responds within minutes</div>
+      </div>
+    </div>
+   
+  </section>
+
+  <footer>
+    <p>Made with ❤️ for <strong>your trusted driver</strong> || Developed by Anmol Kumar & protech team 🔥</p>
+    <p style="margin-top:.45rem">📞 <strong>+91 87573 48847</strong></p>
+     <P style="margin-top:.45rem">Note: Vehicle is non-AC. so for special requirement please contact to driver.</p>
+  </footer>
+
+  <a class="call-float" href="tel:+918757348847">📞 Call</a>
+  <a class="wa-float" href="https://wa.me/918757348847" target="_blank">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    WhatsApp
+  </a>
+
+  <!-- MAP MODAL -->
+  <div class="map-modal" id="mapModal">
+    <div class="map-modal-inner">
+      <div class="map-modal-hdr">
+        <div class="map-modal-title" id="mapModalTitle">📍 Select Location</div>
+        <button class="map-close" onclick="closeMap()">✕</button>
+      </div>
+      <div style="padding:.7rem 1rem;border-bottom:1px solid var(--border);display:flex;gap:.5rem;background:var(--dark3)">
+        <input type="text" id="mapSearchInp" placeholder="Search area, street, landmark…"
+          style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.6rem .9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none"
+          onkeydown="if(event.key==='Enter')searchMapAddr()">
+        <button onclick="searchMapAddr()" style="background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:.6rem 1rem;font-weight:700;font-size:.84rem;cursor:pointer;white-space:nowrap">🔍 Search</button>
+        <button id="myLocBtn" onclick="useMyLocation()" title="Use my current location"
+          style="background:rgba(52,152,219,.15);color:var(--blue);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:.6rem .8rem;font-size:1rem;cursor:pointer;flex-shrink:0">📡</button>
+      </div>
+      <div style="position:relative">
+        <div class="map-tip">Tap the map to pin your location, or search above</div>
+        <div id="leafletMap"></div>
+      </div>
+      <div class="map-modal-ftr">
+        <div class="map-addr-display" id="mapAddrDisplay">Search or tap on map</div>
+        <button class="map-confirm" onclick="confirmMap()">✅ Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PENDING OVERLAY -->
+  <div class="overlay" id="ovPending">
+    <div class="ov-card">
+      <span class="ov-icon spinning">⏳</span>
+      <div class="ov-title">Waiting for Driver</div>
+      <p class="ov-sub">Your booking has been saved and sent to the driver via WhatsApp. <strong>This screen will automatically update</strong> when the driver accepts or declines your ride.</p>
+      <div class="ref-box"><div class="ref-lbl">Booking Reference</div><div class="ref-val" id="pendingRef">#DR0000</div></div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:1rem">If WhatsApp didn't open automatically, call the driver directly.</div>
+      <button class="ov-cancel" onclick="closeOverlay('ovPending')">Cancel &amp; go back</button>
+    </div>
+  </div>
+
+  <!-- CONFIRMED OVERLAY -->
+  <div class="overlay" id="ovConfirmed">
+    <div class="ov-card" style="border-color:var(--green2)">
+      <span class="ov-icon">🎉</span>
+      <div class="ov-title" style="color:var(--green2)">Ride Confirmed!</div>
+      <p class="ov-sub">Your ride has been accepted by the driver!</p>
+      <!-- OTP DISPLAY in overlay -->
+      <div class="ride-otp-box" style="margin-bottom:1rem">
+        <div class="ride-otp-lbl">🔐 Your Ride OTP — Share at pickup</div>
+        <div class="ride-otp-code" id="ovOtpDisplay">----</div>
+        <div class="ride-otp-note">Show this to the driver at your pickup point to start the ride.</div>
+      </div>
+      <div style="background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);border-radius:12px;padding:.95rem;text-align:left;margin-bottom:.95rem" id="confirmedDetails"></div>
+      <a id="trackingLink" href="#" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:var(--blue);color:#fff;text-decoration:none;font-weight:700;font-size:.88rem;padding:.82rem;border-radius:10px;margin-bottom:.65rem;transition:background .2s" onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='var(--blue)'">📍 View Route on Google Maps</a>
+      <button class="obtn obtn-gold" onclick="closeOverlay('ovConfirmed');document.getElementById('custTrackSec').scrollIntoView({behavior:'smooth'})">📍 Watch Live Tracking ↓</button>
+    </div>
+  </div>
+
+  <!-- DECLINED OVERLAY -->
+  <div class="overlay" id="ovDeclined">
+    <div class="ov-card" style="border-color:var(--red)">
+      <span class="ov-icon">😔</span>
+      <div class="ov-title" style="color:var(--red)">Not Available</div>
+      <p class="ov-sub">Sorry, the driver is not available for this slot. Please try a different date/time or call directly.</p>
+      <button class="obtn obtn-gold" onclick="closeOverlay('ovDeclined');document.getElementById('booking').scrollIntoView({behavior:'smooth'})">🔄 Try Another Booking</button>
+      <a href="tel:+918757348847" class="obtn-outline">📞 Call Driver Directly</a>
+    </div>
+  </div>
+
+  <!-- CUSTOMER CANCEL OVERLAY -->
+  <div class="overlay" id="ovCustCancel">
+    <div class="ov-card" style="border-color:var(--orange)">
+      <span class="ov-icon">⚠️</span>
+      <div class="ov-title" style="color:var(--orange)">Cancel Your Ride?</div>
+      <p class="ov-sub">Please select a reason. This helps us serve you better.</p>
+      <div class="cancel-reason-box">
+        <label>Reason for Cancellation *</label>
+        <select class="cancel-reason-select" id="custCancelReason">
+          <option value="">— Select a reason —</option>
+          <option value="Change of plans">Change of plans</option>
+          <option value="Booked by mistake">Booked by mistake</option>
+          <option value="Driver is taking too long">Driver is taking too long</option>
+          <option value="Found another transport">Found another transport</option>
+          <option value="Emergency came up">Emergency came up</option>
+          <option value="Other">Other reason</option>
+        </select>
+        <textarea class="cancel-note-inp" id="custCancelNote" placeholder="Any additional details? (optional)"></textarea>
+      </div>
+      <div class="ov-actions">
+        <button class="obtn obtn-red" onclick="confirmCustCancel()">Yes, Cancel Ride</button>
+        <button class="obtn" style="background:var(--card2);color:var(--text);border:1px solid var(--border)" onclick="closeOverlay('ovCustCancel')">Go Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIDE STARTED OVERLAY -->
+  <div class="overlay" id="ovRideStarted">
+    <div class="ov-card" style="border-color:var(--green2)">
+      <span class="ov-icon" style="font-size:3.5rem">🚗💨</span>
+      <div class="ov-title" style="color:var(--green2)">Ride Has Started!</div>
+      <p class="ov-sub">OTP verified! Your driver has confirmed your identity and the ride has begun.</p>
+      <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:10px;padding:.9rem;margin-bottom:1rem;font-size:.86rem;line-height:1.6">
+        <strong style="color:var(--green2)">📍 Driver has picked you up!</strong><br>
+        <span style="color:var(--muted)">Sit back and enjoy your ride. Live tracking is active below.</span>
+      </div>
+      <button class="obtn obtn-gold" onclick="closeOverlay('ovRideStarted');document.getElementById('custTrackSec').scrollIntoView({behavior:'smooth'})">📍 Watch Live Map ↓</button>
+    </div>
+  </div>
+
+  <!-- RIDE ENDED OVERLAY -->
+  <div class="overlay" id="ovRideEnded">
+    <div class="ov-card" style="border-color:var(--blue)">
+      <span class="ov-icon" style="font-size:3.5rem">🏁</span>
+      <div class="ov-title" style="color:var(--blue)">Ride Completed!</div>
+      <p class="ov-sub">You have reached your destination. Thank you for choosing DriveEasy!</p>
+      <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);border-radius:10px;padding:.9rem;margin-bottom:1rem;font-size:.86rem;line-height:1.6;text-align:left" id="rideEndedDetails"></div>
+      <a href="https://wa.me/918757348847?text=Hi%20DriveEasy!%20I%20just%20completed%20my%20ride.%20Great%20experience!" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:var(--green);color:#fff;text-decoration:none;font-weight:700;font-size:.88rem;padding:.82rem;border-radius:10px;margin-bottom:.65rem">💬 Share Feedback on WhatsApp</a>
+      <button class="obtn obtn-gold" onclick="closeOverlay('ovRideEnded');window.scrollTo({top:0,behavior:'smooth'})">🏠 Back to Home</button>
+    </div>
+  </div>
+
+  <!-- CANCELLED OVERLAY -->
+  <div class="overlay" id="ovCancelled">
+    <div class="ov-card" style="border-color:var(--orange)">
+      <span class="ov-icon">❌</span>
+      <div class="ov-title" style="color:var(--orange)">Ride Cancelled</div>
+      <p class="ov-sub" id="ovCancelledMsg">This ride has been cancelled.</p>
+      <button class="obtn obtn-gold" onclick="closeOverlay('ovCancelled');document.getElementById('booking').scrollIntoView({behavior:'smooth'})">🔄 Book a New Ride</button>
+      <a href="tel:+918757348847" class="obtn-outline" style="margin-top:.6rem">📞 Call Driver</a>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminApp">
+  <aside class="sidebar" id="adminSidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">🚗</div>
+      <div class="sb-logo-text">Drive<span>Easy</span></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</div>
+      <div class="nav-item" onclick="showPage('bookings',this)"><span class="nav-icon">📋</span>Bookings<span class="nav-badge" id="pendingBadge"></span></div>
+      <div class="nav-item" onclick="showPage('calendar',this)"><span class="nav-icon">📅</span>Availability</div>
+      <div class="nav-item" onclick="showPage('tracking',this)"><span class="nav-icon">📍</span>Live Tracking</div>
+      <div class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span>Settings</div>
+    </nav>
+    <div class="sb-footer"><button class="sb-logout" onclick="adminLogout()">🚪 Logout</button></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <button class="sb-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div class="tb-title">Driver <span>Panel</span></div>
+      </div>
+      <div class="tb-right">
+        <div class="status-toggle" onclick="toggleOnline()">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusLbl">Online</span>
+        </div>
+        <a href="https://wa.me/918757348847" target="_blank" style="display:inline-flex;align-items:center;gap:.38rem;background:rgba(37,211,102,.1);color:var(--green);border:1px solid rgba(37,211,102,.2);border-radius:8px;padding:.42rem .85rem;font-size:.76rem;font-weight:600;text-decoration:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div class="notif-banner" id="notifBanner">
+        <span style="font-size:1.3rem">🔔</span>
+        <div class="notif-text"><strong>New Booking Request!</strong> A customer is waiting for your response.</div>
+        <button class="btn-sm acc" onclick="showPage('bookings',document.querySelectorAll('.nav-item')[1]);document.getElementById('notifBanner').classList.remove('show')">View →</button>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="apage active" id="pg-dashboard">
+        <div class="dash-grid" id="dashCards">
+          <div class="dash-card"><div class="dash-lbl">Total Bookings</div><div class="dash-val c-blue">—</div></div>
+          <div class="dash-card"><div class="dash-lbl">Pending</div><div class="dash-val c-orange">—</div></div>
+          <div class="dash-card"><div class="dash-lbl">Accepted</div><div class="dash-val c-green">—</div></div>
+          <div class="dash-card"><div class="dash-lbl">Est. Earnings</div><div class="dash-val c-gold">—</div></div>
+        </div>
+        <div class="section-h">Recent Bookings</div>
+        <div class="bk-list" id="dashList"><div class="empty-state"><div class="empty-icon">⏳</div>Connecting to Firebase…</div></div>
+      </div>
+
+      <!-- BOOKINGS -->
+      <div class="apage" id="pg-bookings">
+        <div class="filter-row">
+          <button class="fbtn" style="background:var(--card);border:1px solid var(--border);color:var(--text)" onclick="setFilter('all')">All</button>
+          <button class="fbtn" style="background:rgba(230,126,34,.09);border:1px solid rgba(230,126,34,.22);color:var(--orange)" onclick="setFilter('pending')">⏳ Pending</button>
+          <button class="fbtn" style="background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);color:var(--green2)" onclick="setFilter('accepted')">✅ Accepted</button>
+          <button class="fbtn" style="background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.18);color:var(--red)" onclick="setFilter('declined')">❌ Declined</button>
+          <button class="fbtn" style="background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);color:var(--orange)" onclick="setFilter('cancelled')">🚫 Cancelled</button>
+          <button class="fbtn" style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);color:var(--blue)" onclick="setFilter('completed')">🏁 Completed</button>
+        </div>
+        <div class="bk-list" id="bkList"><div class="empty-state"><div class="empty-icon">⏳</div>Loading…</div></div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div class="apage" id="pg-calendar">
+        <div class="acal-card">
+          <div class="cal-nav-row">
+            <button class="cal-nav-btn" onclick="adminCalMonth(-1)">&#8592;</button>
+            <div class="cal-month-lbl" id="aCalLbl"></div>
+            <button class="cal-nav-btn" onclick="adminCalMonth(1)">&#8594;</button>
+          </div>
+          <div class="acal-grid" id="aCalGrid"></div>
+          <div class="acal-legend">
+            <div class="aleg"><div class="aleg-dot" style="background:var(--green2)"></div>Free (tap to block)</div>
+            <div class="aleg"><div class="aleg-dot" style="background:var(--red)"></div>Blocked (tap to unblock)</div>
+            <div class="aleg"><div class="aleg-dot" style="background:var(--blue)"></div>Customer Booked</div>
+          </div>
+          <div class="acal-hint">💡 Tap any free day to mark it unavailable. Tap a blocked day to make it free again. Changes appear instantly on the customer website.</div>
+        </div>
+        <div class="set-card">
+          <h3>📝 Date Notes</h3>
+          <div style="display:flex;gap:.7rem;align-items:flex-end;flex-wrap:wrap">
+            <div style="flex:1;min-width:130px"><div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.32rem">Date</div><input type="date" class="set-inp" id="noteDate" style="margin-top:0"></div>
+            <div style="flex:2;min-width:168px"><div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.32rem">Note</div><input type="text" class="set-inp" id="noteText" placeholder="e.g. Vehicle servicing" style="margin-top:0"></div>
+            <button class="btn-save" onclick="saveNote()" style="margin-top:0">Save</button>
+          </div>
+          <div id="notesList" style="margin-top:.85rem;display:flex;flex-direction:column;gap:.42rem"></div>
+        </div>
+      </div>
+
+      <!-- TRACKING -->
+      <div class="apage" id="pg-tracking">
+        <div id="adminMapWrap">
+          <div id="adminMap"></div>
+          <div class="map-info-bar">
+            <div class="mib"><span class="ml">Status:</span><span class="mv" id="trackStatus">No active ride</span></div>
+            <div class="mib"><span class="ml">Booking:</span><span class="mv" id="trackRef">—</span></div>
+            <div class="mib"><span class="ml">GPS:</span><span class="mv" id="trackGps">—</span></div>
+            <div class="mib"><span class="ml">Updated:</span><span class="mv" id="trackTime">—</span></div>
+          </div>
+        </div>
+        <div class="track-panel">
+          <h3>🚗 Rapido-Style Live Tracking</h3>
+          <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.32rem">Select Accepted Booking</div>
+          <select class="track-sel" id="trackSel" onchange="loadTrackBooking(this.value)"><option value="">— Choose an accepted booking —</option></select>
+
+          <!-- OTP VERIFY BOX — driver enters OTP to start ride -->
+          <div class="otp-verify-box" id="adminOtpBox" style="display:none">
+            <h4>🔐 Enter Customer OTP to Start Ride</h4>
+            <p style="font-size:.76rem;color:var(--muted);margin-bottom:.65rem">Ask the customer for their 4-digit OTP and enter it below to verify &amp; start the ride.</p>
+            <div class="otp-inp-row">
+              <input type="text" class="otp-inp" id="adminOtpInput" placeholder="_ _ _ _" maxlength="4" onkeydown="if(event.key==='Enter')verifyRideOtp()">
+              <button class="otp-verify-btn" onclick="verifyRideOtp()">✅ Verify &amp; Start Ride</button>
+            </div>
+            <div id="adminOtpErr" style="color:var(--red);font-size:.76rem;margin-top:.5rem;display:none"></div>
+          </div>
+
+          <button class="tbtn tbtn-blue" onclick="startGPS()">📍 Start GPS Tracking (My Location)</button>
+          <button class="tbtn" style="background:rgba(52,152,219,.15);color:var(--blue);border:1px solid rgba(52,152,219,.3);margin-bottom:.52rem" onclick="markRideEnded()">🏁 Mark Ride Ended (Reached Destination)</button>
+          <button class="tbtn tbtn-red" onclick="stopGPS()">⏹️ Stop GPS Tracking</button>
+          <button class="tbtn" style="background:rgba(230,126,34,.12);color:var(--orange);border:1px solid rgba(230,126,34,.28);margin-bottom:.52rem" onclick="adminCancelRide()">❌ Cancel Accepted Ride</button>
+          <button class="tbtn tbtn-green" onclick="shareLocation()">📤 Share Live Location with Passenger</button>
+          <div class="track-status" id="trackStatusBox">
+            🟢 <strong>GPS Active</strong> — Your location is being sent every 4 seconds.<br>
+            Customer can see your 🚗 moving live on their screen!
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="apage" id="pg-settings">
+        <div class="set-card">
+          <h3>🔐 Change Admin Credentials</h3>
+          <div class="set-row"><div class="set-lbl">New Username</div><input type="text" class="set-inp" id="newUser" placeholder="Enter new username"></div>
+          <div class="set-row"><div class="set-lbl">New Password</div><input type="password" class="set-inp" id="newPass" placeholder="Min 4 characters"></div>
+          <div class="set-row"><div class="set-lbl">Confirm Password</div><input type="password" class="set-inp" id="newPassConfirm" placeholder="Repeat password"></div>
+          <button class="btn-save" onclick="saveCreds()">Save Credentials</button>
+        </div>
+        <div class="set-card">
+          <h3>💰 Fare Rates</h3>
+          <div class="set-row"><div class="set-lbl">City Rate (₹/km)</div><input type="number" class="set-inp" id="rCity" value="12"></div>
+          <div class="set-row"><div class="set-lbl">Outstation Rate (₹/km)</div><input type="number" class="set-inp" id="rOut" value="10"></div>
+          <div class="set-row"><div class="set-lbl">Airport Base Fare (₹)</div><input type="number" class="set-inp" id="rAir" value="500"></div>
+          <div class="set-row"><div class="set-lbl">Hourly Rate (₹/hr)</div><input type="number" class="set-inp" id="rHr" value="150"></div>
+          <button class="btn-save" onclick="saveRates()">Save Rates</button>
+        </div>
+        <div class="set-card">
+          <h3>🔥 Firebase Status</h3>
+          <div class="set-row"><div class="set-lbl">Project</div><div class="set-desc">driveeasy-bde61</div></div>
+          <div class="set-row"><div class="set-lbl">Auth</div><div class="set-desc">Firebase Email/Password</div></div>
+          <div class="set-row"><div class="set-lbl">Database</div><div class="set-desc">Firestore — real-time sync across all devices ✅</div></div>
+        </div>
+        <div class="set-card" style="border-color:rgba(231,76,60,.3)">
+          <h3 style="color:var(--red)">🗑️ Data Management</h3>
+          <div class="set-row"><div><div class="set-lbl">Delete All Bookings</div><div class="set-desc">Permanently removes all booking records from Firebase</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Clear Blocked Dates</div><div class="set-desc">Removes all manually blocked dates from calendar</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Reset Driver Location</div><div class="set-desc">Clears live tracking data from Firebase</div></div></div>
+          <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem">
+            <button class="btn-save" style="background:var(--red);margin-top:0" onclick="deleteAllBookings()">🗑️ Delete All Bookings</button>
+            <button class="btn-save" style="background:var(--orange);margin-top:0" onclick="clearBlockedDates()">📅 Clear Blocked Dates</button>
+            <button class="btn-save" style="background:var(--blue);margin-top:0" onclick="resetDriverLocation()">📍 Reset Live Location</button>
+            <button class="btn-save" style="background:#555;margin-top:0" onclick="resetEverything()">⚠️ Reset Everything</button>
+          </div>
+          <div style="margin-top:.8rem;font-size:.74rem;color:var(--red);opacity:.8">⚠️ These actions are permanent and cannot be undone.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="admin-toast" id="adminToast"></div>
+
+<script>
+// ============================================================
+// FIREBASE INIT
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDU4_1HJylrto03Fh2MdF9X16ceSdtr9bI",
+  authDomain: "driveeasy-bde61.firebaseapp.com",
+  projectId: "driveeasy-bde61",
+  storageBucket: "driveeasy-bde61.firebasestorage.app",
+  messagingSenderId: "38289381720",
+  appId: "1:38289381720:web:5d1377eaad4eb8a05eed2d"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+let currentUser    = null;
+let currentBooking = {};
+let activeFilter   = 'all';
+let allBookings    = [];
+let bookingsUnsub  = null;
+let calDate        = new Date();
+let adminCalDate   = new Date();
+let leafletMap     = null, leafMarker = null, selLatLng = null, mapFor = 'pickup';
+let adminMap       = null, driverMarker = null, pkMarker = null, dpMarker = null;
+let trackInterval  = null;
+let custTrackMap   = null, custDriverMarker = null;
+let driverOn       = true;
+let activeBookingFid = null;
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ============================================================
+// UTILITY
+// ============================================================
+function toast(msg, bg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = bg || '#1a1a1a';
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500);
+}
+function aToast(msg, bg) {
+  const t = document.getElementById('adminToast');
+  t.textContent = msg; t.style.background = bg || '#1a1a1a';
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500);
+}
+function showOverlay(id)  { document.getElementById(id).classList.add('show'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+function fmtDate(ds) {
+  const d = new Date(ds);
+  return d.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+function fmtTime(ts) {
+  const [hr,mn] = ts.split(':'); const h = parseInt(hr);
+  return `${h%12||12}:${mn} ${h>=12?'PM':'AM'}`;
+}
+function genRef() { return '#DR' + Math.floor(1000 + Math.random()*9000); }
+function genOtp() { return String(Math.floor(1000 + Math.random()*9000)); }
+
+// ============================================================
+// SHOW SCREENS
+// ============================================================
+function showScreen(s) {
+  document.getElementById('authScreen').style.display  = s==='auth'     ? 'flex'  : 'none';
+  document.getElementById('customerApp').style.display = s==='customer' ? 'block' : 'none';
+  document.getElementById('adminApp').style.display    = s==='admin'    ? 'block' : 'none';
+}
+
+// ============================================================
+// AUTH TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  ['loginErr','signupErr','adminErr'].forEach(id => {
+    const e = document.getElementById(id); if(e){ e.style.display='none'; e.textContent=''; }
+  });
+  const tabs = document.getElementById('mainAuthTabs');
+  if (tab === 'login') {
+    if(tabs) tabs.style.display='flex';
+    document.querySelectorAll('.auth-tab')[0].classList.add('active');
+    document.getElementById('panelLogin').classList.add('active');
+  } else if (tab === 'signup') {
+    if(tabs) tabs.style.display='flex';
+    document.querySelectorAll('.auth-tab')[1].classList.add('active');
+    document.getElementById('panelSignup').classList.add('active');
+  } else if (tab === 'admin') {
+    if(tabs) tabs.style.display='none';
+    document.getElementById('panelAdmin').classList.add('active');
+  }
+}
+
+function showErr(id, msg) {
+  const e = document.getElementById(id);
+  if (!e) return;
+  e.textContent = msg; e.style.display = 'block';
+}
+
+// ============================================================
+// PASSWORD VISIBILITY TOGGLE
+// ============================================================
+function togglePwd(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ============================================================
+// PASSWORD STRENGTH METER — called via oninput on signup pass
+// ============================================================
+function checkPwdStrength(v) {
+  const bar = document.getElementById('pwdStrengthBar');
+  const lbl = document.getElementById('pwdStrengthLbl');
+  if (!v) { bar.style.width='0%'; lbl.textContent=''; return; }
+  let score = 0;
+  if (v.length >= 6) score++;
+  if (v.length >= 10) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const levels = [
+    {w:'20%',c:'#e74c3c',t:'Very Weak'},
+    {w:'40%',c:'#e67e22',t:'Weak'},
+    {w:'60%',c:'#f1c40f',t:'Fair'},
+    {w:'80%',c:'#2ecc71',t:'Strong'},
+    {w:'100%',c:'#27ae60',t:'Very Strong'}
+  ];
+  const lvl = levels[Math.min(score-1,4)] || levels[0];
+  bar.style.width = lvl.w; bar.style.background = lvl.c;
+  lbl.textContent = lvl.t; lbl.style.color = lvl.c;
+}
+
+// ============================================================
+// CUSTOMER LOGIN
+// ============================================================
+function doLogin() {
+  const email = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginErr');
+  if (err) err.style.display = 'none';
+  if (!email) { showErr('loginErr','⚠️ Please enter your email address.'); return; }
+  if (!pass)  { showErr('loginErr','⚠️ Please enter your password.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('loginErr','⚠️ Please enter a valid email address.'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = '⏳ Logging in…';
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
+      btn.disabled = false; btn.textContent = '🚗 Login & Book a Ride';
+    })
+    .catch(e => {
+      showErr('loginErr', '❌ ' + friendlyErr(e.code));
+      btn.disabled = false; btn.textContent = '🚗 Login & Book a Ride';
+    });
+}
+
+// ============================================================
+// CUSTOMER SIGNUP — direct account creation, no OTP
+// ============================================================
+function doSignup() {
+  const first  = (document.getElementById('signupFirst').value || '').trim();
+  const last   = (document.getElementById('signupLast').value  || '').trim();
+  const email  = (document.getElementById('signupEmail').value || '').trim().toLowerCase();
+  const phone  = (document.getElementById('signupPhone').value || '').trim();
+  const pass   = document.getElementById('signupPass').value;
+  const passC  = document.getElementById('signupConfirm').value;
+
+  if (!first)  { showErr('signupErr','⚠️ Please enter your first name.'); return; }
+  if (!last)   { showErr('signupErr','⚠️ Please enter your last name.'); return; }
+  if (!email)  { showErr('signupErr','⚠️ Please enter your email address.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('signupErr','⚠️ Please enter a valid email address.'); return; }
+  if (!phone || phone.length < 10) { showErr('signupErr','⚠️ Please enter a valid 10-digit phone number.'); return; }
+  if (!pass)   { showErr('signupErr','⚠️ Please enter a password.'); return; }
+  if (pass.length < 6) { showErr('signupErr','⚠️ Password must be at least 6 characters.'); return; }
+  if (pass !== passC)  { showErr('signupErr','❌ Passwords do not match.'); return; }
+
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true; btn.textContent = '⏳ Creating account…';
+
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(cred => Promise.all([
+      cred.user.updateProfile({ displayName: first + ' ' + last }),
+      db.collection('users').doc(cred.user.uid).set({
+        firstName: first, lastName: last, email: email, phone: phone,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      })
+    ]))
+    .then(() => {
+      btn.disabled = false; btn.textContent = '✅ Create Account';
+      toast('🎉 Account created! Welcome to DriveEasy!', '#2ecc71');
+    })
+    .catch(e => {
+      showErr('signupErr','❌ ' + friendlyErr(e.code));
+      btn.disabled = false; btn.textContent = '✅ Create Account';
+    });
+}
+
+// ============================================================
+// AUTH STATE LISTENER
+// ============================================================
+auth.onAuthStateChanged(user => {
+  if (localStorage.getItem('de_admin_session') === '1') return;
+  if (user) {
+    currentUser = user;
+    db.collection('users').doc(user.uid).get()
+      .then(snap => enterCustomer(user, snap.exists ? snap.data() : {}))
+      .catch(() => enterCustomer(user, {}));
+  } else {
+    currentUser = null;
+    showScreen('auth');
+    switchTab('login');
+  }
+});
+
+function enterCustomer(user, data) {
+  showScreen('customer');
+  const first    = data.firstName || (user.displayName||'').split(' ')[0] || 'User';
+  const fullName = user.displayName || (data.firstName ? data.firstName + ' ' + (data.lastName||'') : user.email);
+  const setEl  = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  const setVal = (id, val) => { const el=document.getElementById(id); if(el) el.value=val; };
+  setEl('userAvatar', first[0].toUpperCase());
+  setEl('userName', first);
+  setVal('bName', fullName);
+  setVal('bPhone', data.phone || '');
+  const dateEl = document.getElementById('bDate');
+  if (dateEl) dateEl.min = new Date().toISOString().split('T')[0];
+  renderCalendar();
+  listenDriverStatus();
+}
+
+function doSignOut() {
+  currentUser = null;
+  auth.signOut().then(() => {
+    showScreen('auth');
+    switchTab('login');
+    ['bName','bPhone','bPickup','bDrop','bFare','bKm','bNotes'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+  });
+}
+
+function friendlyErr(code) {
+  const m = {
+    'auth/user-not-found':'No account with this email.',
+    'auth/wrong-password':'Wrong password.',
+    'auth/invalid-credential':'Wrong email or password.',
+    'auth/email-already-in-use':'Email already registered. Please login.',
+    'auth/invalid-email':'Invalid email address.',
+    'auth/weak-password':'Password too weak — use at least 6 characters.',
+    'auth/too-many-requests':'Too many attempts. Wait a moment and try again.',
+    'auth/network-request-failed':'Network error. Check your internet connection.'
+  };
+  return m[code] || 'Something went wrong. Please try again.';
+}
+
+// ============================================================
+// ADMIN LOGIN
+// ============================================================
+function getAdminCreds() {
+  try { return JSON.parse(localStorage.getItem('de_admin_creds')) || { user:'driver', pass:'driver@1234' }; }
+  catch(e) { return { user:'driver', pass:'driver@1234' }; }
+}
+
+function doAdminLogin() {
+  const u = (document.getElementById('adminUser').value || '').trim();
+  const p = (document.getElementById('adminPass').value  || '').trim();
+  if (!u) { showErr('adminErr','⚠️ Please enter your username.'); return; }
+  if (!p) { showErr('adminErr','⚠️ Please enter your password.'); return; }
+  const creds = getAdminCreds();
+  if (u === creds.user && p === creds.pass) {
+    localStorage.setItem('de_admin_session','1');
+    if (auth.currentUser) {
+      auth.signOut().then(() => enterAdmin());
+    } else {
+      enterAdmin();
+    }
+  } else {
+    showErr('adminErr','❌ Wrong username or password.');
+    document.getElementById('adminPass').value = '';
+  }
+}
+
+function adminLogout() {
+  localStorage.removeItem('de_admin_session');
+  if (bookingsUnsub) { bookingsUnsub(); bookingsUnsub = null; }
+  if (trackInterval) { clearInterval(trackInterval); trackInterval = null; }
+  allBookings = [];
+  driverOn = true;
+  showScreen('auth');
+  switchTab('login');
+}
+
+function enterAdmin() {
+  showScreen('admin');
+  showPage('dashboard', document.querySelectorAll('.nav-item')[0]);
+  initAdminData();
+  db.collection('driverStatus').doc('status').get().then(snap => {
+    const online = snap.exists ? snap.data().online : true;
+    driverOn = online;
+    const dot = document.getElementById('statusDot');
+    const lbl = document.getElementById('statusLbl');
+    if(dot) dot.className = 'status-dot' + (driverOn ? '' : ' offline');
+    if(lbl) lbl.textContent = driverOn ? 'Online' : 'Offline';
+  }).catch(() => {});
+  const rates = JSON.parse(localStorage.getItem('de_rates')||'{}');
+  if (rates.city) document.getElementById('rCity').value = rates.city;
+  if (rates.outstation) document.getElementById('rOut').value = rates.outstation;
+  if (rates.airport) document.getElementById('rAir').value = rates.airport;
+  if (rates.hourly) document.getElementById('rHr').value = rates.hourly;
+  const nd = document.getElementById('noteDate');
+  if (nd) nd.min = new Date().toISOString().split('T')[0];
+  renderNotes();
+}
+
+// ============================================================
+// STARTUP
+// ============================================================
+window.addEventListener('DOMContentLoaded', function() {
+  if (localStorage.getItem('de_admin_session') === '1') {
+    enterAdmin();
+  } else {
+    showScreen('auth');
+    switchTab('login');
+  }
+});
+
+// ============================================================
+// CUSTOMER CALENDAR
+// ============================================================
+function renderCalendar() {
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  document.getElementById('calMonthLbl').textContent = MONTHS[m]+' '+y;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Loading…</div>';
+  Promise.all([
+    db.collection('bookedDates').get(),
+    db.collection('blockedDates').get()
+  ]).then(([bs,bls]) => {
+    const booked  = bs.docs.map(d=>d.id);
+    const blocked = bls.docs.map(d=>d.id);
+    grid.innerHTML = '';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+      const el=document.createElement('div'); el.className='cal-dname'; el.textContent=d; grid.appendChild(el);
+    });
+    const firstDay = new Date(y,m,1).getDay();
+    const days = new Date(y,m+1,0).getDate();
+    const todayStr = new Date().toISOString().split('T')[0];
+    for(let i=0;i<firstDay;i++){const el=document.createElement('div');el.className='cal-day empty';grid.appendChild(el);}
+    for(let d=1;d<=days;d++){
+      const el=document.createElement('div');
+      const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isPast=ds<todayStr;
+      if(ds===todayStr) el.className='cal-day ctoday';
+      else if(isPast) el.className='cal-day past';
+      else if(booked.includes(ds)||blocked.includes(ds)) el.className='cal-day taken';
+      else {
+        el.className='cal-day avail';
+        el.title='Available – tap to select date';
+        el.onclick=()=>{
+          document.getElementById('bDate').value=ds;
+          document.getElementById('booking').scrollIntoView({behavior:'smooth'});
+          toast('📅 Date selected!','#C9973A');
+        };
+      }
+      el.textContent=d; grid.appendChild(el);
+    }
+  }).catch(()=>{
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;color:var(--red);font-size:.82rem">Could not load calendar. Check internet.</div>';
+  });
+}
+function changeMonth(dir) { calDate.setMonth(calDate.getMonth()+dir); renderCalendar(); }
+
+// ============================================================
+// FARE ESTIMATOR
+// ============================================================
+function toggleEstHrs() {
+  document.getElementById('estHrsGrp').style.display = document.getElementById('estType').value==='hourly' ? 'block' : 'none';
+}
+function calcFare() {
+  const km=parseFloat(document.getElementById('estKm').value)||0;
+  const t=document.getElementById('estType').value;
+  const h=Math.max(parseFloat(document.getElementById('estHrs').value)||2,2);
+  let fare=0,note='';
+  if(t==='city'){fare=Math.max(km*12,80);note=`${km}km × ₹12 = ₹${km*12}. Min ₹80. Toll extra.`;}
+  else if(t==='outstation'){fare=Math.max(km*10,800);note=`${km}km × ₹10. Min ₹800. Toll extra.`;}
+  else if(t==='airport'){const ex=Math.max(km-10,0);fare=500+ex*12;note=`₹500 base + ${ex}km × ₹12.`;}
+  else if(t==='hourly'){fare=h*150;note=`${h}hrs × ₹150 = ₹${h*150}. Min 2hrs.`;}
+  document.getElementById('estAmt').textContent=`₹${Math.round(fare).toLocaleString('en-IN')}`;
+  document.getElementById('estNote').textContent=note;
+  document.getElementById('estResult').classList.add('show');
+}
+function autoFare() {
+  const km=parseFloat(document.getElementById('bKm').value)||0;
+  const t=document.getElementById('bTripType').value;
+  if(!km){document.getElementById('bFare').value='';return;}
+  let fare=0;
+  if(t.includes('City'))fare=Math.max(km*12,80);
+  else if(t.includes('Outstation'))fare=Math.max(km*10,800);
+  else if(t.includes('Airport'))fare=500+Math.max(0,km-10)*12;
+  else if(t.includes('Round'))fare=km*12*2;
+  else if(t.includes('Hourly'))fare=km*150;
+  else fare=km*12;
+  document.getElementById('bFare').value=`₹${Math.round(fare).toLocaleString('en-IN')} (est.)`;
+}
+
+// ============================================================
+// MAP MODAL
+// ============================================================
+function openMap(field) {
+  mapFor = field;
+  selLatLng = null;
+  document.getElementById('mapModalTitle').textContent =
+    field === 'pickup' ? '📍 Select Pickup Location' : '🏁 Select Drop Location';
+  document.getElementById('mapAddrDisplay').textContent = 'Search or use your current location';
+  document.getElementById('mapSearchInp').value = '';
+  document.getElementById('mapModal').classList.add('show');
+  setTimeout(() => {
+    if (!leafletMap) {
+      leafletMap = L.map('leafletMap', { attributionControl: false, zoomControl: true })
+                   .setView([26.2211, 84.3564], 14);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19, attribution: 'Tiles © Esri'
+      }).addTo(leafletMap);
+      L.control.attribution({ position:'bottomright', prefix:'' }).addTo(leafletMap);
+      leafletMap.on('click', e => placeMapPin(e.latlng.lat, e.latlng.lng));
+    } else {
+      leafletMap.invalidateSize();
+    }
+  }, 200);
+}
+
+function placeMapPin(lat, lng) {
+  selLatLng = { lat, lng };
+  if (leafMarker) leafletMap.removeLayer(leafMarker);
+  const emoji = mapFor === 'pickup' ? '📍' : '🏁';
+  const color = mapFor === 'pickup' ? '#2ecc71' : '#e74c3c';
+  leafMarker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      html: `<div style="width:36px;height:44px;position:relative;display:flex;flex-direction:column;align-items:center">
+        <div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center">
+          <span style="transform:rotate(45deg);font-size:.95rem">${emoji}</span>
+        </div>
+        <div style="width:2px;height:8px;background:${color};margin-top:1px"></div>
+      </div>`,
+      className: '', iconSize:[36,44], iconAnchor:[18,44]
+    })
+  }).addTo(leafletMap).bindPopup(mapFor === 'pickup' ? 'Pickup Point' : 'Drop Point').openPopup();
+  document.getElementById(mapFor==='pickup'?'bPickupLat':'bDropLat').value = lat;
+  document.getElementById(mapFor==='pickup'?'bPickupLng':'bDropLng').value = lng;
+  document.getElementById('mapAddrDisplay').textContent = 'Fetching address…';
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+    .then(r => r.json())
+    .then(data => {
+      const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      const shortAddr = addr.length > 80 ? addr.substring(0,80) + '…' : addr;
+      document.getElementById('mapAddrDisplay').textContent = shortAddr;
+      document.getElementById(mapFor==='pickup'?'bPickup':'bDrop').value = shortAddr;
+    })
+    .catch(() => {
+      const fallback = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      document.getElementById('mapAddrDisplay').textContent = fallback;
+      document.getElementById(mapFor==='pickup'?'bPickup':'bDrop').value = fallback;
+    });
+}
+
+function useMyLocation() {
+  if (!navigator.geolocation) { toast('❌ GPS not available on this device.'); return; }
+  const btn = document.getElementById('myLocBtn');
+  btn.textContent = '⏳'; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      leafletMap.setView([lat, lng], 17);
+      placeMapPin(lat, lng);
+      btn.textContent = '📡'; btn.disabled = false;
+      toast('📍 Your location found!', '#C9973A');
+    },
+    err => {
+      btn.textContent = '📡'; btn.disabled = false;
+      toast('⚠️ Could not get location: ' + err.message);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function searchMapAddr() {
+  const q = document.getElementById('mapSearchInp').value.trim();
+  if (!q) return;
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=in`)
+    .then(r => r.json())
+    .then(results => {
+      if (!results.length) { toast('⚠️ Location not found. Try a more specific name.'); return; }
+      const { lat, lon } = results[0];
+      leafletMap.setView([parseFloat(lat), parseFloat(lon)], 16);
+      placeMapPin(parseFloat(lat), parseFloat(lon));
+    })
+    .catch(() => toast('⚠️ Search failed. Check internet connection.'));
+}
+
+function confirmMap() {
+  if (!selLatLng) { toast('⚠️ Please tap on the map or search a location first!'); return; }
+  closeMap();
+  toast('📍 Location set!', '#C9973A');
+}
+function closeMap() { document.getElementById('mapModal').classList.remove('show'); }
+
+// ============================================================
+// SUBMIT BOOKING → Firestore + WhatsApp
+// ============================================================
+async function submitBooking() {
+  const name   = (document.getElementById('bName').value   || '').trim();
+  const phone  = (document.getElementById('bPhone').value  || '').trim();
+  const pickup = (document.getElementById('bPickup').value || '').trim();
+  const drop   = (document.getElementById('bDrop').value   || '').trim();
+  const date   = document.getElementById('bDate').value;
+  const time   = document.getElementById('bTime').value;
+
+  if(!name)  { toast('⚠️ Please enter your name.'); return; }
+  if(!phone) { toast('⚠️ Please enter your phone number.'); return; }
+  if(!pickup){ toast('⚠️ Please enter pickup location.'); return; }
+  if(!drop)  { toast('⚠️ Please enter drop location.'); return; }
+  if(!date)  { toast('⚠️ Please select a travel date.'); return; }
+  if(!time)  { toast('⚠️ Please select a travel time.'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Saving booking…';
+
+  try {
+    const [bd,bl] = await Promise.all([
+      db.collection('bookedDates').doc(date).get(),
+      db.collection('blockedDates').doc(date).get()
+    ]);
+    if(bd.exists||bl.exists){
+      toast('❌ This date is already taken! Please choose another date.');
+      btn.disabled=false;
+      btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Send Booking via WhatsApp';
+      return;
+    }
+  } catch(e){}
+
+  const triptype   = document.getElementById('bTripType').value;
+  const passengers = document.getElementById('bPassengers').value;
+  const km         = document.getElementById('bKm').value;
+  const fare       = document.getElementById('bFare').value;
+  const notes      = (document.getElementById('bNotes').value || '').trim();
+  const pLat       = document.getElementById('bPickupLat').value;
+  const pLng       = document.getElementById('bPickupLng').value;
+  const dLat       = document.getElementById('bDropLat').value;
+  const dLng       = document.getElementById('bDropLng').value;
+
+  const fDate    = fmtDate(date);
+  const fTime    = fmtTime(time);
+  const ref      = genRef();
+  const mapLink  = (pLat&&pLng) ? `https://www.google.com/maps/dir/?api=1&origin=${pLat},${pLng}&destination=${dLat||pLat},${dLng||pLng}&travelmode=driving` : '';
+
+  const bookingData = {
+    ref, name, phone, pickup, drop,
+    date:fDate, rawDate:date, time:fTime,
+    triptype, passengers, km, fare, notes,
+    pickupLat:pLat, pickupLng:pLng, dropLat:dLat, dropLng:dLng, mapLink,
+    status:'pending',
+    uid: currentUser ? currentUser.uid : 'guest',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    const docRef = await db.collection('bookings').add(bookingData);
+    currentBooking = { ...bookingData, firestoreId:docRef.id };
+    toast('✅ Booking saved !','#2ecc71');
+  } catch(e) {
+    toast('❌ Could not save booking. Check internet connection.');
+    btn.disabled=false;
+    btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Send Booking via WhatsApp';
+    return;
+  }
+
+  const msg = [
+    '🚗 *NEW RIDE BOOKING REQUEST*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    `🔖 *Ref:* ${ref}`,
+    `👤 *Name:* ${name}`,
+    `📞 *Phone:* ${phone}`,
+    '━━━━━━━━━━━━━━━━━━━━',
+    `📍 *Pickup:* ${pickup}`,
+    `🏁 *Drop:* ${drop}`,
+    pLat ? `📌 *Coords:* ${parseFloat(pLat).toFixed(5)}, ${parseFloat(pLng).toFixed(5)}` : '',
+    mapLink ? `🗺️ *Route Map:* ${mapLink}` : '',
+    '━━━━━━━━━━━━━━━━━━━━',
+    `📅 *Date:* ${fDate}`,
+    `⏰ *Time:* ${fTime}`,
+    `🛣️ *Trip Type:* ${triptype}`,
+    `🧑‍🤝‍🧑 *Passengers:* ${passengers}`,
+    km ? `📏 *Distance:* ${km} km` : '',
+    fare ? `💰 *Est. Fare:* ${fare}` : '',
+    notes ? `📝 *Notes:* ${notes}` : '',
+    '━━━━━━━━━━━━━━━━━━━━',
+    '⚠️ Please reply *ACCEPT* or *DECLINE* to confirm this booking.',
+    'Customer is waiting. Admin panel also shows this booking.'
+  ].filter(Boolean).join('\n');
+
+  window.open(`https://wa.me/918757348847?text=${encodeURIComponent(msg)}`,'_blank');
+
+  document.getElementById('pendingRef').textContent = ref;
+  showOverlay('ovPending');
+  listenBookingStatus(currentBooking.firestoreId);
+
+  btn.disabled=false;
+  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Send Booking via WhatsApp';
+}
+
+// ============================================================
+// LISTEN BOOKING STATUS + OTP GENERATION ON ACCEPT
+// ============================================================
+function listenBookingStatus(fid) {
+  if(!fid) return;
+  const unsub = db.collection('bookings').doc(fid).onSnapshot(snap => {
+    if(!snap.exists) return;
+    const data = snap.data();
+    if(data.status === 'accepted') {
+      unsub();
+      closeOverlay('ovPending');
+
+      // Generate OTP and save to Firestore
+      const otp = genOtp();
+      db.collection('bookings').doc(fid).update({ rideOtp: otp });
+
+      // Show OTP to customer
+      document.getElementById('custOtpDisplay').textContent = otp;
+      document.getElementById('ovOtpDisplay').textContent   = otp;
+      document.getElementById('custOtpBox').style.display   = 'block';
+
+      document.getElementById('confirmedDetails').innerHTML = `
+        <div class="cd-row"><span class="cd-lbl">Passenger</span><span class="cd-val">${data.name}</span></div>
+        <div class="cd-row"><span class="cd-lbl">Pickup</span><span class="cd-val">${data.pickup}</span></div>
+        <div class="cd-row"><span class="cd-lbl">Drop</span><span class="cd-val">${data.drop}</span></div>
+        <div class="cd-row"><span class="cd-lbl">Date & Time</span><span class="cd-val">${data.date}, ${data.time}</span></div>
+        <div class="cd-row"><span class="cd-lbl">Trip Type</span><span class="cd-val">${data.triptype}</span></div>
+        <div class="cd-row"><span class="cd-lbl">Fare</span><span class="cd-val gold">${data.fare||'Agreed with driver'}</span></div>
+        <div class="cd-row"><span class="cd-lbl">Ref No.</span><span class="cd-val" style="color:var(--gold)">${data.ref}</span></div>`;
+
+      const tl = document.getElementById('trackingLink');
+      if(data.mapLink){ tl.href=data.mapLink; tl.style.display='flex'; } else { tl.style.display='none'; }
+      showOverlay('ovConfirmed');
+      toast('🎉 Driver accepted your ride! Your OTP: ' + otp,'#2ecc71');
+      startCustTracking(data);
+      window._rideStartedShown   = false;
+      window._rideEndedShown     = false;
+      window._rideCancelledShown = false;
+      window._autoEndTriggered   = false;
+      listenRideStatus(fid);
+    } else if(data.status === 'declined') {
+      unsub();
+      closeOverlay('ovPending');
+      showOverlay('ovDeclined');
+      toast('😔 Driver declined. Please try another time.','#e74c3c');
+    }
+  });
+}
+
+// ============================================================
+// ADMIN: OTP VERIFY → START RIDE
+// ============================================================
+async function verifyRideOtp() {
+  const fid     = document.getElementById('trackSel').value;
+  const entered = (document.getElementById('adminOtpInput').value || '').trim();
+  const errEl   = document.getElementById('adminOtpErr');
+  errEl.style.display = 'none';
+
+  if (!fid)     { aToast('⚠️ Select a booking first.','#e67e22'); return; }
+  if (!entered || entered.length !== 4) { errEl.textContent = '⚠️ Please enter the 4-digit OTP.'; errEl.style.display='block'; return; }
+
+  const b = allBookings.find(x => x.firestoreId === fid);
+  if (!b) return;
+
+  try {
+    const snap = await db.collection('bookings').doc(fid).get();
+    const correct = snap.data().rideOtp;
+    if (entered !== correct) {
+      errEl.textContent = '❌ Wrong OTP. Ask the customer to check their screen.';
+      errEl.style.display = 'block';
+      return;
+    }
+    // OTP correct — start the ride
+    await db.collection('bookings').doc(fid).update({
+      rideStatus: 'started',
+      rideStartedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection('driverLocation').doc('live').set({
+      rideStatus: 'started', fid, ref: b.ref,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    document.getElementById('adminOtpInput').value = '';
+    errEl.style.display = 'none';
+    aToast('✅ OTP Verified! Ride started!','#2ecc71');
+
+    const msg = `Hi ${b.name}! 🚗💨 Your ride has *STARTED*!\n\nOTP verified. Your driver has picked you up. Sit back and enjoy!\nOpen the website to track your journey live.\n\n– DriveEasy`;
+    setTimeout(() => window.open(`https://wa.me/91${b.phone}?text=${encodeURIComponent(msg)}`, '_blank'), 400);
+  } catch(e) { aToast('❌ Error: ' + e.message,'#e74c3c'); }
+}
+
+// ============================================================
+// SHOW/HIDE OTP BOX WHEN BOOKING IS SELECTED
+// ============================================================
+function loadTrackBooking(fid) {
+  const otpBox = document.getElementById('adminOtpBox');
+  const errEl  = document.getElementById('adminOtpErr');
+  if (!fid) {
+    if (otpBox) otpBox.style.display = 'none';
+    return;
+  }
+  const b = allBookings.find(x => x.firestoreId === fid);
+  if (!b) return;
+
+  // Show OTP box only if ride not yet started
+  if (otpBox && b.status === 'accepted' && b.rideStatus !== 'started' && b.rideStatus !== 'ended') {
+    otpBox.style.display = 'block';
+    if (errEl) { errEl.style.display='none'; errEl.textContent=''; }
+    if (document.getElementById('adminOtpInput')) document.getElementById('adminOtpInput').value = '';
+  } else if (otpBox) {
+    otpBox.style.display = 'none';
+  }
+
+  initAdminMap();
+  if(pkMarker){adminMap.removeLayer(pkMarker);pkMarker=null;}
+  if(dpMarker){adminMap.removeLayer(dpMarker);dpMarker=null;}
+  if(window._adminRouteLine){adminMap.removeLayer(window._adminRouteLine);window._adminRouteLine=null;}
+  if(b.pickupLat&&b.pickupLng){
+    pkMarker=L.marker([parseFloat(b.pickupLat),parseFloat(b.pickupLng)],{icon:makePinIcon('pickup'),zIndexOffset:10})
+      .addTo(adminMap).bindPopup('<b>Pickup</b><br>'+b.pickup);
+  }
+  if(b.dropLat&&b.dropLng){
+    dpMarker=L.marker([parseFloat(b.dropLat),parseFloat(b.dropLng)],{icon:makePinIcon('drop'),zIndexOffset:10})
+      .addTo(adminMap).bindPopup('<b>Drop</b><br>'+b.drop);
+  }
+  if(b.pickupLat&&b.pickupLng&&b.dropLat&&b.dropLng){
+    window._adminRouteLine=L.polyline(
+      [[parseFloat(b.pickupLat),parseFloat(b.pickupLng)],[parseFloat(b.dropLat),parseFloat(b.dropLng)]],
+      {color:'#C9973A',weight:4,dashArray:'10,8',opacity:.75}
+    ).addTo(adminMap);
+    adminMap.fitBounds(
+      [[parseFloat(b.pickupLat),parseFloat(b.pickupLng)],[parseFloat(b.dropLat),parseFloat(b.dropLng)]],
+      {padding:[50,50]}
+    );
+  }
+  document.getElementById('trackRef').textContent = `${b.ref} – ${b.name}`;
+}
+
+// ============================================================
+// CUSTOMER LIVE TRACKING
+// ============================================================
+let custPrevLat = null, custPrevLng = null;
+function startCustTracking(booking) {
+  document.getElementById('custTrackSec').style.display = 'block';
+  document.getElementById('ctPickup').textContent = booking.pickup || '—';
+  document.getElementById('ctDrop').textContent   = booking.drop   || '—';
+  document.getElementById('custTrackStatus').textContent = '🟡 Driver confirmed — waiting for GPS…';
+  custPrevLat = null; custPrevLng = null;
+  setTimeout(() => {
+    if (!custTrackMap) {
+      const lat = parseFloat(booking.pickupLat) || 26.2211;
+      const lng = parseFloat(booking.pickupLng) || 84.3564;
+      custTrackMap = L.map('custTrackMap', { zoomControl: true, attributionControl: false }).setView([lat, lng], 15);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap © CartoDB', subdomains: 'abcd', maxZoom: 19
+      }).addTo(custTrackMap);
+      L.control.attribution({ position: 'bottomleft', prefix: false }).addTo(custTrackMap);
+      if (booking.pickupLat && booking.pickupLng)
+        L.marker([parseFloat(booking.pickupLat), parseFloat(booking.pickupLng)], { icon: makePinIcon('pickup'), zIndexOffset: 10 })
+          .addTo(custTrackMap).bindPopup('<b>Your Pickup</b><br>' + (booking.pickup || ''));
+      if (booking.dropLat && booking.dropLng)
+        L.marker([parseFloat(booking.dropLat), parseFloat(booking.dropLng)], { icon: makePinIcon('drop'), zIndexOffset: 10 })
+          .addTo(custTrackMap).bindPopup('<b>Your Destination</b><br>' + (booking.drop || ''));
+      if (booking.pickupLat && booking.pickupLng && booking.dropLat && booking.dropLng)
+        L.polyline([[parseFloat(booking.pickupLat), parseFloat(booking.pickupLng)],[parseFloat(booking.dropLat), parseFloat(booking.dropLng)]],
+          { color: '#C9973A', weight: 4, dashArray: '10,8', opacity: .7 }).addTo(custTrackMap);
+    } else {
+      custTrackMap.invalidateSize();
+    }
+    db.collection('driverLocation').doc('live').onSnapshot(snap => {
+      if (!snap.exists) return;
+      const { lat, lng } = snap.data();
+      if (!lat || !lng) return;
+      let heading = 0;
+      if (custPrevLat !== null && custPrevLng !== null)
+        heading = getBearing(custPrevLat, custPrevLng, lat, lng);
+      if (!custDriverMarker) {
+        custDriverMarker = L.marker([lat, lng], { icon: makeCarIcon(heading), zIndexOffset: 100 }).addTo(custTrackMap);
+      } else {
+        animateMarker(custDriverMarker, lat, lng, custTrackMap, 3000);
+        custDriverMarker.setIcon(makeCarIcon(heading));
+      }
+      custPrevLat = lat; custPrevLng = lng;
+      custTrackMap.panTo([lat, lng], { animate: true, duration: 1.5, easeLinearity: 0.25 });
+      document.getElementById('custTrackStatus').textContent = '🟢 Driver is on the way — tracking live!';
+    });
+  }, 400);
+}
+
+// ============================================================
+// ADMIN: INIT + REAL-TIME BOOKINGS
+// ============================================================
+function initAdminData() {
+  if(bookingsUnsub) bookingsUnsub();
+  bookingsUnsub = db.collection('bookings').orderBy('createdAt','desc').onSnapshot(snap=>{
+    allBookings = snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
+    renderDash();
+    renderBookings();
+    updatePendingBadge();
+    populateTrackSel();
+  }, err => {
+    aToast('❌ Firebase error: '+err.message,'#e74c3c');
+  });
+  renderAdminCal();
+}
+
+function updatePendingBadge() {
+  const n = allBookings.filter(b=>b.status==='pending').length;
+  document.getElementById('pendingBadge').textContent = n||'';
+  document.getElementById('notifBanner').classList.toggle('show', n>0);
+}
+
+// ============================================================
+// ADMIN: NAVIGATION
+// ============================================================
+function showPage(name, el) {
+  document.querySelectorAll('.apage').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  if(name==='tracking') initAdminMap();
+  if(name==='calendar') renderAdminCal();
+  document.getElementById('adminSidebar').classList.remove('open');
+}
+
+// ============================================================
+// ADMIN: DASHBOARD
+// ============================================================
+function renderDash() {
+  const total     = allBookings.length;
+  const pending   = allBookings.filter(b=>b.status==='pending').length;
+  const completed = allBookings.filter(b=>b.status==='completed').length;
+  const earnings  = allBookings.filter(b=>b.status==='completed'||b.status==='accepted').reduce((s,b)=>{
+    const n=parseInt((b.fare||'').replace(/[^0-9]/g,'')); return s+(isNaN(n)?0:n);
+  },0);
+  document.getElementById('dashCards').innerHTML=`
+    <div class="dash-card"><div class="dash-lbl">Total Bookings</div><div class="dash-val c-blue">${total}</div><div class="dash-sub">All time</div></div>
+    <div class="dash-card"><div class="dash-lbl">Pending</div><div class="dash-val c-orange">${pending}</div><div class="dash-sub">Need response</div></div>
+    <div class="dash-card"><div class="dash-lbl">Completed</div><div class="dash-val c-green">${completed}</div><div class="dash-sub">Finished rides</div></div>
+    <div class="dash-card"><div class="dash-lbl">Est. Earnings</div><div class="dash-val c-gold">₹${earnings.toLocaleString('en-IN')}</div><div class="dash-sub">Completed + accepted</div></div>`;
+  const recent = allBookings.slice(0,5);
+  document.getElementById('dashList').innerHTML = recent.length ? recent.map(buildCard).join('') : '<div class="empty-state"><div class="empty-icon">📭</div>No bookings yet. Share your website!</div>';
+}
+
+// ============================================================
+// ADMIN: BOOKINGS LIST
+// ============================================================
+function setFilter(f) { activeFilter=f; renderBookings(); }
+
+function renderBookings() {
+  const filtered = activeFilter==='all' ? allBookings : allBookings.filter(b=>b.status===activeFilter);
+  document.getElementById('bkList').innerHTML = filtered.length ? filtered.map(buildCard).join('') : `<div class="empty-state"><div class="empty-icon">📭</div>No ${activeFilter==='all'?'':activeFilter+' '}bookings found.</div>`;
+}
+
+function buildCard(b) {
+  const s = b.status||'pending';
+  const mapBtn  = b.mapLink ? `<button class="btn-sm map" onclick="window.open('${b.mapLink}','_blank')">🗺️ Route</button>` : '';
+  const custMsg = s==='accepted'
+    ? `Hi ${b.name}! 🎉 Your ride ${b.ref} is *CONFIRMED*!%0A%0A📅 ${encodeURIComponent(b.date||'')}%0A⏰ ${encodeURIComponent(b.time||'')}%0A💰 Fare: ${encodeURIComponent(b.fare||'As discussed')}%0A%0AThe driver is on the way! Open the website to track live. – DriveEasy 🚗`
+    : `Hi ${b.name}, your ride ${b.ref} has been ❌ declined. Please try another time or call us. – DriveEasy`;
+  const waBtn  = `<button class="btn-sm wa" onclick="window.open('https://wa.me/91${b.phone}?text=${custMsg}','_blank')">📲 WhatsApp</button>`;
+  const accBtn = s==='pending' ? `<button class="btn-sm acc" onclick="adminAccept('${b.firestoreId}','${b.rawDate||''}','${b.phone}','${b.name}','${b.ref}','${encodeURIComponent(b.date||'')}','${encodeURIComponent(b.time||'')}','${encodeURIComponent(b.fare||'')}')">✅ Accept</button>` : '';
+  const decBtn = s==='pending' ? `<button class="btn-sm dec" onclick="adminDecline('${b.firestoreId}')">❌ Decline</button>` : '';
+  const trkBtn = s==='accepted' ? `<button class="btn-sm map" onclick="goTrack('${b.firestoreId}')">📍 Track</button>` : '';
+  const cancelAccBtn = s==='accepted' ? `<button class="btn-sm" style="background:rgba(230,126,34,.1);color:var(--orange);border:1px solid rgba(230,126,34,.25)" onclick="adminCancelRideById('${b.firestoreId}','${b.name}','${b.ref}','${b.phone}','${encodeURIComponent(b.date||'')}','${encodeURIComponent(b.time||'')}','${b.rawDate||''}')">❌ Cancel</button>` : '';
+  const ts = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().toLocaleString('en-IN') : '';
+  return `<div class="bk-item ${s}">
+    <div class="bk-top"><div><div class="bk-ref">${b.ref}</div><div class="bk-time">${ts}</div></div><div class="bk-badge ${s}">${s.toUpperCase()}</div></div>
+    <div class="bk-info">
+      <div class="bk-field"><span class="fl">Passenger</span><span class="fv">${b.name||'—'}</span></div>
+      <div class="bk-field"><span class="fl">Phone</span><span class="fv">${b.phone||'—'}</span></div>
+      <div class="bk-field"><span class="fl">Pickup</span><span class="fv">${b.pickup||'—'}</span></div>
+      <div class="bk-field"><span class="fl">Drop</span><span class="fv">${b.drop||'—'}</span></div>
+      <div class="bk-field"><span class="fl">Date</span><span class="fv">${b.date||'—'}</span></div>
+      <div class="bk-field"><span class="fl">Time</span><span class="fv">${b.time||'—'}</span></div>
+      <div class="bk-field"><span class="fl">Trip Type</span><span class="fv">${b.triptype||'—'}</span></div>
+      <div class="bk-field"><span class="fl">Fare</span><span class="fv gold">${b.fare||'—'}</span></div>
+      ${b.notes?`<div class="bk-field" style="grid-column:1/-1"><span class="fl">Notes</span><span class="fv">${b.notes}</span></div>`:''}
+    </div>
+    <div class="bk-actions">${accBtn}${decBtn}${trkBtn}${cancelAccBtn}${mapBtn}${waBtn}</div>
+  </div>`;
+}
+
+// ============================================================
+// ADMIN: ACCEPT / DECLINE
+// ============================================================
+async function adminAccept(fid, rawDate, phone, name, ref, dateEnc, timeEnc, fareEnc) {
+  try {
+    await db.collection('bookings').doc(fid).update({ status:'accepted' });
+    if(rawDate && rawDate!=='undefined' && rawDate!=='')
+      await db.collection('bookedDates').doc(rawDate).set({ bookedAt:firebase.firestore.FieldValue.serverTimestamp() });
+    aToast('✅ Ride accepted!','#2ecc71');
+    const d = decodeURIComponent(dateEnc);
+    const t = decodeURIComponent(timeEnc);
+    const f = decodeURIComponent(fareEnc);
+    const msg = `Hi ${name}! 🎉 Your ride ${ref} is *CONFIRMED*!\n\n📅 ${d}\n⏰ ${t}\n💰 Fare: ${f||'As discussed'}\n\nYour driver is on the way! Open the website to track live and see your OTP. – DriveEasy 🚗`;
+    setTimeout(()=>window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank'),500);
+  } catch(e) { aToast('❌ Error: '+e.message,'#e74c3c'); }
+}
+
+async function adminDecline(fid) {
+  try {
+    await db.collection('bookings').doc(fid).update({ status:'declined' });
+    aToast('❌ Ride declined.','#e74c3c');
+  } catch(e) { aToast('❌ Error: '+e.message,'#e74c3c'); }
+}
+
+async function adminCancelRideById(fid, name, ref, phone, dateEnc, timeEnc, rawDate) {
+  if (!confirm(`Cancel the ACCEPTED ride for ${name} (${ref})?\n\nThe customer will be notified on WhatsApp and the date will be freed up.`)) return;
+  try {
+    await db.collection('bookings').doc(fid).update({
+      status: 'cancelled', cancelledBy: 'driver',
+      cancelReason: 'Cancelled by driver',
+      cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    if (rawDate && rawDate !== 'undefined' && rawDate !== '')
+      try { await db.collection('bookedDates').doc(rawDate).delete(); } catch(e) {}
+    renderAdminCal();
+    aToast('❌ Ride cancelled and date freed.', '#e67e22');
+    const d = decodeURIComponent(dateEnc);
+    const t = decodeURIComponent(timeEnc);
+    const msg = `Hi ${name}! 🙏 We sincerely apologize.\n\nYour ride ${ref} (${d} at ${t}) has been *cancelled by the driver*.\n\nPlease book again or call us at +91 87573 48847.\n\nSorry! – DriveEasy 🚗`;
+    setTimeout(() => window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank'), 500);
+  } catch(e) { aToast('❌ Error: ' + e.message, '#e74c3c'); }
+}
+
+// ============================================================
+// ADMIN: CALENDAR
+// ============================================================
+async function renderAdminCal() {
+  const y=adminCalDate.getFullYear(), m=adminCalDate.getMonth();
+  document.getElementById('aCalLbl').textContent = MONTHS[m]+' '+y;
+  const grid=document.getElementById('aCalGrid');
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1.2rem;color:var(--muted);font-size:.8rem">Loading…</div>';
+  let booked=[],blocked=[];
+  try {
+    const [bs,bls]=await Promise.all([db.collection('bookedDates').get(),db.collection('blockedDates').get()]);
+    booked=bs.docs.map(d=>d.id); blocked=bls.docs.map(d=>d.id);
+  } catch(e){}
+  grid.innerHTML='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+    const el=document.createElement('div');el.className='acal-dname';el.textContent=d;grid.appendChild(el);
+  });
+  const firstDay=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const todayStr=new Date().toISOString().split('T')[0];
+  for(let i=0;i<firstDay;i++){const el=document.createElement('div');el.className='acal-day empty';grid.appendChild(el);}
+  for(let d=1;d<=days;d++){
+    const el=document.createElement('div');
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast=ds<todayStr;
+    if(ds===todayStr) el.className='acal-day atoday';
+    else if(isPast) el.className='acal-day past';
+    else if(booked.includes(ds)){el.className='acal-day abooked';el.title='Customer booked';}
+    else if(blocked.includes(ds)){el.className='acal-day ablocked';el.title='Blocked — tap to unblock';el.onclick=()=>unblockDate(ds);}
+    else{el.className='acal-day afree';el.title='Free — tap to block';el.onclick=()=>blockDate(ds);}
+    el.textContent=d; grid.appendChild(el);
+  }
+}
+function adminCalMonth(dir){adminCalDate.setMonth(adminCalDate.getMonth()+dir);renderAdminCal();}
+
+async function blockDate(ds) {
+  try{await db.collection('blockedDates').doc(ds).set({blockedAt:firebase.firestore.FieldValue.serverTimestamp()});renderAdminCal();renderCalendar();aToast('🔒 '+ds+' blocked','#e67e22');}
+  catch(e){aToast('❌ Error: '+e.message,'#e74c3c');}
+}
+async function unblockDate(ds) {
+  try{await db.collection('blockedDates').doc(ds).delete();renderAdminCal();renderCalendar();aToast('🔓 '+ds+' unblocked','#2ecc71');}
+  catch(e){aToast('❌ Error: '+e.message,'#e74c3c');}
+}
+
+function saveNote() {
+  const ds=document.getElementById('noteDate').value;
+  const txt=(document.getElementById('noteText').value||'').trim();
+  if(!ds||!txt){aToast('⚠️ Enter date and note','#e67e22');return;}
+  const notes=JSON.parse(localStorage.getItem('de_notes')||'{}');
+  notes[ds]=txt; localStorage.setItem('de_notes',JSON.stringify(notes));
+  document.getElementById('noteDate').value=''; document.getElementById('noteText').value='';
+  renderNotes(); aToast('📝 Note saved!','#2ecc71');
+}
+function renderNotes() {
+  const el=document.getElementById('notesList'); if(!el)return;
+  const notes=JSON.parse(localStorage.getItem('de_notes')||'{}');
+  const entries=Object.entries(notes);
+  el.innerHTML=entries.length?entries.sort((a,b)=>a[0]<b[0]?-1:1).map(([ds,txt])=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:7px;padding:.45rem .82rem;font-size:.8rem">
+      <span><strong style="color:var(--gold)">${ds}:</strong> ${txt}</span>
+      <button style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.88rem" onclick="delNote('${ds}')">✕</button>
+    </div>`).join(''):'<div style="font-size:.78rem;color:var(--muted)">No notes yet.</div>';
+}
+function delNote(ds){const n=JSON.parse(localStorage.getItem('de_notes')||'{}');delete n[ds];localStorage.setItem('de_notes',JSON.stringify(n));renderNotes();}
+
+// ============================================================
+// ADMIN: LIVE TRACKING MAP
+// ============================================================
+function initAdminMap() {
+  if(adminMap){adminMap.invalidateSize();return;}
+  adminMap=L.map('adminMap',{zoomControl:true,attributionControl:false}).setView([26.2211,84.3564],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    subdomains:'abcd', maxZoom:19
+  }).addTo(adminMap);
+  L.control.attribution({position:'bottomleft',prefix:'© CartoDB'}).addTo(adminMap);
+}
+
+function populateTrackSel() {
+  const accepted=allBookings.filter(b=>b.status==='accepted');
+  const sel=document.getElementById('trackSel');
+  const prev=sel.value;
+  sel.innerHTML='<option value="">— Choose an accepted booking —</option>';
+  accepted.forEach(b=>{sel.innerHTML+=`<option value="${b.firestoreId}">${b.ref} – ${b.name} | ${(b.pickup||'').substring(0,25)}</option>`;});
+  if(prev) sel.value=prev;
+}
+
+function goTrack(fid) {
+  showPage('tracking',document.querySelectorAll('.nav-item')[3]);
+  setTimeout(()=>{ document.getElementById('trackSel').value=fid; loadTrackBooking(fid); },300);
+}
+
+function startGPS() {
+  const fid=document.getElementById('trackSel').value;
+  if(!fid){aToast('⚠️ Select an accepted booking first','#e67e22');return;}
+  if(!navigator.geolocation){aToast('❌ GPS not supported on this device','#e74c3c');return;}
+  loadTrackBooking(fid);
+  const b=allBookings.find(x=>x.firestoreId===fid);
+  document.getElementById('trackStatus').textContent='🟢 Live – '+(b?b.name:'');
+  document.getElementById('trackStatusBox').classList.add('show');
+  window._autoEndTriggered = false;
+  if(trackInterval)clearInterval(trackInterval);
+  trackInterval=setInterval(()=>{
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      const lat=pos.coords.latitude, lng=pos.coords.longitude;
+      document.getElementById('trackGps').textContent=`${lat.toFixed(4)},${lng.toFixed(4)}`;
+      document.getElementById('trackTime').textContent=new Date().toLocaleTimeString('en-IN');
+      try{await db.collection('driverLocation').doc('live').set({lat,lng,fid,ref:b?b.ref:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
+      if (b) checkAutoRideEnd(lat, lng, b);
+      if(adminMap){
+        const heading = (window._adminPrevLat!==undefined) ? getBearing(window._adminPrevLat,window._adminPrevLng,lat,lng) : 0;
+        if(!driverMarker){
+          driverMarker=L.marker([lat,lng],{icon:makeCarIcon(heading),zIndexOffset:200}).addTo(adminMap);
+        } else {
+          animateMarker(driverMarker,lat,lng,adminMap,3500);
+          driverMarker.setIcon(makeCarIcon(heading));
+        }
+        window._adminPrevLat=lat; window._adminPrevLng=lng;
+        adminMap.panTo([lat,lng],{animate:true,duration:1.5,easeLinearity:0.25});
+      }
+    },err=>{aToast('⚠️ GPS error: '+err.message,'#e67e22');},{enableHighAccuracy:true,timeout:10000});
+  },4000);
+  aToast('📍 GPS tracking started!','#2ecc71');
+}
+
+function stopGPS() {
+  if(trackInterval){clearInterval(trackInterval);trackInterval=null;}
+  document.getElementById('trackStatus').textContent='Tracking stopped';
+  document.getElementById('trackStatusBox').classList.remove('show');
+  aToast('⏹️ Tracking stopped','#888');
+}
+
+async function shareLocation() {
+  try {
+    const snap=await db.collection('driverLocation').doc('live').get();
+    if(!snap.exists){aToast('⚠️ Start GPS tracking first!','#e67e22');return;}
+    const {lat,lng,ref}=snap.data();
+    const gmaps=`https://www.google.com/maps?q=${lat},${lng}`;
+    const b=(allBookings||[]).find(x=>x.ref===ref);
+    const msg=`Hi${b?' '+b.name:''}! 📍 Your driver's live location:\n${gmaps}\n\nOn the way to you! – DriveEasy 🚗`;
+    if(b&&b.phone) window.open(`https://wa.me/91${b.phone}?text=${encodeURIComponent(msg)}`,'_blank');
+    aToast('📤 Location shared!','#2ecc71');
+  } catch(e){aToast('⚠️ Start GPS tracking first!','#e67e22');}
+}
+
+// ============================================================
+// ADMIN: SETTINGS
+// ============================================================
+async function deleteAllBookings() {
+  if (!confirm('DELETE ALL BOOKINGS permanently?\n\nThis removes every booking from Firebase. Cannot be undone!')) return;
+  aToast('🗑️ Deleting all bookings…', '#e74c3c');
+  try {
+    const snap = await db.collection('bookings').get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    const bdSnap = await db.collection('bookedDates').get();
+    const batch2 = db.batch();
+    bdSnap.docs.forEach(d => batch2.delete(d.ref));
+    await batch2.commit();
+    allBookings = [];
+    renderDash(); renderBookings();
+    aToast('✅ All bookings deleted!', '#2ecc71');
+  } catch(e) { aToast('❌ Error: ' + e.message, '#e74c3c'); }
+}
+async function clearBlockedDates() {
+  if (!confirm('Clear all manually blocked dates?')) return;
+  try {
+    const snap = await db.collection('blockedDates').get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    renderAdminCal();
+    aToast('✅ All blocked dates cleared!', '#2ecc71');
+  } catch(e) { aToast('❌ Error: ' + e.message, '#e74c3c'); }
+}
+async function resetDriverLocation() {
+  try {
+    await db.collection('driverLocation').doc('live').delete();
+    aToast('✅ Driver location reset!', '#3498db');
+  } catch(e) { aToast('✅ Already clear.', '#3498db'); }
+}
+async function resetEverything() {
+  if (!confirm('⚠️ RESET EVERYTHING?\n\nThis will DELETE:\n• All bookings\n• All blocked dates\n• Driver location data\n• OTP codes\n\nThis CANNOT be undone!')) return;
+  if (!confirm('Are you absolutely sure? This is permanent!')) return;
+  aToast('⚠️ Resetting all data…', '#e74c3c');
+  try {
+    const collections = ['bookings','bookedDates','blockedDates','driverLocation','otpCodes'];
+    for (const col of collections) {
+      const snap = await db.collection(col).get();
+      if (snap.docs.length > 0) {
+        const batch = db.batch();
+        snap.docs.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      }
+    }
+    localStorage.removeItem('de_notes'); localStorage.removeItem('de_rates');
+    allBookings = [];
+    renderDash(); renderBookings(); renderAdminCal();
+    aToast('✅ Everything has been reset!', '#2ecc71');
+  } catch(e) { aToast('❌ Error: ' + e.message, '#e74c3c'); }
+}
+function saveCreds() {
+  const u=(document.getElementById('newUser').value||'').trim();
+  const p=document.getElementById('newPass').value;
+  const pc=document.getElementById('newPassConfirm').value;
+  if(!u||!p){aToast('⚠️ Fill all fields','#e67e22');return;}
+  if(p!==pc){aToast('❌ Passwords do not match','#e74c3c');return;}
+  if(p.length<4){aToast('⚠️ Min 4 characters','#e67e22');return;}
+  localStorage.setItem('de_admin_creds',JSON.stringify({user:u,pass:p}));
+  document.getElementById('newUser').value='';
+  document.getElementById('newPass').value='';
+  document.getElementById('newPassConfirm').value='';
+  aToast('✅ Credentials updated! Use new credentials next login.','#2ecc71');
+}
+function saveRates() {
+  localStorage.setItem('de_rates',JSON.stringify({
+    city:document.getElementById('rCity').value,
+    outstation:document.getElementById('rOut').value,
+    airport:document.getElementById('rAir').value,
+    hourly:document.getElementById('rHr').value
+  }));
+  aToast('💰 Rates saved!','#2ecc71');
+}
+
+// ============================================================
+// DRIVER ONLINE / OFFLINE STATUS
+// ============================================================
+function listenDriverStatus() {
+  db.collection('driverStatus').doc('status').onSnapshot(snap => {
+    const online = snap.exists ? snap.data().online : true;
+    applyDriverStatus(online);
+  }, () => { applyDriverStatus(true); });
+}
+function applyDriverStatus(online) {
+  const banner     = document.getElementById('driverOfflineBanner');
+  const blockMsg   = document.getElementById('offlineBlockMsg');
+  const formFields = document.getElementById('bookingFormFields');
+  const submitBtn  = document.getElementById('submitBtn');
+  const onlineBadge= document.querySelector('.online-badge');
+  if (online) {
+    if (banner)     banner.style.display = 'none';
+    if (blockMsg)   blockMsg.classList.remove('show');
+    if (formFields) { formFields.style.opacity='1'; formFields.style.pointerEvents='auto'; }
+    if (submitBtn)  submitBtn.disabled = false;
+    if (onlineBadge) {
+      onlineBadge.innerHTML = '<div class="dot-live"></div> Online Now · Responds within minutes';
+      onlineBadge.style.background='rgba(37,211,102,.1)';
+      onlineBadge.style.borderColor='rgba(37,211,102,.25)';
+      onlineBadge.style.color='var(--green2)';
+    }
+  } else {
+    if (banner)     banner.style.display = 'block';
+    if (blockMsg)   blockMsg.classList.add('show');
+    if (formFields) { formFields.style.opacity='0.4'; formFields.style.pointerEvents='none'; }
+    if (submitBtn)  submitBtn.disabled = true;
+    if (onlineBadge) {
+      onlineBadge.innerHTML = '<div class="dot-live" style="background:var(--red);animation:none"></div> Driver is Offline';
+      onlineBadge.style.background='rgba(231,76,60,.1)';
+      onlineBadge.style.borderColor='rgba(231,76,60,.25)';
+      onlineBadge.style.color='var(--red)';
+    }
+  }
+}
+
+// ============================================================
+// UBER/RAPIDO MAP HELPERS
+// ============================================================
+function makeCarIcon(heading) {
+  const rot = heading || 0;
+  return L.divIcon({
+    html: `<div class="uber-car" style="transform:rotate(${rot}deg)">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="20" fill="#C9973A" opacity="0.15"/>
+        <circle cx="20" cy="20" r="16" fill="#C9973A"/>
+        <text x="20" y="26" text-anchor="middle" font-size="16" fill="white">🚗</text>
+      </svg>
+    </div>`,
+    className: '', iconSize:[40,40], iconAnchor:[20,20]
+  });
+}
+function makePinIcon(type) {
+  const emoji = type === 'pickup' ? '📍' : '🏁';
+  const color = type === 'pickup' ? '#2ecc71' : '#e74c3c';
+  return L.divIcon({
+    html: `<div style="text-align:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))">
+      <div style="background:${color};color:#fff;border-radius:50% 50% 50% 0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.4)">
+        <span style="transform:rotate(45deg)">${emoji}</span>
+      </div>
+    </div>`,
+    className: '', iconSize:[36,44], iconAnchor:[18,44]
+  });
+}
+function animateMarker(marker, newLat, newLng, map, duration) {
+  if (!marker) return;
+  const startLat = marker.getLatLng().lat;
+  const startLng = marker.getLatLng().lng;
+  const startTime = performance.now();
+  function step(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const easedT = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    const lat = startLat + (newLat - startLat) * easedT;
+    const lng = startLng + (newLng - startLng) * easedT;
+    marker.setLatLng([lat, lng]);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function getBearing(lat1, lng1, lat2, lng2) {
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const y = Math.sin(dLng) * Math.cos(lat2 * Math.PI / 180);
+  const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+            Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLng);
+  return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
+}
+function getDistanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ============================================================
+// CUSTOMER CANCEL
+// ============================================================
+function openCustCancel() {
+  if (!activeBookingFid) { toast('⚠️ No active booking to cancel.'); return; }
+  document.getElementById('custCancelReason').value = '';
+  document.getElementById('custCancelNote').value   = '';
+  showOverlay('ovCustCancel');
+}
+async function confirmCustCancel() {
+  const reason = document.getElementById('custCancelReason').value;
+  const note   = (document.getElementById('custCancelNote').value || '').trim();
+  if (!reason) { toast('⚠️ Please select a cancellation reason.'); return; }
+  if (!activeBookingFid) return;
+  try {
+    await db.collection('bookings').doc(activeBookingFid).update({
+      status: 'cancelled', cancelledBy: 'customer',
+      cancelReason: reason, cancelNote: note || '',
+      cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeOverlay('ovCustCancel');
+    document.getElementById('custTrackSec').style.display = 'none';
+    document.getElementById('custOtpBox').style.display   = 'none';
+    document.getElementById('ovCancelledMsg').textContent =
+      `You cancelled this ride. Reason: "${reason}". We hope to serve you again soon!`;
+    showOverlay('ovCancelled');
+    const b = currentBooking;
+    const msg = `⚠️ *RIDE CANCELLED BY CUSTOMER*\n\n🔖 Ref: ${b.ref||''}\n👤 Customer: ${b.name||''}\n📞 Phone: ${b.phone||''}\n❌ Reason: ${reason}\n${note?'📝 Note: '+note:''}\n\nThe customer has cancelled this booking.`;
+    window.open(`https://wa.me/918757348847?text=${encodeURIComponent(msg)}`, '_blank');
+    toast('Ride cancelled successfully.', '#e67e22');
+    activeBookingFid = null;
+    if (trackInterval) { clearInterval(trackInterval); trackInterval = null; }
+  } catch(e) { toast('❌ Error cancelling: ' + e.message); }
+}
+
+// ============================================================
+// ADMIN: CANCEL ACCEPTED RIDE
+// ============================================================
+async function adminCancelRide() {
+  const fid = document.getElementById('trackSel').value;
+  if (!fid) { aToast('⚠️ Select a booking to cancel first.', '#e67e22'); return; }
+  const b = allBookings.find(x => x.firestoreId === fid);
+  if (!b) return;
+  if (!confirm(`Cancel the ride for ${b.name} (${b.ref})?\n\nThis was an accepted ride. The customer will be notified on WhatsApp.`)) return;
+  try {
+    await db.collection('bookings').doc(fid).update({
+      status: 'cancelled', cancelledBy: 'driver',
+      cancelReason: 'Cancelled by driver',
+      cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    if (b.rawDate) try { await db.collection('bookedDates').doc(b.rawDate).delete(); } catch(e) {}
+    stopGPS();
+    const msg = `Hi ${b.name}! 🙏 We sincerely apologize.\n\nYour ride ${b.ref} (${b.date} at ${b.time}) has been *cancelled by the driver* due to an unavoidable reason.\n\nPlease book again or call us directly at +91 87573 48847.\n\nSorry for the inconvenience! – DriveEasy 🚗`;
+    setTimeout(() => window.open(`https://wa.me/91${b.phone}?text=${encodeURIComponent(msg)}`, '_blank'), 500);
+    aToast('❌ Ride cancelled. Customer notified on WhatsApp.', '#e67e22');
+    renderAdminCal();
+  } catch(e) { aToast('❌ Error: ' + e.message, '#e74c3c'); }
+}
+
+// ============================================================
+// ADMIN: MARK RIDE ENDED
+// ============================================================
+async function markRideEnded() {
+  const fid = document.getElementById('trackSel').value;
+  if (!fid) { aToast('⚠️ Select a booking first.', '#e67e22'); return; }
+  const b = allBookings.find(x => x.firestoreId === fid);
+  if (!b) return;
+  if (!confirm(`Mark ride for ${b.name} as COMPLETED?\n\nThis will end the ride and notify the customer.`)) return;
+  try {
+    await db.collection('bookings').doc(fid).update({
+      rideStatus: 'ended', rideEndedAt: firebase.firestore.FieldValue.serverTimestamp(), status: 'completed'
+    });
+    await db.collection('driverLocation').doc('live').set({
+      rideStatus: 'ended', fid, ref: b.ref,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    stopGPS();
+    aToast('🏁 Ride marked as completed!', '#3498db');
+    const msg = `Hi ${b.name}! 🏁 Your ride is *COMPLETED*!\n\nYou have reached your destination. Thank you for choosing DriveEasy!\n\nFare: ${b.fare||'As agreed'}\n\nWe hope you had a comfortable journey! – DriveEasy 🚗`;
+    setTimeout(() => window.open(`https://wa.me/91${b.phone}?text=${encodeURIComponent(msg)}`, '_blank'), 400);
+  } catch(e) { aToast('❌ Error: ' + e.message, '#e74c3c'); }
+}
+
+// ============================================================
+// CUSTOMER: LISTEN RIDE STATUS CHANGES
+// ============================================================
+function listenRideStatus(fid) {
+  activeBookingFid = fid;
+  db.collection('bookings').doc(fid).onSnapshot(snap => {
+    if (!snap.exists) return;
+    const data = snap.data();
+    const rs = data.rideStatus;
+    const st = data.status;
+    if (rs === 'started') {
+      const dot = document.getElementById('rideStatusDot');
+      const txt = document.getElementById('rideStatusText');
+      if (dot) dot.className = 'ride-dot started';
+      if (txt) txt.textContent = '🚗 Ride in progress';
+      document.getElementById('custTrackStatus').textContent = '🟢 Ride has started — tracking live!';
+      document.getElementById('rideStartedBanner').classList.add('show');
+      document.getElementById('custOtpBox').style.display = 'none'; // hide OTP once ride started
+      const cb = document.getElementById('custCancelBtn');
+      if (cb) cb.style.display = 'none';
+      if (!window._rideStartedShown) {
+        window._rideStartedShown = true;
+        showOverlay('ovRideStarted');
+        toast('🚗 Your ride has started!', '#2ecc71');
+      }
+    }
+    if (rs === 'ended' || st === 'completed') {
+      const dot = document.getElementById('rideStatusDot');
+      const txt = document.getElementById('rideStatusText');
+      if (dot) dot.className = 'ride-dot ended';
+      if (txt) txt.textContent = '🏁 Ride completed';
+      document.getElementById('custTrackStatus').textContent = '🏁 Ride completed — you have arrived!';
+      document.getElementById('rideStartedBanner').classList.remove('show');
+      document.getElementById('rideEndedBanner').classList.add('show');
+      document.getElementById('custOtpBox').style.display = 'none';
+      const cb = document.getElementById('custCancelBtn');
+      if (cb) cb.style.display = 'none';
+      if (!window._rideEndedShown) {
+        window._rideEndedShown = true;
+        const b = currentBooking;
+        document.getElementById('rideEndedDetails').innerHTML = `
+          <div style="margin-bottom:.4rem">🧑 <strong>Passenger:</strong> ${b.name||data.name||'—'}</div>
+          <div style="margin-bottom:.4rem">📍 <strong>From:</strong> ${b.pickup||data.pickup||'—'}</div>
+          <div style="margin-bottom:.4rem">🏁 <strong>To:</strong> ${b.drop||data.drop||'—'}</div>
+          <div style="margin-bottom:.4rem">💰 <strong>Fare:</strong> ${b.fare||data.fare||'As agreed'}</div>
+          <div>🔖 <strong>Ref:</strong> ${b.ref||data.ref||'—'}</div>`;
+        closeOverlay('ovRideStarted');
+        showOverlay('ovRideEnded');
+        toast('🏁 You have reached your destination!', '#3498db');
+        activeBookingFid = null;
+      }
+    }
+    if (st === 'cancelled' && data.cancelledBy === 'driver') {
+      if (!window._rideCancelledShown) {
+        window._rideCancelledShown = true;
+        closeOverlay('ovPending'); closeOverlay('ovConfirmed');
+        document.getElementById('ovCancelledMsg').textContent =
+          'The driver cancelled this ride. We sincerely apologize for the inconvenience. Please book again or call us.';
+        showOverlay('ovCancelled');
+        document.getElementById('custTrackSec').style.display = 'none';
+        document.getElementById('custOtpBox').style.display   = 'none';
+        activeBookingFid = null;
+      }
+    }
+  });
+}
+
+// ============================================================
+// AUTO RIDE-END DETECTION
+// ============================================================
+function checkAutoRideEnd(driverLat, driverLng, booking) {
+  if (!booking.dropLat || !booking.dropLng) return;
+  const dropLat = parseFloat(booking.dropLat);
+  const dropLng = parseFloat(booking.dropLng);
+  if (isNaN(dropLat) || isNaN(dropLng)) return;
+  const dist = getDistanceMeters(driverLat, driverLng, dropLat, dropLng);
+  if (dist <= 80) {
+    const fid = document.getElementById('trackSel').value;
+    if (fid && !window._autoEndTriggered) {
+      window._autoEndTriggered = true;
+      markRideEnded();
+      aToast('🏁 Auto ride-end triggered — driver reached destination!', '#3498db');
+    }
+  }
+}
+
+// ============================================================
+// TOGGLE DRIVER ONLINE STATUS
+// ============================================================
+async function toggleOnline() {
+  driverOn = !driverOn;
+  document.getElementById('statusDot').className = 'status-dot' + (driverOn ? '' : ' offline');
+  document.getElementById('statusLbl').textContent = driverOn ? 'Online' : 'Offline';
+  aToast(driverOn ? '🟢 You are now Online' : '🔴 You are now Offline', driverOn ? '#2ecc71' : '#888');
+  try {
+    await db.collection('driverStatus').doc('status').set({
+      online: driverOn, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) { aToast('⚠️ Could not sync status: ' + e.message, '#e67e22'); }
+}
+</script>
+</body>
+</html>
