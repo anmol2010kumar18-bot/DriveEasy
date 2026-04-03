@@ -463,9 +463,113 @@ footer strong{color:var(--gold)}
   .auth-card{padding:2rem 1.5rem}
   header{padding:1rem 1.2rem}
 }
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Thumb (main bar) */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00d4ff, #7b5cf5);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Glow on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00ffff, #9a7bff);
+  box-shadow: 0 0 10px rgba(0,212,255,0.7),
+              0 0 20px rgba(123,92,245,0.6);
+}
+/* Hide scrollbar initially */
+body::-webkit-scrollbar-thumb {
+  opacity: 0;
+}
+
+/* Show when hovering page */
+body:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00d4ff transparent;
+}
+/* smooth scrolling */
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.5);
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.9);
+}
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100%;
+    width: 220px;
+    z-index: 1000;
+    transition: 0.3s;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .menu-btn {
+    display: block;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    background: #00d4ff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #000;
+    font-size: 18px;
+  }
+
+  .main-area {
+    padding: 10px;
+  }
+
+  .page {
+    padding: 16px;
+  }
+
+  .footer-right {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .footer-box {
+    width: 100%;
+  }
+}
+.menu-btn {
+  display: none;
+}
 </style>
 </head>
 <body>
+
+  /*=============== toogle bar for mobile ===============*/
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
 
 <!-- AUTH SCREEN -->
 <div id="authScreen">
@@ -1131,6 +1235,11 @@ footer strong{color:var(--gold)}
 <div class="admin-toast" id="adminToast"></div>
 
 <script>
+
+  /* ==================== toggle script for mobile =================== */
+ function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('active');
+}
 // ============================================================
 // FIREBASE INIT
 // ============================================================
