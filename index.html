@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DriveEasy – Cab Booking in Siwan</title>
+<meta name="description" content="DriveEasy: book safe cab rides in Siwan with live map tracking, OTP-verified start and transparent fares.">
+<meta name="theme-color" content="#C9973A"><meta property="og:title" content="DriveEasy – Cab Booking in Siwan"><meta property="og:description" content="Live tracking, OTP-safe rides, fair fares.">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C9973A' stroke='%23E8B84B' stroke-width='2'/%3E%3Ctext x='50' y='72' font-size='52' text-anchor='middle' fill='%230D0D0D' font-family='monospace'%3E🚗%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -531,7 +535,6 @@ body:hover::-webkit-scrollbar-thumb {
   }
 
   .menu-btn {
-    display: block;
     position: fixed;
     top: 15px;
     left: 15px;
@@ -563,6 +566,9 @@ body:hover::-webkit-scrollbar-thumb {
 }
 .menu-btn {
   display: none;
+}
+@media (max-width: 768px) {
+  body.in-admin .menu-btn { display: block; }
 }
 </style>
 </head>
@@ -634,22 +640,26 @@ body:hover::-webkit-scrollbar-thumb {
       <div style="text-align:center;margin-bottom:1.3rem">
         <div style="font-size:2.2rem;margin-bottom:.5rem">🔐</div>
         <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700">Driver Admin Access</div>
-        <div style="font-size:.76rem;color:var(--muted);margin-top:.28rem">Enter your admin credentials</div>
+        <div style="font-size:.76rem;color:var(--muted);margin-top:.28rem">Only the registered admin Google account can enter</div>
       </div>
-      <div class="auth-field"><label>Admin Username</label><input type="text" id="adminUser" placeholder="driver" autocomplete="username" onkeydown="if(event.key==='Enter')doAdminLogin()"></div>
-      <div class="auth-field">
-        <label>Admin Password</label>
-        <div style="position:relative">
-          <input type="password" id="adminPass" placeholder="••••••••" autocomplete="current-password" style="padding-right:2.8rem" onkeydown="if(event.key==='Enter')doAdminLogin()">
-          <button type="button" onclick="togglePwd('adminPass',this)" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">👁</button>
-        </div>
-      </div>
-      <button class="abtn abtn-dark" onclick="doAdminLogin()">🔐 Open Admin Panel</button>
+      <button class="abtn abtn-gold" id="gBtn" onclick="doAdminLogin()">🔐 Sign in with Google (Admin)</button>
       <div class="auth-err" id="adminErr"></div>
       <div class="auth-link-row" style="margin-top:.8rem"><button class="auth-link" onclick="switchTab('login')">← Back to Customer Login</button></div>
     </div>
 
-    <div class="admin-hint">Driver / Admin? <button class="auth-link" onclick="switchTab('admin')">Open Admin Panel →</button></div>
+    <div class="auth-panel" id="panelDriver">
+      <div style="text-align:center;margin-bottom:1rem"><div style="font-size:2.2rem">🚖</div><div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700">Driver Portal</div><div style="font-size:.76rem;color:var(--muted)">Register your vehicle and get verified to earn with DriveEasy</div></div>
+      <div class="auth-tabs"><div class="auth-tab active" id="dmL" onclick="drvMode('login')">Login</div><div class="auth-tab" id="dmR" onclick="drvMode('reg')">Register</div></div>
+      <div id="drvLoginBox"><div class="auth-field"><label>Email</label><input type="email" id="dlEmail" placeholder="driver@email.com"></div><div class="auth-field"><label>Password</label><input type="password" id="dlPass" placeholder="••••••••"></div><button class="abtn abtn-gold" onclick="doDriverLogin()">🚖 Driver Login</button></div>
+      <div id="drvRegBox" style="display:none"><div class="auth-field"><label>Full Name</label><input type="text" id="dName" placeholder=""></div><div class="auth-field"><label>Phone</label><input type="tel" id="dPhone" placeholder="10-digit mobile"></div><div class="auth-field"><label>Email</label><input type="email" id="dEmail" placeholder=""></div><div class="auth-field"><label>Password (min 6)</label><input type="password" id="dPass" placeholder=""></div>
+        <div class="auth-field"><label>Vehicle Type</label><select id="dVType" style="width:100%;background:#222;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:.8rem;color:var(--text)"><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>Auto</option></select></div>
+        <div class="auth-field"><label>Vehicle Number</label><input type="text" id="dVNo" placeholder="BR 29 AB 1234"></div><div class="auth-field"><label>Driving Licence No.</label><input type="text" id="dLic" placeholder=""></div><div class="auth-field"><label>City</label><input type="text" id="dCity" placeholder="Siwan"></div>
+        <button class="abtn abtn-green" onclick="doDriverRegister()">📝 Register as Driver</button></div>
+      <div class="auth-err" id="drvErr"></div>
+      <div class="auth-link-row"><button class="auth-link" onclick="switchTab('login')">← Back to Customer Login</button></div>
+    </div>
+    <div class="auth-panel" id="panelPending"><div style="text-align:center"><div style="font-size:2.4rem">⏳</div><div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin:.4rem 0">Verification Status</div><div id="pendMsg" style="font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:1rem"></div></div><button class="abtn abtn-gold" onclick="routeUser(auth.currentUser)">🔄 Check Status</button><button class="abtn abtn-dark" onclick="auth.signOut()">Sign Out</button></div>
+    <div class="admin-hint">Are you a driver? <button class="auth-link" onclick="switchTab('driver')">Driver Login / Register →</button><br><button class="auth-link" onclick="switchTab('admin')" style="margin-top:.4rem">🔐 Owner / Admin</button></div>
   </div>
 </div>
 
@@ -658,12 +668,13 @@ body:hover::-webkit-scrollbar-thumb {
   <header>
     <a class="logo" href="#"><div class="logo-icon">🚗</div><div class="logo-text">Drive<span>Easy</span></div></a>
     <nav>
-      <a href="#availability">Availability</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#booking">Book</a>
-      <a href="#call">Call Us</a>
+      <a href="#availability" data-hi="उपलब्धता">Availability</a>
+      <a href="#pricing" data-hi="किराया">Pricing</a>
+      <a href="#booking" data-hi="बुक करें">Book</a>
+      <a href="#call" data-hi="कॉल करें">Call Us</a>
     </nav>
     <div class="user-menu">
+      <button class="btn-signout" onclick="toggleLang()" id="langBtn">हिं</button>
       <div class="user-avatar" id="userAvatar">?</div>
       <span class="user-name" id="userName">User</span>
       <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
@@ -672,7 +683,7 @@ body:hover::-webkit-scrollbar-thumb {
 
   <!-- DRIVER OFFLINE BANNER -->
   <div id="driverOfflineBanner" style="display:none;background:rgba(231,76,60,.12);border-bottom:1px solid rgba(231,76,60,.3);padding:.75rem 2rem;text-align:center;position:sticky;top:64px;z-index:190;backdrop-filter:blur(8px)">
-    <span style="font-size:.88rem;font-weight:600;color:var(--red)">🔴 Driver is currently offline. Booking is temporarily unavailable. Please check back soon or call directly.</span>
+    <span style="font-size:.88rem;font-weight:600;color:var(--red)">🔴 No drivers are online right now. Booking is temporarily unavailable — please check back soon.</span>
     <a href="tel:+918757348847" style="margin-left:1rem;font-size:.82rem;color:var(--gold);font-weight:600;text-decoration:none">📞 Call Now</a>
   </div>
 
@@ -686,11 +697,11 @@ body:hover::-webkit-scrollbar-thumb {
       <div class="road-line" style="width:55px;left:80%;animation-delay:1.2s"></div>
     </div>
     <div class="hero-content">
-      <div class="badge">⭐ Trusted Local Driver &nbsp;·&nbsp; Available 24/7</div>
-      <h1>Your Journey,<br>Our <em>Promise.</em></h1>
-      <p class="hero-desc">Safe, comfortable rides to any destination. Pin your location, pick your date, get confirmed — all in one place.</p>
+      <div class="badge">⭐ Verified Drivers &nbsp;·&nbsp; Available 24/7</div>
+      <h1 data-hi="आपका सफ़र,<br>हमारा <em>वादा।</em>">Your Journey,<br>Our <em>Promise.</em></h1>
+      <p class="hero-desc" data-hi="सुरक्षित और आरामदायक सफ़र। लोकेशन पिन करें, तारीख चुनें, कन्फ़र्म पाएँ।">Safe, comfortable rides to any destination. Pin your location, pick your date, get confirmed — all in one place.</p>
       <div class="hero-btns">
-        <a href="#booking" class="btn-gold">📅 Book a Ride</a>
+        <a href="#booking" class="btn-gold"><span data-hi="📅 राइड बुक करें">📅 Book a Ride</span></a>
         <a href="tel:+918757348847" class="btn-outline-hero">📞 Call Now</a>
       </div>
     </div>
@@ -698,23 +709,23 @@ body:hover::-webkit-scrollbar-thumb {
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat"><div class="stat-num">1000+</div><div class="stat-label">Happy Passengers</div></div>
-    <div class="stat"><div class="stat-num">5★</div><div class="stat-label">Average Rating</div></div>
+    <div class="stat"><div class="stat-num" id="stRides">0</div><div class="stat-label">Rides Completed</div></div>
+    <div class="stat"><div class="stat-num" id="stRate">–</div><div class="stat-label" id="stRateL">Average Rating</div></div>
+    <div class="stat"><div class="stat-num" id="stKm">0</div><div class="stat-label">Km Travelled</div></div>
     <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Available</div></div>
-    <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Years Experience</div></div>
   </div>
 
   <!-- FEATURES -->
   <section class="features" id="features">
     <div class="sec-label">Why Choose Us</div>
-    <h2 class="sec-title">Ride with Confidence</h2>
+    <h2 class="sec-title" data-hi="भरोसे के साथ सफ़र करें">Ride with Confidence</h2>
     <div class="feat-grid">
-      <div class="feat-card"><span class="feat-icon">🛡️</span><div class="feat-title">Safe & Verified Driver</div><p class="feat-text">Licensed, experienced driver with a clean record. Your safety is our top priority.</p></div>
+      <div class="feat-card"><span class="feat-icon">🛡️</span><div class="feat-title">Safe & Verified Driver</div><p class="feat-text">Every driver registers with licence and vehicle details and is verified by our admin before taking rides.</p></div>
       <div class="feat-card"><span class="feat-icon">🗺️</span><div class="feat-title">Map-Based Pickup</div><p class="feat-text">Pin your exact pickup & drop on the map. No confusion about addresses ever.</p></div>
       <div class="feat-card"><span class="feat-icon">📅</span><div class="feat-title">Live Availability</div><p class="feat-text">See exactly which dates are free or booked — synced live with Firebase.</p></div>
       <div class="feat-card"><span class="feat-icon">💰</span><div class="feat-title">Transparent Fare</div><p class="feat-text">Fare estimated before booking. No hidden charges — ever.</p></div>
       <div class="feat-card"><span class="feat-icon">🔐</span><div class="feat-title">OTP-Verified Start</div><p class="feat-text">You receive a 4-digit OTP when driver accepts. Share it only at pickup to start the ride.</p></div>
-      <div class="feat-card"><span class="feat-icon">📍</span><div class="feat-title">Rapido-Style Tracking</div><p class="feat-text">Watch the driver's 🚗 move toward you live on the map after confirmation.</p></div>
+      <div class="feat-card"><span class="feat-icon">📍</span><div class="feat-title">Live Driver Tracking</div><p class="feat-text">Watch the driver's 🚗 move toward you live on the map after confirmation.</p></div>
     </div>
   </section>
 
@@ -722,7 +733,7 @@ body:hover::-webkit-scrollbar-thumb {
   <section class="avail-section" id="availability">
     <div class="avail-wrap">
       <div class="sec-label">Check Before You Book</div>
-      <h2 class="sec-title">Vehicle Availability</h2>
+      <h2 class="sec-title" data-hi="गाड़ी की उपलब्धता">Vehicle Availability</h2>
       <div class="cal-card">
         <div class="cal-nav-row">
           <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8592;</button>
@@ -825,6 +836,7 @@ body:hover::-webkit-scrollbar-thumb {
         </div>
         <div class="form-row">
           <div class="form-grp"><label>Approx. Distance (km)</label><input type="number" id="bKm" placeholder="e.g. 20" min="1" oninput="autoFare()"></div>
+          <div id="routeInfo" style="grid-column:1/-1;font-size:.84rem;color:var(--gold)"></div>
           <div class="form-grp"><label>Estimated Fare</label><input type="text" id="bFare" class="fare-field" placeholder="Auto-calculated" readonly></div>
         </div>
         <div class="form-grp"><label>Additional Notes</label><textarea id="bNotes" placeholder="Luggage, special stops, special requirment etc."></textarea></div>
@@ -880,6 +892,7 @@ body:hover::-webkit-scrollbar-thumb {
           <span style="font-size:.8rem;color:var(--muted)">You have reached your destination.</span>
         </div>
       </div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin:.8rem 0"><button class="btn-signout" onclick="shareTrip()">👪 Share trip with family</button><a class="btn-signout" href="tel:112" style="background:#e74c3c;color:#fff;text-decoration:none">🆘 SOS 112</a></div>
       <div id="custTrackMap"></div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.3rem;margin-top:.9rem;display:flex;gap:1.5rem;flex-wrap:wrap">
         <div style="font-size:.84rem"><span style="color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;display:block">Pickup</span><span id="ctPickup">—</span></div>
@@ -890,6 +903,7 @@ body:hover::-webkit-scrollbar-thumb {
   </section>
 
   <!-- CALL SECTION -->
+  <section class="features" id="history"><div class="sec-label">Your Account</div><h2 class="sec-title" data-hi="मेरी राइड्स">My Rides</h2><div id="histList" style="max-width:760px;margin:0 auto;display:grid;gap:.7rem"></div></section>
   <section class="call-sec" id="call">
     <div class="call-wrap">
       <div class="sec-label" style="text-align:center">Direct Contact</div>
@@ -1039,6 +1053,7 @@ body:hover::-webkit-scrollbar-thumb {
       <p class="ov-sub">You have reached your destination. Thank you for choosing DriveEasy!</p>
       <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);border-radius:10px;padding:.9rem;margin-bottom:1rem;font-size:.86rem;line-height:1.6;text-align:left" id="rideEndedDetails"></div>
       <a href="https://wa.me/918757348847?text=Hi%20DriveEasy!%20I%20just%20completed%20my%20ride.%20Great%20experience!" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:var(--green);color:#fff;text-decoration:none;font-weight:700;font-size:.88rem;padding:.82rem;border-radius:10px;margin-bottom:.65rem">💬 Share Feedback on WhatsApp</a>
+      <div style="text-align:center;margin:.2rem 0 1rem"><div style="font-size:.8rem;color:var(--muted);margin-bottom:.3rem">Rate your ride</div><div id="starRow" style="font-size:2rem;cursor:pointer;letter-spacing:.2rem"><span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span></div><input id="rateTxt" class="auth-field" placeholder="Comment (optional)" style="width:100%;margin-top:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:.6rem;color:var(--text)"><button class="obtn obtn-gold" style="margin-top:.5rem" onclick="submitRating()">⭐ Submit Rating</button></div>
       <button class="obtn obtn-gold" onclick="closeOverlay('ovRideEnded');window.scrollTo({top:0,behavior:'smooth'})">🏠 Back to Home</button>
     </div>
   </div>
@@ -1065,6 +1080,7 @@ body:hover::-webkit-scrollbar-thumb {
     <nav class="sb-nav">
       <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</div>
       <div class="nav-item" onclick="showPage('bookings',this)"><span class="nav-icon">📋</span>Bookings<span class="nav-badge" id="pendingBadge"></span></div>
+      <div class="nav-item" id="navDrivers" style="display:none" onclick="showPage('drivers',this)"><span class="nav-icon">🪪</span>Drivers<span class="nav-badge" id="drvBadge"></span></div>
       <div class="nav-item" onclick="showPage('calendar',this)"><span class="nav-icon">📅</span>Availability</div>
       <div class="nav-item" onclick="showPage('tracking',this)"><span class="nav-icon">📍</span>Live Tracking</div>
       <div class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span>Settings</div>
@@ -1104,9 +1120,12 @@ body:hover::-webkit-scrollbar-thumb {
           <div class="dash-card"><div class="dash-lbl">Accepted</div><div class="dash-val c-green">—</div></div>
           <div class="dash-card"><div class="dash-lbl">Est. Earnings</div><div class="dash-val c-gold">—</div></div>
         </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin:1rem 0"><div class="dash-card"><div class="dash-lbl">Earnings – last 7 days</div><div style="height:200px"><canvas id="chEarn"></canvas></div></div><div class="dash-card"><div class="dash-lbl">Booking status</div><div style="height:200px"><canvas id="chStat"></canvas></div></div></div>
         <div class="section-h">Recent Bookings</div>
         <div class="bk-list" id="dashList"><div class="empty-state"><div class="empty-icon">⏳</div>Connecting to Firebase…</div></div>
       </div>
+
+      <div class="apage" id="pg-drivers"><div class="section-h">Driver Verification</div><div class="bk-list" id="drvList"><div class="empty-state">Loading drivers…</div></div></div>
 
       <!-- BOOKINGS -->
       <div class="apage" id="pg-bookings">
@@ -1189,12 +1208,8 @@ body:hover::-webkit-scrollbar-thumb {
 
       <!-- SETTINGS -->
       <div class="apage" id="pg-settings">
-        <div class="set-card">
-          <h3>🔐 Change Admin Credentials</h3>
-          <div class="set-row"><div class="set-lbl">New Username</div><input type="text" class="set-inp" id="newUser" placeholder="Enter new username"></div>
-          <div class="set-row"><div class="set-lbl">New Password</div><input type="password" class="set-inp" id="newPass" placeholder="Min 4 characters"></div>
-          <div class="set-row"><div class="set-lbl">Confirm Password</div><input type="password" class="set-inp" id="newPassConfirm" placeholder="Repeat password"></div>
-          <button class="btn-save" onclick="saveCreds()">Save Credentials</button>
+        <div class="set-card" id="adminCard">
+          <h3>🔐 Admin Account</h3><div class="set-row"><div class="set-lbl">Google account</div><div class="set-desc">anmol2010kumar18@gmail.com (verified)</div></div>
         </div>
         <div class="set-card">
           <h3>💰 Fare Rates</h3>
@@ -1206,11 +1221,11 @@ body:hover::-webkit-scrollbar-thumb {
         </div>
         <div class="set-card">
           <h3>🔥 Firebase Status</h3>
-          <div class="set-row"><div class="set-lbl">Project</div><div class="set-desc">driveeasy-bde61</div></div>
-          <div class="set-row"><div class="set-lbl">Auth</div><div class="set-desc">Firebase Email/Password</div></div>
+          <div class="set-row"><div class="set-lbl">Project</div><div class="set-desc">driveeasy-a14ac</div></div>
+          <div class="set-row"><div class="set-lbl">Auth</div><div class="set-desc">Firebase Email/Password + Google (admin)</div></div>
           <div class="set-row"><div class="set-lbl">Database</div><div class="set-desc">Firestore — real-time sync across all devices ✅</div></div>
         </div>
-        <div class="set-card" style="border-color:rgba(231,76,60,.3)">
+        <div class="set-card" id="dangerCard" style="border-color:rgba(231,76,60,.3)">
           <h3 style="color:var(--red)">🗑️ Data Management</h3>
           <div class="set-row"><div><div class="set-lbl">Delete All Bookings</div><div class="set-desc">Permanently removes all booking records from Firebase</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Clear Blocked Dates</div><div class="set-desc">Removes all manually blocked dates from calendar</div></div></div>
@@ -1233,6 +1248,10 @@ body:hover::-webkit-scrollbar-thumb {
 <div class="admin-toast" id="adminToast"></div>
 
 <script>
+// Shows any hidden script error on the login screen (helps debugging)
+function _showScriptErr(msg){ const el=document.getElementById('loginErr'); if(el){ el.textContent='⚠️ '+msg; el.style.display='block'; } }
+window.addEventListener('error', e => _showScriptErr('Script error: '+e.message+(e.lineno?' (line '+e.lineno+')':'')));
+window.addEventListener('unhandledrejection', e => _showScriptErr('Error: '+((e.reason&&(e.reason.code||e.reason.message))||e.reason)));
 
   /* ==================== toggle script for mobile =================== */
  function toggleSidebar() {
@@ -1242,16 +1261,27 @@ body:hover::-webkit-scrollbar-thumb {
 // FIREBASE INIT
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyDU4_1HJylrto03Fh2MdF9X16ceSdtr9bI",
-  authDomain: "driveeasy-bde61.firebaseapp.com",
-  projectId: "driveeasy-bde61",
-  storageBucket: "driveeasy-bde61.firebasestorage.app",
-  messagingSenderId: "38289381720",
-  appId: "1:38289381720:web:5d1377eaad4eb8a05eed2d"
+  apiKey: "AIzaSyDSn3cH0l-NZb-NkDWELujuwKrS64WeKcM",
+  authDomain: "driveeasy-a14ac.firebaseapp.com",
+  projectId: "driveeasy-a14ac",
+  storageBucket: "driveeasy-a14ac.firebasestorage.app",
+  messagingSenderId: "107405024247",
+  appId: "1:107405024247:web:37f8e5330b72925147ecf2",
+  measurementId: "G-DSZJ4WR942"
 };
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.firestore();
+let auth = null, db = null, FB_ERR = '';
+try {
+  if (typeof firebase === 'undefined') throw new Error('Firebase library did not load (check internet / blocked CDN).');
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db   = firebase.firestore();
+} catch (e) { FB_ERR = e.message || String(e); console.error('Firebase init failed:', e); }
+// Returns true (and shows a clear message) when login cannot work
+function fbBlocked(errId) {
+  if (location.protocol === 'file:') { showErr(errId, '⚠️ Open this site through a web address (https:// or localhost), not by double-clicking the file. Firebase login does not work on file://'); return true; }
+  if (!auth) { showErr(errId, '⚠️ Could not connect to the login service. Check your internet connection and reload the page.'); return true; }
+  return false;
+}
 
 // ============================================================
 // GLOBAL STATE
@@ -1305,6 +1335,7 @@ function showScreen(s) {
   document.getElementById('authScreen').style.display  = s==='auth'     ? 'flex'  : 'none';
   document.getElementById('customerApp').style.display = s==='customer' ? 'block' : 'none';
   document.getElementById('adminApp').style.display    = s==='admin'    ? 'block' : 'none';
+  document.body.classList.toggle('in-admin', s==='admin');
 }
 
 // ============================================================
@@ -1313,7 +1344,7 @@ function showScreen(s) {
 function switchTab(tab) {
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
-  ['loginErr','signupErr','adminErr'].forEach(id => {
+  ['loginErr','signupErr','adminErr','drvErr'].forEach(id => {
     const e = document.getElementById(id); if(e){ e.style.display='none'; e.textContent=''; }
   });
   const tabs = document.getElementById('mainAuthTabs');
@@ -1325,6 +1356,9 @@ function switchTab(tab) {
     if(tabs) tabs.style.display='flex';
     document.querySelectorAll('.auth-tab')[1].classList.add('active');
     document.getElementById('panelSignup').classList.add('active');
+  } else if (tab === 'driver' || tab === 'pending') {
+    if(tabs) tabs.style.display='none';
+    document.getElementById(tab==='driver'?'panelDriver':'panelPending').classList.add('active');
   } else if (tab === 'admin') {
     if(tabs) tabs.style.display='none';
     document.getElementById('panelAdmin').classList.add('active');
@@ -1382,6 +1416,7 @@ function doLogin() {
   if (!email) { showErr('loginErr','⚠️ Please enter your email address.'); return; }
   if (!pass)  { showErr('loginErr','⚠️ Please enter your password.'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('loginErr','⚠️ Please enter a valid email address.'); return; }
+  if (fbBlocked('loginErr')) return;
   const btn = document.getElementById('loginBtn');
   btn.disabled = true; btn.textContent = '⏳ Logging in…';
   auth.signInWithEmailAndPassword(email, pass)
@@ -1414,6 +1449,7 @@ function doSignup() {
   if (pass.length < 6) { showErr('signupErr','⚠️ Password must be at least 6 characters.'); return; }
   if (pass !== passC)  { showErr('signupErr','❌ Passwords do not match.'); return; }
 
+  if (fbBlocked('signupErr')) return;
   const btn = document.getElementById('signupBtn');
   btn.disabled = true; btn.textContent = '⏳ Creating account…';
 
@@ -1438,19 +1474,62 @@ function doSignup() {
 // ============================================================
 // AUTH STATE LISTENER
 // ============================================================
-auth.onAuthStateChanged(user => {
-  if (localStorage.getItem('de_admin_session') === '1') return;
-  if (user) {
-    currentUser = user;
-    db.collection('users').doc(user.uid).get()
-      .then(snap => enterCustomer(user, snap.exists ? snap.data() : {}))
-      .catch(() => enterCustomer(user, {}));
-  } else {
-    currentUser = null;
-    showScreen('auth');
-    switchTab('login');
-  }
-});
+let _regBusy=false;
+const MYDRV=()=>window._driverUid||'owner';
+function routeUser(user){
+  if (isAdminUser(user)) { if(!window._adminOn){window._adminOn=true;window._role='owner';enterAdmin();} return; }
+  window._adminOn=false;
+  if(!user){ currentUser=null; window._role=null; showScreen('auth'); switchTab('login'); return; }
+  currentUser=user;
+  const asCust=()=>{window._role='customer';db.collection('users').doc(user.uid).get().then(sn=>enterCustomer(user,sn.exists?sn.data():{})).catch(()=>enterCustomer(user,{}));};
+  db.collection('drivers').doc(user.uid).get().then(ds=>{
+    if(!ds.exists) return asCust();
+    const d=ds.data(); window._driverUid=user.uid; window._drv=d;
+    if(d.status==='approved'){ window._role='driver'; enterAdmin(); }
+    else { showScreen('auth'); switchTab('pending');
+      document.getElementById('pendMsg').textContent = d.status==='rejected' ? '❌ Your registration was rejected or suspended. Please contact support.' : '⏳ Your details are under review. You can start taking rides once the admin verifies you.'; }
+  }).catch(asCust);
+}
+if (auth) auth.onAuthStateChanged(u=>{ if(!_regBusy) routeUser(u); });
+function drvMode(m){
+  document.getElementById('drvLoginBox').style.display=m==='login'?'block':'none';
+  document.getElementById('drvRegBox').style.display=m==='reg'?'block':'none';
+  document.getElementById('dmL').classList.toggle('active',m==='login');document.getElementById('dmR').classList.toggle('active',m==='reg');
+}
+function doDriverLogin(){
+  const e=document.getElementById('dlEmail').value.trim().toLowerCase(),p=document.getElementById('dlPass').value;
+  if(!e||!p){showErr('drvErr','⚠️ Enter email and password.');return;}
+  if (fbBlocked('drvErr')) return;
+  auth.signInWithEmailAndPassword(e,p).catch(x=>showErr('drvErr','❌ '+friendlyErr(x.code)));
+}
+async function doDriverRegister(){
+  const g=i=>(document.getElementById(i).value||'').trim();
+  const name=g('dName'),phone=g('dPhone'),email=g('dEmail').toLowerCase(),pass=document.getElementById('dPass').value,vt=g('dVType'),vn=g('dVNo').toUpperCase(),lic=g('dLic').toUpperCase(),city=g('dCity');
+  if(!name||!/^\d{10}$/.test(phone)||!email||pass.length<6||!vn||!lic||!city){showErr('drvErr','⚠️ Fill all fields (10-digit phone, password min 6).');return;}
+  if (fbBlocked('drvErr')) return;
+  _regBusy=true;
+  try{
+    const cr=await auth.createUserWithEmailAndPassword(email,pass);
+    await cr.user.updateProfile({displayName:name});
+    await db.collection('drivers').doc(cr.user.uid).set({name,phone,email,vehicleType:vt,vehicleNo:vn,city,status:'pending',online:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('driverPrivate').doc(cr.user.uid).set({licenceNo:lic});
+    _regBusy=false; routeUser(cr.user);
+  }catch(e){ _regBusy=false; showErr('drvErr','❌ '+friendlyErr(e.code||'')); }
+}
+function listenDrivers(){
+  if(window._drvUnsub) return;
+  window._drvUnsub=db.collection('drivers').onSnapshot(async q=>{
+    const L=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.status==='pending'?0:1)-(b.status==='pending'?0:1));
+    const lic=await Promise.all(L.map(d=>db.collection('driverPrivate').doc(d.id).get().then(x=>x.exists?x.data().licenceNo:'—').catch(()=>'—')));
+    const np=L.filter(d=>d.status==='pending').length; document.getElementById('drvBadge').textContent=np||'';
+    const cls={pending:'pending',approved:'accepted',rejected:'declined'};
+    document.getElementById('drvList').innerHTML=L.length?L.map((d,i)=>`<div class="bk-item ${cls[d.status]||'pending'}"><div class="bk-top"><div><div class="bk-ref">${d.name}</div><div class="bk-time">${d.city||''}</div></div><div class="bk-badge ${cls[d.status]||'pending'}">${(d.status||'').toUpperCase()}</div></div><div class="bk-info"><div class="bk-field"><span class="fl">Phone</span><span class="fv">${d.phone}</span></div><div class="bk-field"><span class="fl">Vehicle</span><span class="fv">${d.vehicleType} · ${d.vehicleNo}</span></div><div class="bk-field"><span class="fl">Licence</span><span class="fv">${lic[i]}</span></div><div class="bk-field"><span class="fl">Online</span><span class="fv">${d.online?'🟢 Yes':'⚪ No'}</span></div></div><div class="bk-actions">${d.status!=='approved'?`<button class="btn-sm acc" onclick="setDriverStatus('${d.id}','approved')">✅ Approve</button>`:''}${d.status!=='rejected'?`<button class="btn-sm dec" onclick="setDriverStatus('${d.id}','rejected')">${d.status==='approved'?'🚫 Suspend':'❌ Reject'}</button>`:''}<button class="btn-sm wa" onclick="window.open('https://wa.me/91${d.phone}','_blank')">📲 WhatsApp</button></div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">🚖</div>No drivers registered yet.</div>';
+  },e=>aToast('❌ '+e.message,'#e74c3c'));
+}
+function setDriverStatus(id,st){
+  const u={status:st,verifiedAt:firebase.firestore.FieldValue.serverTimestamp()}; if(st!=='approved')u.online=false;
+  db.collection('drivers').doc(id).update(u).then(()=>aToast(st==='approved'?'✅ Driver verified':'🚫 Driver '+st,'#2ecc71')).catch(e=>aToast('❌ '+e.message,'#e74c3c'));
+}
 
 function enterCustomer(user, data) {
   showScreen('customer');
@@ -1466,6 +1545,7 @@ function enterCustomer(user, data) {
   if (dateEl) dateEl.min = new Date().toISOString().split('T')[0];
   renderCalendar();
   listenDriverStatus();
+  loadStats(); loadHistory();
 }
 
 function doSignOut() {
@@ -1488,40 +1568,33 @@ function friendlyErr(code) {
     'auth/invalid-email':'Invalid email address.',
     'auth/weak-password':'Password too weak — use at least 6 characters.',
     'auth/too-many-requests':'Too many attempts. Wait a moment and try again.',
-    'auth/network-request-failed':'Network error. Check your internet connection.'
+    'auth/network-request-failed':'Network error. Check your internet connection.',
+    'auth/operation-not-allowed':'Email/Password sign-in is not enabled in Firebase (Authentication → Sign-in method).',
+    'auth/unauthorized-domain':'This website address is not authorised in Firebase (Authentication → Settings → Authorized domains).',
+    'auth/operation-not-supported-in-this-environment':'Login needs https:// or localhost — it does not work from a local file.',
+    'auth/invalid-api-key':'Firebase API key is invalid.',
+    'auth/user-disabled':'This account has been disabled.',
+    'auth/popup-blocked':'Popup was blocked — allow popups for this site and try again.'
   };
-  return m[code] || 'Something went wrong. Please try again.';
+  return m[code] || ('Something went wrong' + (code ? ' (' + code + ')' : '') + '. Please try again.');
 }
 
 // ============================================================
 // ADMIN LOGIN
 // ============================================================
-function getAdminCreds() {
-  try { return JSON.parse(localStorage.getItem('de_admin_creds')) || { user:'driver', pass:'driver@1234' }; }
-  catch(e) { return { user:'driver', pass:'driver@1234' }; }
+const ADMIN_EMAIL='anmol2010kumar18@gmail.com';
+function isAdminUser(u){return !!u&&(u.email||'').toLowerCase()===ADMIN_EMAIL&&u.emailVerified===true;}
+function doAdminLogin(){
+  if (fbBlocked('adminErr')) return;
+  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+  auth.signInWithPopup(p).then(r=>{
+    if(!isAdminUser(r.user)){auth.signOut();showErr('adminErr','❌ This Google account is not the admin account.');}
+  }).catch(e=>showErr('adminErr','❌ '+(e.code==='auth/popup-closed-by-user'?'Sign-in cancelled.':e.message)));
 }
-
-function doAdminLogin() {
-  const u = (document.getElementById('adminUser').value || '').trim();
-  const p = (document.getElementById('adminPass').value  || '').trim();
-  if (!u) { showErr('adminErr','⚠️ Please enter your username.'); return; }
-  if (!p) { showErr('adminErr','⚠️ Please enter your password.'); return; }
-  const creds = getAdminCreds();
-  if (u === creds.user && p === creds.pass) {
-    localStorage.setItem('de_admin_session','1');
-    if (auth.currentUser) {
-      auth.signOut().then(() => enterAdmin());
-    } else {
-      enterAdmin();
-    }
-  } else {
-    showErr('adminErr','❌ Wrong username or password.');
-    document.getElementById('adminPass').value = '';
-  }
-}
-
 function adminLogout() {
-  localStorage.removeItem('de_admin_session');
+  window._adminOn=false; window._role=null; window._driverUid=null;
+  if(window._drvUnsub){window._drvUnsub();window._drvUnsub=null;}
+  auth.signOut();
   if (bookingsUnsub) { bookingsUnsub(); bookingsUnsub = null; }
   if (trackInterval) { clearInterval(trackInterval); trackInterval = null; }
   allBookings = [];
@@ -1534,8 +1607,12 @@ function enterAdmin() {
   showScreen('admin');
   showPage('dashboard', document.querySelectorAll('.nav-item')[0]);
   initAdminData();
-  db.collection('driverStatus').doc('status').get().then(snap => {
-    const online = snap.exists ? snap.data().online : true;
+  const isOwner = window._role==='owner';
+  document.getElementById('navDrivers').style.display = isOwner ? '' : 'none';
+  document.getElementById('dangerCard').style.display = isOwner ? '' : 'none';
+  document.getElementById('adminCard').style.display  = isOwner ? '' : 'none';
+  db.collection('drivers').doc(window._driverUid||'x').get().then(snap => {
+    const online = snap.exists ? !!snap.data().online : false;
     driverOn = online;
     const dot = document.getElementById('statusDot');
     const lbl = document.getElementById('statusLbl');
@@ -1556,13 +1633,78 @@ function enterAdmin() {
 // STARTUP
 // ============================================================
 window.addEventListener('DOMContentLoaded', function() {
-  if (localStorage.getItem('de_admin_session') === '1') {
-    enterAdmin();
-  } else {
-    showScreen('auth');
-    switchTab('login');
-  }
+  showScreen('auth'); switchTab('login');
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if(typeof Chart!=='undefined') Chart.defaults.color='#aaa';
 });
+
+
+// ============================================================
+// EXTRA FEATURES: route, stats, ratings, history, charts, language, share
+// ============================================================
+async function fetchRoute(){
+  const g=id=>document.getElementById(id).value;
+  if(!g('bPickupLat')||!g('bDropLat')) return;
+  const info=document.getElementById('routeInfo'); info.textContent='⏳ Calculating route…';
+  try{
+    const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${g('bPickupLng')},${g('bPickupLat')};${g('bDropLng')},${g('bDropLat')}?overview=false`);
+    const d=(await r.json()).routes[0];
+    const km=Math.max(1,Math.round(d.distance/100)/10), min=Math.round(d.duration/60);
+    document.getElementById('bKm').value=km; autoFare();
+    info.textContent=`🛣️ ${km} km · ⏱️ about ${min>=60?Math.floor(min/60)+' hr '+min%60+' min':min+' min'} by road`;
+  }catch(e){info.textContent='⚠️ Route not available — enter distance manually.';}
+}
+function loadStats(){
+  db.collection('stats').doc('summary').get().then(s=>{const d=s.exists?s.data():{};
+    document.getElementById('stRides').textContent=d.rides||0;
+    document.getElementById('stKm').textContent=Math.round(d.km||0).toLocaleString('en-IN');}).catch(()=>{});
+  db.collection('ratings').limit(200).get().then(q=>{
+    if(!q.size) return; let t=0; q.forEach(x=>t+=x.data().stars||0);
+    document.getElementById('stRate').textContent=(t/q.size).toFixed(1)+'★';
+    document.getElementById('stRateL').textContent=`Average Rating (${q.size})`;}).catch(()=>{});
+}
+function setStars(n){window._rate=n;document.querySelectorAll('#starRow span').forEach((e,i)=>e.textContent=i<n?'★':'☆');}
+async function submitRating(){
+  if(!window._rate){toast('⚠️ Tap a star first.');return;}
+  try{
+    await db.collection('ratings').add({stars:window._rate,comment:(document.getElementById('rateTxt').value||'').trim().slice(0,200),fid:window._ratingFid||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('⭐ Thanks for your feedback!','#2ecc71'); closeOverlay('ovRideEnded'); loadStats();
+  }catch(e){toast('❌ Could not save rating.');}
+}
+function loadHistory(){
+  if(!currentUser) return;
+  db.collection('bookings').where('uid','==',currentUser.uid).get().then(q=>{
+    const L=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    window._hist=L;
+    document.getElementById('histList').innerHTML=L.length?L.map((b,i)=>`<div class="feat-card" style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap"><div><b>${b.ref||''}</b> · ${b.date||''}<br><small style="color:var(--muted)">${b.pickup||''} → ${b.drop||''}</small><br><small>${b.fare||''} · ${b.status||''}</small></div>${b.status==='completed'?`<button class="btn-signout" onclick="printReceipt(${i})">🧾 Receipt</button>`:''}</div>`).join(''):'<div style="text-align:center;color:var(--muted)">No rides yet.</div>';
+  }).catch(()=>{});
+}
+function printReceipt(i){
+  const b=window._hist[i], w=window.open('','_blank');
+  w.document.write(`<title>Receipt ${b.ref}</title><body style="font-family:sans-serif;max-width:480px;margin:2rem auto"><h2>🚗 DriveEasy – Ride Receipt</h2><hr><p><b>Ref:</b> ${b.ref}<br><b>Passenger:</b> ${b.name}<br><b>Date:</b> ${b.date} ${b.time||''}<br><b>From:</b> ${b.pickup}<br><b>To:</b> ${b.drop}<br><b>Distance:</b> ${b.km||'–'} km<br><b>Fare:</b> ${b.fare||'As agreed'}</p><hr><p>Thank you for riding with DriveEasy!</p><script>print()<\/script></body>`);
+  w.document.close();
+}
+function shareTrip(){
+  const b=currentBooking||{};
+  const t=`🚗 I'm travelling with DriveEasy.\nRef: ${b.ref||''}\nFrom: ${b.pickup||''}\nTo: ${b.drop||''}\nDriver: +91 8757348847`;
+  window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
+}
+let _c1=null,_c2=null;
+function renderCharts(){
+  if(typeof Chart==='undefined'||!document.getElementById('chEarn')) return;
+  const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d.toISOString().split('T')[0];});
+  const earn=days.map(d=>allBookings.filter(b=>b.rawDate===d&&(b.status==='completed'||b.status==='accepted')).reduce((s,b)=>s+(parseInt((b.fare||'').replace(/[^0-9]/g,''))||0),0));
+  const st=['pending','accepted','completed','cancelled','declined'].map(k=>allBookings.filter(b=>b.status===k).length);
+  if(_c1)_c1.destroy(); if(_c2)_c2.destroy();
+  _c1=new Chart(document.getElementById('chEarn'),{type:'bar',data:{labels:days.map(d=>d.slice(5)),datasets:[{data:earn,backgroundColor:'#C9973A'}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  _c2=new Chart(document.getElementById('chStat'),{type:'doughnut',data:{labels:['Pending','Accepted','Completed','Cancelled','Declined'],datasets:[{data:st,backgroundColor:['#e67e22','#3498db','#2ecc71','#e74c3c','#777'],borderWidth:0}]},options:{maintainAspectRatio:false}});
+}
+let _hi=false;
+function toggleLang(){
+  _hi=!_hi;
+  document.querySelectorAll('[data-hi]').forEach(e=>{if(!e.dataset.en)e.dataset.en=e.innerHTML;e.innerHTML=_hi?e.dataset.hi:e.dataset.en;});
+  document.getElementById('langBtn').textContent=_hi?'EN':'हिं';
+}
 
 // ============================================================
 // CUSTOMER CALENDAR
@@ -1741,6 +1883,7 @@ function confirmMap() {
   if (!selLatLng) { toast('⚠️ Please tap on the map or search a location first!'); return; }
   closeMap();
   toast('📍 Location set!', '#C9973A');
+  fetchRoute();
 }
 function closeMap() { document.getElementById('mapModal').classList.remove('show'); }
 
@@ -1767,7 +1910,7 @@ async function submitBooking() {
 
   try {
     const [bd,bl] = await Promise.all([
-      db.collection('bookedDates').doc(date).get(),
+      Promise.resolve({exists:false}),
       db.collection('blockedDates').doc(date).get()
     ]);
     if(bd.exists||bl.exists){
@@ -1838,7 +1981,6 @@ async function submitBooking() {
     'Customer is waiting. Admin panel also shows this booking.'
   ].filter(Boolean).join('\n');
 
-  window.open(`https://wa.me/918757348847?text=${encodeURIComponent(msg)}`,'_blank');
 
   document.getElementById('pendingRef').textContent = ref;
   showOverlay('ovPending');
@@ -1870,6 +2012,7 @@ function listenBookingStatus(fid) {
       document.getElementById('custOtpBox').style.display   = 'block';
 
       document.getElementById('confirmedDetails').innerHTML = `
+        <div class="cd-row"><span class="cd-lbl">Driver</span><span class="cd-val">${data.driverName||"—"}${data.vehicle?" · "+data.vehicle:""}</span></div>
         <div class="cd-row"><span class="cd-lbl">Passenger</span><span class="cd-val">${data.name}</span></div>
         <div class="cd-row"><span class="cd-lbl">Pickup</span><span class="cd-val">${data.pickup}</span></div>
         <div class="cd-row"><span class="cd-lbl">Drop</span><span class="cd-val">${data.drop}</span></div>
@@ -1925,7 +2068,7 @@ async function verifyRideOtp() {
       rideStatus: 'started',
       rideStartedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    await db.collection('driverLocation').doc('live').set({
+    await db.collection('driverLocation').doc(MYDRV()).set({
       rideStatus: 'started', fid, ref: b.ref,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
@@ -2017,7 +2160,7 @@ function startCustTracking(booking) {
     } else {
       custTrackMap.invalidateSize();
     }
-    db.collection('driverLocation').doc('live').onSnapshot(snap => {
+    db.collection('driverLocation').doc(booking.driverId||'none').onSnapshot(snap => {
       if (!snap.exists) return;
       const { lat, lng } = snap.data();
       if (!lat || !lng) return;
@@ -2042,15 +2185,17 @@ function startCustTracking(booking) {
 // ============================================================
 function initAdminData() {
   if(bookingsUnsub) bookingsUnsub();
-  bookingsUnsub = db.collection('bookings').orderBy('createdAt','desc').onSnapshot(snap=>{
-    allBookings = snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
-    renderDash();
-    renderBookings();
-    updatePendingBadge();
-    populateTrackSel();
-  }, err => {
-    aToast('❌ Firebase error: '+err.message,'#e74c3c');
-  });
+  const owner=window._role==='owner', uid=window._driverUid, parts={}, B=db.collection('bookings'), u=[];
+  const merge=k=>snap=>{
+    parts[k]=snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
+    const m={}; Object.values(parts).flat().forEach(b=>m[b.firestoreId]=b);
+    allBookings=Object.values(m).filter(b=>!(window._skipped&&window._skipped.has(b.firestoreId)&&b.status==='pending')).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderDash(); renderBookings(); updatePendingBadge(); populateTrackSel();
+  };
+  const err=e=>aToast('❌ Firebase error: '+e.message,'#e74c3c');
+  if(owner){ u.push(B.onSnapshot(merge('all'),err)); listenDrivers(); }
+  else { u.push(B.where('status','==','pending').onSnapshot(merge('open'),err)); u.push(B.where('driverId','==',uid).onSnapshot(merge('mine'),err)); }
+  bookingsUnsub=()=>u.forEach(f=>f());
   renderAdminCal();
 }
 
@@ -2070,7 +2215,7 @@ function showPage(name, el) {
   if(el) el.classList.add('active');
   if(name==='tracking') initAdminMap();
   if(name==='calendar') renderAdminCal();
-  document.getElementById('adminSidebar').classList.remove('open');
+  document.getElementById('adminSidebar').classList.remove('open','active');
 }
 
 // ============================================================
@@ -2089,6 +2234,7 @@ function renderDash() {
     <div class="dash-card"><div class="dash-lbl">Completed</div><div class="dash-val c-green">${completed}</div><div class="dash-sub">Finished rides</div></div>
     <div class="dash-card"><div class="dash-lbl">Est. Earnings</div><div class="dash-val c-gold">₹${earnings.toLocaleString('en-IN')}</div><div class="dash-sub">Completed + accepted</div></div>`;
   const recent = allBookings.slice(0,5);
+  renderCharts();
   document.getElementById('dashList').innerHTML = recent.length ? recent.map(buildCard).join('') : '<div class="empty-state"><div class="empty-icon">📭</div>No bookings yet. Share your website!</div>';
 }
 
@@ -2135,24 +2281,28 @@ function buildCard(b) {
 // ADMIN: ACCEPT / DECLINE
 // ============================================================
 async function adminAccept(fid, rawDate, phone, name, ref, dateEnc, timeEnc, fareEnc) {
+  if(window._role!=='driver'){ aToast('⚠️ Only verified drivers can accept rides.','#e67e22'); return; }
+  const dr=window._drv||{}, bref=db.collection('bookings').doc(fid);
   try {
-    await db.collection('bookings').doc(fid).update({ status:'accepted' });
-    if(rawDate && rawDate!=='undefined' && rawDate!=='')
-      await db.collection('bookedDates').doc(rawDate).set({ bookedAt:firebase.firestore.FieldValue.serverTimestamp() });
+    await db.runTransaction(async t=>{
+      const sn=await t.get(bref);
+      if(!sn.exists||sn.data().status!=='pending') throw new Error('Already taken by another driver');
+      t.update(bref,{status:'accepted',driverId:window._driverUid,driverName:dr.name||'',driverPhone:dr.phone||'',vehicle:((dr.vehicleType||'')+' '+(dr.vehicleNo||'')).trim()});
+    });
     aToast('✅ Ride accepted!','#2ecc71');
-    const d = decodeURIComponent(dateEnc);
-    const t = decodeURIComponent(timeEnc);
-    const f = decodeURIComponent(fareEnc);
-    const msg = `Hi ${name}! 🎉 Your ride ${ref} is *CONFIRMED*!\n\n📅 ${d}\n⏰ ${t}\n💰 Fare: ${f||'As discussed'}\n\nYour driver is on the way! Open the website to track live and see your OTP. – DriveEasy 🚗`;
+    const msg=`Hi ${name}! 🎉 Your ride ${ref} is *CONFIRMED* with ${dr.name} (${dr.vehicleType||''} ${dr.vehicleNo||''}).\n\n📅 ${decodeURIComponent(dateEnc)}\n⏰ ${decodeURIComponent(timeEnc)}\n💰 Fare: ${decodeURIComponent(fareEnc)||'As discussed'}\n\nOpen the website to track live and see your OTP. – DriveEasy`;
     setTimeout(()=>window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank'),500);
-  } catch(e) { aToast('❌ Error: '+e.message,'#e74c3c'); }
+  } catch(e) { aToast('❌ '+e.message,'#e74c3c'); }
 }
 
 async function adminDecline(fid) {
-  try {
-    await db.collection('bookings').doc(fid).update({ status:'declined' });
-    aToast('❌ Ride declined.','#e74c3c');
-  } catch(e) { aToast('❌ Error: '+e.message,'#e74c3c'); }
+  if(window._role==='owner'){
+    try{ await db.collection('bookings').doc(fid).update({ status:'declined' }); aToast('❌ Ride declined.','#e74c3c'); }catch(e){ aToast('❌ '+e.message,'#e74c3c'); }
+    return;
+  }
+  (window._skipped=window._skipped||new Set()).add(fid);
+  allBookings=allBookings.filter(b=>b.firestoreId!==fid); renderDash(); renderBookings(); updatePendingBadge();
+  aToast('⏭️ Skipped — other drivers can still accept it.','#888');
 }
 
 async function adminCancelRideById(fid, name, ref, phone, dateEnc, timeEnc, rawDate) {
@@ -2279,7 +2429,7 @@ function startGPS() {
       const lat=pos.coords.latitude, lng=pos.coords.longitude;
       document.getElementById('trackGps').textContent=`${lat.toFixed(4)},${lng.toFixed(4)}`;
       document.getElementById('trackTime').textContent=new Date().toLocaleTimeString('en-IN');
-      try{await db.collection('driverLocation').doc('live').set({lat,lng,fid,ref:b?b.ref:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
+      try{await db.collection('driverLocation').doc(MYDRV()).set({lat,lng,fid,ref:b?b.ref:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
       if (b) checkAutoRideEnd(lat, lng, b);
       if(adminMap){
         const heading = (window._adminPrevLat!==undefined) ? getBearing(window._adminPrevLat,window._adminPrevLng,lat,lng) : 0;
@@ -2306,7 +2456,7 @@ function stopGPS() {
 
 async function shareLocation() {
   try {
-    const snap=await db.collection('driverLocation').doc('live').get();
+    const snap=await db.collection('driverLocation').doc(MYDRV()).get();
     if(!snap.exists){aToast('⚠️ Start GPS tracking first!','#e67e22');return;}
     const {lat,lng,ref}=snap.data();
     const gmaps=`https://www.google.com/maps?q=${lat},${lng}`;
@@ -2350,7 +2500,7 @@ async function clearBlockedDates() {
 }
 async function resetDriverLocation() {
   try {
-    await db.collection('driverLocation').doc('live').delete();
+    await db.collection('driverLocation').doc(MYDRV()).delete();
     aToast('✅ Driver location reset!', '#3498db');
   } catch(e) { aToast('✅ Already clear.', '#3498db'); }
 }
@@ -2401,10 +2551,7 @@ function saveRates() {
 // DRIVER ONLINE / OFFLINE STATUS
 // ============================================================
 function listenDriverStatus() {
-  db.collection('driverStatus').doc('status').onSnapshot(snap => {
-    const online = snap.exists ? snap.data().online : true;
-    applyDriverStatus(online);
-  }, () => { applyDriverStatus(true); });
+  db.collection('drivers').where('online','==',true).onSnapshot(q => applyDriverStatus(q.size>0), () => applyDriverStatus(true));
 }
 function applyDriverStatus(online) {
   const banner     = document.getElementById('driverOfflineBanner');
@@ -2429,7 +2576,7 @@ function applyDriverStatus(online) {
     if (formFields) { formFields.style.opacity='0.4'; formFields.style.pointerEvents='none'; }
     if (submitBtn)  submitBtn.disabled = true;
     if (onlineBadge) {
-      onlineBadge.innerHTML = '<div class="dot-live" style="background:var(--red);animation:none"></div> Driver is Offline';
+      onlineBadge.innerHTML = '<div class="dot-live" style="background:var(--red);animation:none"></div> No Drivers Online';
       onlineBadge.style.background='rgba(231,76,60,.1)';
       onlineBadge.style.borderColor='rgba(231,76,60,.25)';
       onlineBadge.style.color='var(--red)';
@@ -2569,10 +2716,11 @@ async function markRideEnded() {
     await db.collection('bookings').doc(fid).update({
       rideStatus: 'ended', rideEndedAt: firebase.firestore.FieldValue.serverTimestamp(), status: 'completed'
     });
-    await db.collection('driverLocation').doc('live').set({
+    await db.collection('driverLocation').doc(MYDRV()).set({
       rideStatus: 'ended', fid, ref: b.ref,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
+    db.collection('stats').doc('summary').set({rides:firebase.firestore.FieldValue.increment(1),km:firebase.firestore.FieldValue.increment(parseFloat(b.km)||0)},{merge:true}).catch(()=>{});
     stopGPS();
     aToast('🏁 Ride marked as completed!', '#3498db');
     const msg = `Hi ${b.name}! 🏁 Your ride is *COMPLETED*!\n\nYou have reached your destination. Thank you for choosing DriveEasy!\n\nFare: ${b.fare||'As agreed'}\n\nWe hope you had a comfortable journey! – DriveEasy 🚗`;
@@ -2627,7 +2775,7 @@ function listenRideStatus(fid) {
           <div style="margin-bottom:.4rem">💰 <strong>Fare:</strong> ${b.fare||data.fare||'As agreed'}</div>
           <div>🔖 <strong>Ref:</strong> ${b.ref||data.ref||'—'}</div>`;
         closeOverlay('ovRideStarted');
-        showOverlay('ovRideEnded');
+        window._ratingFid = fid; window._rate=0; showOverlay('ovRideEnded');
         toast('🏁 You have reached your destination!', '#3498db');
         activeBookingFid = null;
       }
@@ -2670,15 +2818,13 @@ function checkAutoRideEnd(driverLat, driverLng, booking) {
 // TOGGLE DRIVER ONLINE STATUS
 // ============================================================
 async function toggleOnline() {
+  if(window._role!=='driver'){ aToast('ℹ️ Online status is for drivers.','#e67e22'); return; }
   driverOn = !driverOn;
   document.getElementById('statusDot').className = 'status-dot' + (driverOn ? '' : ' offline');
   document.getElementById('statusLbl').textContent = driverOn ? 'Online' : 'Offline';
   aToast(driverOn ? '🟢 You are now Online' : '🔴 You are now Offline', driverOn ? '#2ecc71' : '#888');
-  try {
-    await db.collection('driverStatus').doc('status').set({
-      online: driverOn, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch(e) { aToast('⚠️ Could not sync status: ' + e.message, '#e67e22'); }
+  try { await db.collection('drivers').doc(window._driverUid).update({ online: driverOn }); }
+  catch(e) { aToast('⚠️ Could not sync status: ' + e.message, '#e67e22'); }
 }
 </script>
 </body>
