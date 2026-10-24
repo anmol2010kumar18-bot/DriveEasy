@@ -6,7 +6,7 @@
 <title>DriveEasy – Cab Booking in Siwan</title>
 <meta name="description" content="DriveEasy: book safe cab rides in Siwan with live map tracking, OTP-verified start and transparent fares.">
 <meta name="theme-color" content="#C9973A"><meta property="og:title" content="DriveEasy – Cab Booking in Siwan"><meta property="og:description" content="Live tracking, OTP-safe rides, fair fares.">
-<link rel="manifest" href="manifest.json"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet"><link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="DriveEasy"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C9973A' stroke='%23E8B84B' stroke-width='2'/%3E%3Ctext x='50' y='72' font-size='52' text-anchor='middle' fill='%230D0D0D' font-family='monospace'%3E🚗%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -433,56 +433,16 @@ footer strong{color:var(--gold)}
   .auth-card{padding:2rem 1.5rem}
   header{padding:1rem 1.2rem}
 }
-/* Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* Thumb (main bar) */
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #00d4ff, #7b5cf5);
-  border-radius: 20px;
-  transition: all 0.3s ease;
-}
-
-/* Glow on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #00ffff, #9a7bff);
-  box-shadow: 0 0 10px rgba(0,212,255,0.7),
-              0 0 20px rgba(123,92,245,0.6);
-}
-/* Hide scrollbar initially */
-body::-webkit-scrollbar-thumb {
-  opacity: 0;
-}
-
-/* Show when hovering page */
-body:hover::-webkit-scrollbar-thumb {
-  opacity: 1;
-}
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #00d4ff transparent;
-}
-/* smooth scrolling */
-.sidebar::-webkit-scrollbar {
-  width: 5px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(0, 212, 255, 0.5);
-  border-radius: 10px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 212, 255, 0.9);
-}
+/* ===== GOLD SCROLLBARS (match the site theme) ===== */
+:root{color-scheme:dark}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#0f0d0a;border-left:1px solid rgba(201,151,58,.12)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#f0c45f,#c9973a 55%,#9a7020);border-radius:99px;border:2px solid #0f0d0a;transition:background .3s}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#ffdf8a,#e8b84b 60%,#c9973a);box-shadow:0 0 10px rgba(201,151,58,.55)}
+::-webkit-scrollbar-corner{background:#0f0d0a}
+.sidebar::-webkit-scrollbar,.place-suggest::-webkit-scrollbar,textarea::-webkit-scrollbar,#navSteps::-webkit-scrollbar{width:6px}
+/* Firefox (and any browser without ::-webkit-scrollbar) */
+@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:#c9973a #0f0d0a}}
 /* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
 
@@ -505,7 +465,7 @@ body:hover::-webkit-scrollbar-thumb {
     top: 15px;
     left: 15px;
     z-index: 1100;
-    background: #00d4ff;
+    background: linear-gradient(135deg,#d9a548,#f0c45f);
     border: none;
     padding: 8px 12px;
     border-radius: 6px;
@@ -684,6 +644,28 @@ html[lang="hi"] .fare-amt{font-family:'Playfair Display','Noto Sans Devanagari',
 .map-name-row input[type=text]{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.6rem .9rem;color:var(--text);font-family:inherit;font-size:.86rem;outline:none}
 .map-name-row input[type=text]:focus{border-color:var(--gold)}
 .map-name-row label{font-size:.78rem;color:var(--muted);display:flex;gap:.45rem;align-items:center;cursor:pointer}
+
+/* ===== POPUPS: always scrollable, never cut off ===== */
+.overlay{overflow-y:auto;-webkit-overflow-scrolling:touch;align-items:flex-start;overscroll-behavior:contain}
+.overlay .ov-card{margin:auto;max-width:460px}
+@media(max-height:760px){.ov-card{padding:1.5rem 1.2rem}.ov-icon{font-size:2.5rem;margin-bottom:.5rem}.ov-sub{margin-bottom:.9rem}}
+.hist-badge{display:inline-block;padding:.18rem .65rem;border-radius:99px;font-size:.72rem;font-weight:700;border:1px solid currentColor}
+
+/* ===== INSTALL BANNER ===== */
+.install-banner{position:fixed;left:50%;bottom:1rem;transform:translate(-50%,140%);width:min(560px,calc(100% - 1.6rem));z-index:9600;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;padding:.9rem 1rem;border-radius:18px;background:linear-gradient(135deg,rgba(28,22,10,.97),rgba(14,12,9,.97));border:1px solid rgba(201,151,58,.5);box-shadow:0 18px 50px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.04) inset;backdrop-filter:blur(14px);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.install-banner.show{transform:translate(-50%,0)}
+.ib-icon{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#d9a548,#f0c45f);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex:none;box-shadow:0 6px 18px rgba(201,151,58,.4)}
+.ib-text{flex:1;min-width:180px;display:flex;flex-direction:column;gap:.15rem}
+.ib-text b{font-size:.98rem}.ib-text span{font-size:.78rem;color:var(--muted);line-height:1.45}
+.ib-actions{display:flex;gap:.5rem;margin-left:auto}
+.ib-go{border:none;cursor:pointer;font:800 .85rem 'DM Sans',sans-serif;padding:.65rem 1.2rem;border-radius:11px;background:linear-gradient(135deg,#d9a548,#f0c45f);color:#1a1204;animation:fabPulse 2.4s infinite}
+.ib-no{border:1px solid rgba(255,255,255,.15);background:none;color:var(--muted);cursor:pointer;font:600 .8rem 'DM Sans',sans-serif;padding:.65rem .9rem;border-radius:11px}
+.ib-no:hover{color:var(--text);border-color:var(--gold)}
+@media(max-width:480px){.ib-actions{width:100%}.ib-go{flex:1}}
+
+img.ib-icon{background:none;padding:0;object-fit:cover;box-shadow:0 6px 18px rgba(201,151,58,.35)}
+
+html:has(.overlay.show),body:has(.overlay.show){overflow:hidden}
 </style>
 </head>
 <body></body>
@@ -811,6 +793,7 @@ html[lang="hi"] .fare-amt{font-family:'Playfair Display','Noto Sans Devanagari',
       <a href="#how">How it works</a>
     </nav>
     <div class="user-menu">
+      <button class="btn-signout" id="installBtn" style="display:none" onclick="installApp()">📲 Install</button>
       <button class="btn-signout" onclick="toggleLang()" id="langBtn">हिं</button>
       <div class="user-avatar" id="userAvatar">?</div>
       <span class="user-name" id="userName">User</span>
@@ -1405,7 +1388,7 @@ function aToast(msg, bg) {
   t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500);
 }
 function showOverlay(id)  { document.getElementById(id).classList.add('show'); }
-function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); if(id==='ovRideEnded') finishRideUI(); }
 function fmtDate(ds) {
   const d = new Date(ds);
   return d.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -1607,7 +1590,7 @@ function initBookingInputs(){
   });
 }
 
-const HI={"name this place – e.g. near shiv mandir, ward 5": "इस जगह का नाम लिखें – जैसे शिव मंदिर के पास, वार्ड 5", "save this place so others can find it": "इस जगह को सेव करें ताकि दूसरे भी ढूँढ सकें", "satellite": "सैटेलाइट", "tap the map, drag the pin*": "नक्शे पर टैप करें, पिन खींचकर सही जगह लगाएँ, या ऊपर Google Maps लिंक / कोऑर्डिनेट पेस्ट करें", "search place, paste map link or code": "जगह खोजें, मैप लिंक या कोड पेस्ट करें", "fetching address": "पता निकाल रहे हैं", "search or use your current location": "खोजें या अपनी मौजूदा लोकेशन इस्तेमाल करें", "select pickup location": "पिकअप की जगह चुनें", "select drop location": "ड्रॉप की जगह चुनें", "welcome back": "वापसी पर स्वागत है", "log in to book your ride": "सवारी बुक करने के लिए लॉगिन करें", "login": "लॉगिन", "sign up": "नया खाता", "email address": "ईमेल", "email": "ईमेल", "password": "पासवर्ड", "login & book a ride": "लॉगिन करें और सवारी बुक करें", "new here?": "नए हैं?", "create free account": "मुफ़्त खाता बनाएँ", "first name": "पहला नाम", "last name": "सरनेम", "phone number": "मोबाइल नंबर", "phone": "मोबाइल", "min 6 chars)": "कम से कम 6 अक्षर)", "confirm password": "पासवर्ड दोबारा लिखें", "create account": "खाता बनाएँ", "already have an account?": "पहले से खाता है?", "customer": "ग्राहक", "driver": "ड्राइवर", "admin": "एडमिन", "driver portal": "ड्राइवर पोर्टल", "register your vehicle and get verified*": "अपनी गाड़ी रजिस्टर करें, वेरिफ़ाई होकर कमाई शुरू करें", "register": "रजिस्टर", "driver login": "ड्राइवर लॉगिन", "full name": "पूरा नाम", "your full name": "आपका पूरा नाम", "10-digit mobile": "10 अंकों का मोबाइल", "password (min 6)": "पासवर्ड (कम से कम 6)", "vehicle type": "गाड़ी का प्रकार", "hatchback": "हैचबैक", "sedan": "सेडान", "suv": "एसयूवी", "auto": "ऑटो", "vehicle number": "गाड़ी नंबर", "driving licence no.": "ड्राइविंग लाइसेंस नंबर", "city": "शहर", "register as driver": "ड्राइवर के रूप में रजिस्टर करें", "verification status": "वेरिफ़िकेशन की स्थिति", "check status": "स्थिति देखें", "sign out": "साइन आउट", "are you a driver?": "क्या आप ड्राइवर हैं?", "driver login / register": "ड्राइवर लॉगिन / रजिस्टर", "continue with google": "Google से जारी रखें", "back to customer login": "ग्राहक लॉगिन पर वापस", "drive with us": "हमारे साथ गाड़ी चलाएँ", "register your vehicle, get verified, start earning": "गाड़ी रजिस्टर करें, वेरिफ़ाई हों, कमाई शुरू करें", "almost there": "बस थोड़ा इंतज़ार", "your driver account is being reviewed": "आपके ड्राइवर खाते की जाँच हो रही है", "owner access": "मालिक का प्रवेश", "join driveeasy in under a minute": "एक मिनट में DriveEasy से जुड़ें", "owner / admin": "मालिक / एडमिन", "restricted to the verified owner account": "सिर्फ़ मालिक के खाते के लिए", "your details are under review. you can start taking rides once the admin verifies you.": "आपकी जानकारी की जाँच हो रही है। एडमिन के वेरिफ़ाई करते ही आप सवारी ले सकेंगे।", "your ride": "आपकी सवारी", "one tap": "बस एक टैप", "away.": "पर हाज़िर।", "your journey": "आपका सफ़र", "our": "हमारा", "promise.": "वादा।", "book safe cabs in siwan*": "सीवान में सुरक्षित कैब बुक करें — लाइव ट्रैकिंग, OTP से सुरक्षित पिकअप और जाँचे-परखे ड्राइवर।", "safe, comfortable rides*": "किसी भी जगह के लिए सुरक्षित और आरामदायक सफ़र। अपनी जगह चुनें, तारीख़ चुनें, पक्की बुकिंग पाएँ।", "otp-safe rides": "OTP से सुरक्षित सफ़र", "live tracking": "लाइव ट्रैकिंग", "verified drivers": "जाँचे-परखे ड्राइवर", "verified drivers*": "जाँचे-परखे ड्राइवर · 24 घंटे उपलब्ध", "pricing": "किराया", "book": "बुक करें", "how it works": "कैसे काम करता है", "user": "यूज़र", "book a ride": "सवारी बुक करें", "see how it works": "देखें कैसे काम करता है", "rides completed": "पूरी हुई सवारी", "average rating": "औसत रेटिंग", "km travelled": "किमी का सफ़र", "available": "उपलब्ध", "why choose us": "हमें क्यों चुनें", "ride with confidence": "भरोसे के साथ सफ़र करें", "safe & verified driver": "सुरक्षित और जाँचा-परखा ड्राइवर", "every driver registers*": "हर ड्राइवर लाइसेंस और गाड़ी की जानकारी देता है और एडमिन की जाँच के बाद ही सवारी लेता है।", "map-based pickup": "नक्शे से पिकअप", "pin your exact pickup*": "नक्शे पर अपनी सही पिकअप और ड्रॉप जगह चुनें। पता समझाने की झंझट नहीं।", "transparent fare": "साफ़ किराया", "fare estimated before booking*": "बुकिंग से पहले ही किराया पता चल जाता है। कोई छुपा चार्ज नहीं।", "otp-verified start": "OTP से सफ़र शुरू", "you receive a 4-digit otp*": "ड्राइवर के स्वीकार करते ही आपको 4 अंकों का OTP मिलता है। इसे सिर्फ़ पिकअप पर ही बताएँ।", "live driver tracking": "ड्राइवर की लाइव लोकेशन", "watch the driver's*": "पक्का होने के बाद नक्शे पर ड्राइवर की गाड़ी को अपनी ओर आते देखें।", "no drivers are online right now*": "अभी कोई ड्राइवर ऑनलाइन नहीं है। कृपया थोड़ी देर बाद देखें।", "clear & honest": "साफ़ और ईमानदार", "our pricing": "हमारा किराया", "city / local": "शहर के अंदर", "per km": "प्रति किमी", "min ₹80*": "कम से कम ₹80 · 15 मिनट इंतज़ार मुफ़्त", "most booked": "सबसे ज़्यादा बुक", "outstation": "शहर के बाहर", "min 80 km*": "कम से कम 80 किमी · टोल व पार्किंग अलग", "airport drop": "एयरपोर्ट ड्रॉप", "flat base": "शुरुआती किराया", "12/km beyond 10 km": "12/किमी (10 किमी के बाद)", "hourly": "घंटे के हिसाब से", "per hour": "प्रति घंटा", "min 2 hrs*": "कम से कम 2 घंटे · 10 किमी/घंटा शामिल", "book your ride": "अपनी सवारी बुक करें", "fill in your details": "अपनी जानकारी भरें", "no drivers are online right now.": "अभी कोई ड्राइवर ऑनलाइन नहीं है।", "booking is temporarily unavailable. please check back soon.": "बुकिंग अभी बंद है। कृपया थोड़ी देर बाद देखें।", "e.g. rahul sharma": "जैसे राहुल शर्मा", "e.g. 9876543210": "जैसे 9876543210", "pickup location": "पिकअप की जगह (कहाँ से)", "drop location": "ड्रॉप की जगह (कहाँ तक)", "type or use map)": "लिखें या नक्शे से चुनें)", "type address or click*": "पता लिखें या 📍 नक्शा बटन दबाएँ", "map": "नक्शा", "travel date": "सफ़र की तारीख़", "travel time": "सफ़र का समय", "trip type": "सफ़र का प्रकार", "city / local (₹12/km)": "शहर के अंदर (₹12/किमी)", "outstation (₹10/km)": "शहर के बाहर (₹10/किमी)", "round trip": "आना-जाना (राउंड ट्रिप)", "airport transfer (from ₹500)": "एयरपोर्ट (₹500 से शुरू)", "hourly use (₹150/hr)": "घंटे के हिसाब से (₹150/घंटा)", "no. of passengers": "सवारियों की संख्या", "estimated fare": "अनुमानित किराया", "choose pickup and drop on the map to see your fare": "किराया देखने के लिए नक्शे पर पिकअप और ड्रॉप चुनें", "distance (km) – filled automatically, you can change it": "दूरी (किमी) – अपने आप भरती है, बदल भी सकते हैं", "additional notes": "अन्य जानकारी", "luggage, special stops*": "सामान, बीच में रुकना आदि", "book ride now": "अभी सवारी बुक करें", "your request goes to nearby verified drivers first.": "आपकी रिक्वेस्ट सबसे पहले पास के जाँचे-परखे ड्राइवरों को जाती है।", "this screen updates automatically when a driver accepts.": "ड्राइवर के स्वीकार करते ही यह स्क्रीन अपने आप बदल जाएगी।", "live ride tracking": "सवारी की लाइव ट्रैकिंग", "waiting for driver to start": "ड्राइवर के शुरू करने का इंतज़ार", "your ride otp*": "आपका सवारी OTP — पिकअप पर ड्राइवर को बताएँ", "this 4-digit otp will be entered*": "यह 4 अंकों का OTP ड्राइवर सफ़र शुरू करने के लिए डालेगा। किसी और को न बताएँ।", "waiting for driver": "ड्राइवर का इंतज़ार", "cancel ride": "सवारी रद्द करें", "ride has started!": "सवारी शुरू हो गई!", "driver picked you up*": "ड्राइवर ने आपको बैठा लिया। आपका सफ़र लाइव ट्रैक हो रहा है।", "ride completed!": "सवारी पूरी हुई!", "you have reached your destination.": "आप अपनी मंज़िल पर पहुँच गए।", "share trip with family": "परिवार को सफ़र की जानकारी भेजें", "pickup": "पिकअप", "drop": "ड्रॉप", "on the way": "रास्ते में", "your account": "आपका खाता", "my rides": "मेरी सवारियाँ", "receipt": "रसीद", "call driver": "ड्राइवर को कॉल करें", "whatsapp": "व्हाट्सऐप", "simple & safe": "आसान और सुरक्षित", "how driveeasy works": "DriveEasy कैसे काम करता है", "pin your route": "अपना रास्ता चुनें", "drop two pins on the map.*": "नक्शे पर दो पिन लगाएँ। दूरी, समय और किराया तुरंत दिखेगा।", "nearby driver accepts": "पास का ड्राइवर स्वीकार करता है", "verified drivers close to you*": "आपके पास के जाँचे-परखे ड्राइवरों को सबसे पहले आपकी रिक्वेस्ट मिलती है।", "track live": "लाइव ट्रैक करें", "see the car*": "नक्शे पर गाड़ी, नंबर प्लेट और पहुँचने का समय देखें।", "ride safe": "सुरक्षित सफ़र", "share the otp*": "OTP बताएँ, आराम से सफ़र करें, फिर ड्राइवर को रेटिंग दें।", "ready when you are.": "आप तैयार, तो हम भी तैयार।", "every ride is otp-verified*": "हर सवारी OTP से सुरक्षित, ट्रैक होने वाली और परिवार से शेयर करने लायक।", "safe, trackable cab rides in siwan.": "सीवान में सुरक्षित, ट्रैक होने वाली कैब सवारी।", "why us": "हमें क्यों चुनें", "select location": "जगह चुनें", "search area, street, landmark": "इलाका, गली या पहचान की जगह खोजें", "search": "खोजें", "use my current location": "मेरी मौजूदा लोकेशन इस्तेमाल करें", "tap the map to pin your location*": "नक्शे पर टैप करके जगह चुनें, या ऊपर खोजें", "search or tap on map": "खोजें या नक्शे पर टैप करें", "confirm": "पक्का करें", "this screen will automatically update": "यह स्क्रीन अपने आप बदल जाएगी", "when the driver accepts or declines your ride.": "जब ड्राइवर आपकी सवारी स्वीकार या अस्वीकार करेगा।", "your booking has been sent to nearby verified drivers.": "आपकी बुकिंग पास के जाँचे-परखे ड्राइवरों को भेज दी गई है।", "booking reference": "बुकिंग नंबर", "cancel & go back": "रद्द करें और वापस जाएँ", "ride confirmed!": "सवारी पक्की हो गई!", "your ride has been accepted by the driver!": "ड्राइवर ने आपकी सवारी स्वीकार कर ली है!", "show this to the driver*": "सफ़र शुरू करने के लिए पिकअप पर यह ड्राइवर को बताएँ।", "view route on google maps": "Google Maps पर रास्ता देखें", "watch live tracking": "लाइव ट्रैकिंग देखें", "not available": "उपलब्ध नहीं", "sorry, the driver is not available*": "माफ़ करें, अभी ड्राइवर उपलब्ध नहीं है। कुछ मिनट बाद फिर कोशिश करें।", "try another booking": "फिर से बुक करें", "cancel your ride?": "क्या सवारी रद्द करनी है?", "please select a reason*": "कृपया कारण चुनें। इससे हम बेहतर सेवा दे पाएँगे।", "reason for cancellation": "रद्द करने का कारण", "select a reason": "कारण चुनें", "change of plans": "प्लान बदल गया", "booked by mistake": "गलती से बुक हो गया", "driver is taking too long": "ड्राइवर को बहुत देर लग रही है", "found another transport": "दूसरा साधन मिल गया", "emergency came up": "ज़रूरी काम आ गया", "other reason": "कोई और कारण", "any additional details? (optional)": "और कुछ बताना है? (ज़रूरी नहीं)", "yes, cancel ride": "हाँ, रद्द करें", "go back": "वापस जाएँ", "otp verified!*": "OTP सही है! ड्राइवर ने पहचान पक्की कर ली और सफ़र शुरू हो गया।", "driver has picked you up!": "ड्राइवर ने आपको बैठा लिया!", "sit back and enjoy*": "आराम से बैठें। लाइव ट्रैकिंग चालू है।", "watch live map": "लाइव नक्शा देखें", "you have reached your destination. thank you*": "आप मंज़िल पर पहुँच गए। DriveEasy चुनने के लिए धन्यवाद!", "rate your ride": "अपनी सवारी को रेटिंग दें", "comment (optional)": "टिप्पणी (ज़रूरी नहीं)", "submit rating": "रेटिंग भेजें", "back to home": "होम पर वापस", "ride cancelled": "सवारी रद्द हुई", "this ride has been cancelled.": "यह सवारी रद्द हो गई है।", "book a new ride": "नई सवारी बुक करें", "dashboard": "डैशबोर्ड", "bookings": "बुकिंग", "drivers": "ड्राइवर", "earnings": "कमाई", "settings": "सेटिंग", "logout": "लॉगआउट", "panel": "पैनल", "online": "ऑनलाइन", "offline": "ऑफ़लाइन", "new booking request!": "नई बुकिंग रिक्वेस्ट!", "a customer is waiting for your response.": "एक ग्राहक आपके जवाब का इंतज़ार कर रहा है।", "view": "देखें", "total bookings": "कुल बुकिंग", "pending": "बाकी", "accepted": "स्वीकार", "declined": "अस्वीकार", "cancelled": "रद्द", "completed": "पूरी", "est. earnings": "अनुमानित कमाई", "earnings*": "कमाई · पिछले 7 दिन", "booking status": "बुकिंग की स्थिति", "recent bookings": "हाल की बुकिंग", "last 14 days": "पिछले 14 दिन", "completed rides": "पूरी हुई सवारियाँ", "all": "सभी", "today": "आज", "last 7 days": "पिछले 7 दिन", "this month": "इस महीने", "all time": "कुल", "rides done": "पूरी सवारियाँ", "rating": "रेटिंग", "status:": "स्थिति:", "no active ride": "कोई सवारी चालू नहीं", "booking:": "बुकिंग:", "gps:": "GPS:", "updated:": "अपडेट:", "live tracking & navigation": "लाइव ट्रैकिंग और नेविगेशन", "select accepted booking": "स्वीकार की गई बुकिंग चुनें", "choose an accepted booking": "बुकिंग चुनें", "navigation": "नेविगेशन", "to pickup": "पिकअप तक", "to drop-off": "ड्रॉप तक", "google maps": "Google Maps", "other map app": "दूसरा मैप ऐप", "recalculate": "दोबारा निकालें", "enter customer otp to start ride": "सफ़र शुरू करने के लिए ग्राहक का OTP डालें", "ask the customer for their 4-digit otp*": "ग्राहक से 4 अंकों का OTP पूछें और नीचे डालकर सफ़र शुरू करें।", "verify & start ride": "जाँचें और सफ़र शुरू करें", "start gps tracking (my location)": "GPS ट्रैकिंग शुरू करें (मेरी लोकेशन)", "mark ride ended (reached destination)": "सफ़र पूरा करें (मंज़िल पर पहुँचे)", "stop gps tracking": "GPS ट्रैकिंग बंद करें", "cancel accepted ride": "स्वीकार की सवारी रद्द करें", "share live location with passenger": "सवारी को लाइव लोकेशन भेजें", "gps active": "GPS चालू", "your location is being sent every 4 seconds.": "आपकी लोकेशन हर 4 सेकंड में भेजी जा रही है।", "customer can see your*": "ग्राहक अपनी स्क्रीन पर आपकी गाड़ी को चलते देख सकता है!", "accept": "स्वीकार करें", "decline": "मना करें", "from you": "आपसे दूरी", "new driver": "नया ड्राइवर", "verified driver": "जाँचा-परखा ड्राइवर", "waiting for driver to share live location": "ड्राइवर की लाइव लोकेशन का इंतज़ार", "your driver has reached*": "आपका ड्राइवर पहुँच गया है!"};
+const HI={"install driveeasy app": "DriveEasy ऐप इंस्टॉल करें", "faster booking, live tracking and one-tap access from your home screen.": "तेज़ बुकिंग, लाइव ट्रैकिंग और होम स्क्रीन से सीधा खोलना।", "install": "इंस्टॉल करें", "not now": "अभी नहीं", "on iphone: tap the share button, then add to home screen.": "iPhone में: Share बटन दबाएँ, फिर 'Add to Home Screen' चुनें।", "ride in progress": "सवारी चल रही है", "driver on the way": "ड्राइवर रास्ते में है", "name this place – e.g. near shiv mandir, ward 5": "इस जगह का नाम लिखें – जैसे शिव मंदिर के पास, वार्ड 5", "save this place so others can find it": "इस जगह को सेव करें ताकि दूसरे भी ढूँढ सकें", "satellite": "सैटेलाइट", "tap the map, drag the pin*": "नक्शे पर टैप करें, पिन खींचकर सही जगह लगाएँ, या ऊपर Google Maps लिंक / कोऑर्डिनेट पेस्ट करें", "search place, paste map link or code": "जगह खोजें, मैप लिंक या कोड पेस्ट करें", "fetching address": "पता निकाल रहे हैं", "search or use your current location": "खोजें या अपनी मौजूदा लोकेशन इस्तेमाल करें", "select pickup location": "पिकअप की जगह चुनें", "select drop location": "ड्रॉप की जगह चुनें", "welcome back": "वापसी पर स्वागत है", "log in to book your ride": "सवारी बुक करने के लिए लॉगिन करें", "login": "लॉगिन", "sign up": "नया खाता", "email address": "ईमेल", "email": "ईमेल", "password": "पासवर्ड", "login & book a ride": "लॉगिन करें और सवारी बुक करें", "new here?": "नए हैं?", "create free account": "मुफ़्त खाता बनाएँ", "first name": "पहला नाम", "last name": "सरनेम", "phone number": "मोबाइल नंबर", "phone": "मोबाइल", "min 6 chars)": "कम से कम 6 अक्षर)", "confirm password": "पासवर्ड दोबारा लिखें", "create account": "खाता बनाएँ", "already have an account?": "पहले से खाता है?", "customer": "ग्राहक", "driver": "ड्राइवर", "admin": "एडमिन", "driver portal": "ड्राइवर पोर्टल", "register your vehicle and get verified*": "अपनी गाड़ी रजिस्टर करें, वेरिफ़ाई होकर कमाई शुरू करें", "register": "रजिस्टर", "driver login": "ड्राइवर लॉगिन", "full name": "पूरा नाम", "your full name": "आपका पूरा नाम", "10-digit mobile": "10 अंकों का मोबाइल", "password (min 6)": "पासवर्ड (कम से कम 6)", "vehicle type": "गाड़ी का प्रकार", "hatchback": "हैचबैक", "sedan": "सेडान", "suv": "एसयूवी", "auto": "ऑटो", "vehicle number": "गाड़ी नंबर", "driving licence no.": "ड्राइविंग लाइसेंस नंबर", "city": "शहर", "register as driver": "ड्राइवर के रूप में रजिस्टर करें", "verification status": "वेरिफ़िकेशन की स्थिति", "check status": "स्थिति देखें", "sign out": "साइन आउट", "are you a driver?": "क्या आप ड्राइवर हैं?", "driver login / register": "ड्राइवर लॉगिन / रजिस्टर", "continue with google": "Google से जारी रखें", "back to customer login": "ग्राहक लॉगिन पर वापस", "drive with us": "हमारे साथ गाड़ी चलाएँ", "register your vehicle, get verified, start earning": "गाड़ी रजिस्टर करें, वेरिफ़ाई हों, कमाई शुरू करें", "almost there": "बस थोड़ा इंतज़ार", "your driver account is being reviewed": "आपके ड्राइवर खाते की जाँच हो रही है", "owner access": "मालिक का प्रवेश", "join driveeasy in under a minute": "एक मिनट में DriveEasy से जुड़ें", "owner / admin": "मालिक / एडमिन", "restricted to the verified owner account": "सिर्फ़ मालिक के खाते के लिए", "your details are under review. you can start taking rides once the admin verifies you.": "आपकी जानकारी की जाँच हो रही है। एडमिन के वेरिफ़ाई करते ही आप सवारी ले सकेंगे।", "your ride": "आपकी सवारी", "one tap": "बस एक टैप", "away.": "पर हाज़िर।", "your journey": "आपका सफ़र", "our": "हमारा", "promise.": "वादा।", "book safe cabs in siwan*": "सीवान में सुरक्षित कैब बुक करें — लाइव ट्रैकिंग, OTP से सुरक्षित पिकअप और जाँचे-परखे ड्राइवर।", "safe, comfortable rides*": "किसी भी जगह के लिए सुरक्षित और आरामदायक सफ़र। अपनी जगह चुनें, तारीख़ चुनें, पक्की बुकिंग पाएँ।", "otp-safe rides": "OTP से सुरक्षित सफ़र", "live tracking": "लाइव ट्रैकिंग", "verified drivers": "जाँचे-परखे ड्राइवर", "verified drivers*": "जाँचे-परखे ड्राइवर · 24 घंटे उपलब्ध", "pricing": "किराया", "book": "बुक करें", "how it works": "कैसे काम करता है", "user": "यूज़र", "book a ride": "सवारी बुक करें", "see how it works": "देखें कैसे काम करता है", "rides completed": "पूरी हुई सवारी", "average rating": "औसत रेटिंग", "km travelled": "किमी का सफ़र", "available": "उपलब्ध", "why choose us": "हमें क्यों चुनें", "ride with confidence": "भरोसे के साथ सफ़र करें", "safe & verified driver": "सुरक्षित और जाँचा-परखा ड्राइवर", "every driver registers*": "हर ड्राइवर लाइसेंस और गाड़ी की जानकारी देता है और एडमिन की जाँच के बाद ही सवारी लेता है।", "map-based pickup": "नक्शे से पिकअप", "pin your exact pickup*": "नक्शे पर अपनी सही पिकअप और ड्रॉप जगह चुनें। पता समझाने की झंझट नहीं।", "transparent fare": "साफ़ किराया", "fare estimated before booking*": "बुकिंग से पहले ही किराया पता चल जाता है। कोई छुपा चार्ज नहीं।", "otp-verified start": "OTP से सफ़र शुरू", "you receive a 4-digit otp*": "ड्राइवर के स्वीकार करते ही आपको 4 अंकों का OTP मिलता है। इसे सिर्फ़ पिकअप पर ही बताएँ।", "live driver tracking": "ड्राइवर की लाइव लोकेशन", "watch the driver's*": "पक्का होने के बाद नक्शे पर ड्राइवर की गाड़ी को अपनी ओर आते देखें।", "no drivers are online right now*": "अभी कोई ड्राइवर ऑनलाइन नहीं है। कृपया थोड़ी देर बाद देखें।", "clear & honest": "साफ़ और ईमानदार", "our pricing": "हमारा किराया", "city / local": "शहर के अंदर", "per km": "प्रति किमी", "min ₹80*": "कम से कम ₹80 · 15 मिनट इंतज़ार मुफ़्त", "most booked": "सबसे ज़्यादा बुक", "outstation": "शहर के बाहर", "min 80 km*": "कम से कम 80 किमी · टोल व पार्किंग अलग", "airport drop": "एयरपोर्ट ड्रॉप", "flat base": "शुरुआती किराया", "12/km beyond 10 km": "12/किमी (10 किमी के बाद)", "hourly": "घंटे के हिसाब से", "per hour": "प्रति घंटा", "min 2 hrs*": "कम से कम 2 घंटे · 10 किमी/घंटा शामिल", "book your ride": "अपनी सवारी बुक करें", "fill in your details": "अपनी जानकारी भरें", "no drivers are online right now.": "अभी कोई ड्राइवर ऑनलाइन नहीं है।", "booking is temporarily unavailable. please check back soon.": "बुकिंग अभी बंद है। कृपया थोड़ी देर बाद देखें।", "e.g. rahul sharma": "जैसे राहुल शर्मा", "e.g. 9876543210": "जैसे 9876543210", "pickup location": "पिकअप की जगह (कहाँ से)", "drop location": "ड्रॉप की जगह (कहाँ तक)", "type or use map)": "लिखें या नक्शे से चुनें)", "type address or click*": "पता लिखें या 📍 नक्शा बटन दबाएँ", "map": "नक्शा", "travel date": "सफ़र की तारीख़", "travel time": "सफ़र का समय", "trip type": "सफ़र का प्रकार", "city / local (₹12/km)": "शहर के अंदर (₹12/किमी)", "outstation (₹10/km)": "शहर के बाहर (₹10/किमी)", "round trip": "आना-जाना (राउंड ट्रिप)", "airport transfer (from ₹500)": "एयरपोर्ट (₹500 से शुरू)", "hourly use (₹150/hr)": "घंटे के हिसाब से (₹150/घंटा)", "no. of passengers": "सवारियों की संख्या", "estimated fare": "अनुमानित किराया", "choose pickup and drop on the map to see your fare": "किराया देखने के लिए नक्शे पर पिकअप और ड्रॉप चुनें", "distance (km) – filled automatically, you can change it": "दूरी (किमी) – अपने आप भरती है, बदल भी सकते हैं", "additional notes": "अन्य जानकारी", "luggage, special stops*": "सामान, बीच में रुकना आदि", "book ride now": "अभी सवारी बुक करें", "your request goes to nearby verified drivers first.": "आपकी रिक्वेस्ट सबसे पहले पास के जाँचे-परखे ड्राइवरों को जाती है।", "this screen updates automatically when a driver accepts.": "ड्राइवर के स्वीकार करते ही यह स्क्रीन अपने आप बदल जाएगी।", "live ride tracking": "सवारी की लाइव ट्रैकिंग", "waiting for driver to start": "ड्राइवर के शुरू करने का इंतज़ार", "your ride otp*": "आपका सवारी OTP — पिकअप पर ड्राइवर को बताएँ", "this 4-digit otp will be entered*": "यह 4 अंकों का OTP ड्राइवर सफ़र शुरू करने के लिए डालेगा। किसी और को न बताएँ।", "waiting for driver": "ड्राइवर का इंतज़ार", "cancel ride": "सवारी रद्द करें", "ride has started!": "सवारी शुरू हो गई!", "driver picked you up*": "ड्राइवर ने आपको बैठा लिया। आपका सफ़र लाइव ट्रैक हो रहा है।", "ride completed!": "सवारी पूरी हुई!", "you have reached your destination.": "आप अपनी मंज़िल पर पहुँच गए।", "share trip with family": "परिवार को सफ़र की जानकारी भेजें", "pickup": "पिकअप", "drop": "ड्रॉप", "on the way": "रास्ते में", "your account": "आपका खाता", "my rides": "मेरी सवारियाँ", "receipt": "रसीद", "call driver": "ड्राइवर को कॉल करें", "whatsapp": "व्हाट्सऐप", "simple & safe": "आसान और सुरक्षित", "how driveeasy works": "DriveEasy कैसे काम करता है", "pin your route": "अपना रास्ता चुनें", "drop two pins on the map.*": "नक्शे पर दो पिन लगाएँ। दूरी, समय और किराया तुरंत दिखेगा।", "nearby driver accepts": "पास का ड्राइवर स्वीकार करता है", "verified drivers close to you*": "आपके पास के जाँचे-परखे ड्राइवरों को सबसे पहले आपकी रिक्वेस्ट मिलती है।", "track live": "लाइव ट्रैक करें", "see the car*": "नक्शे पर गाड़ी, नंबर प्लेट और पहुँचने का समय देखें।", "ride safe": "सुरक्षित सफ़र", "share the otp*": "OTP बताएँ, आराम से सफ़र करें, फिर ड्राइवर को रेटिंग दें।", "ready when you are.": "आप तैयार, तो हम भी तैयार।", "every ride is otp-verified*": "हर सवारी OTP से सुरक्षित, ट्रैक होने वाली और परिवार से शेयर करने लायक।", "safe, trackable cab rides in siwan.": "सीवान में सुरक्षित, ट्रैक होने वाली कैब सवारी।", "why us": "हमें क्यों चुनें", "select location": "जगह चुनें", "search area, street, landmark": "इलाका, गली या पहचान की जगह खोजें", "search": "खोजें", "use my current location": "मेरी मौजूदा लोकेशन इस्तेमाल करें", "tap the map to pin your location*": "नक्शे पर टैप करके जगह चुनें, या ऊपर खोजें", "search or tap on map": "खोजें या नक्शे पर टैप करें", "confirm": "पक्का करें", "this screen will automatically update": "यह स्क्रीन अपने आप बदल जाएगी", "when the driver accepts or declines your ride.": "जब ड्राइवर आपकी सवारी स्वीकार या अस्वीकार करेगा।", "your booking has been sent to nearby verified drivers.": "आपकी बुकिंग पास के जाँचे-परखे ड्राइवरों को भेज दी गई है।", "booking reference": "बुकिंग नंबर", "cancel & go back": "रद्द करें और वापस जाएँ", "ride confirmed!": "सवारी पक्की हो गई!", "your ride has been accepted by the driver!": "ड्राइवर ने आपकी सवारी स्वीकार कर ली है!", "show this to the driver*": "सफ़र शुरू करने के लिए पिकअप पर यह ड्राइवर को बताएँ।", "view route on google maps": "Google Maps पर रास्ता देखें", "watch live tracking": "लाइव ट्रैकिंग देखें", "not available": "उपलब्ध नहीं", "sorry, the driver is not available*": "माफ़ करें, अभी ड्राइवर उपलब्ध नहीं है। कुछ मिनट बाद फिर कोशिश करें।", "try another booking": "फिर से बुक करें", "cancel your ride?": "क्या सवारी रद्द करनी है?", "please select a reason*": "कृपया कारण चुनें। इससे हम बेहतर सेवा दे पाएँगे।", "reason for cancellation": "रद्द करने का कारण", "select a reason": "कारण चुनें", "change of plans": "प्लान बदल गया", "booked by mistake": "गलती से बुक हो गया", "driver is taking too long": "ड्राइवर को बहुत देर लग रही है", "found another transport": "दूसरा साधन मिल गया", "emergency came up": "ज़रूरी काम आ गया", "other reason": "कोई और कारण", "any additional details? (optional)": "और कुछ बताना है? (ज़रूरी नहीं)", "yes, cancel ride": "हाँ, रद्द करें", "go back": "वापस जाएँ", "otp verified!*": "OTP सही है! ड्राइवर ने पहचान पक्की कर ली और सफ़र शुरू हो गया।", "driver has picked you up!": "ड्राइवर ने आपको बैठा लिया!", "sit back and enjoy*": "आराम से बैठें। लाइव ट्रैकिंग चालू है।", "watch live map": "लाइव नक्शा देखें", "you have reached your destination. thank you*": "आप मंज़िल पर पहुँच गए। DriveEasy चुनने के लिए धन्यवाद!", "rate your ride": "अपनी सवारी को रेटिंग दें", "comment (optional)": "टिप्पणी (ज़रूरी नहीं)", "submit rating": "रेटिंग भेजें", "back to home": "होम पर वापस", "ride cancelled": "सवारी रद्द हुई", "this ride has been cancelled.": "यह सवारी रद्द हो गई है।", "book a new ride": "नई सवारी बुक करें", "dashboard": "डैशबोर्ड", "bookings": "बुकिंग", "drivers": "ड्राइवर", "earnings": "कमाई", "settings": "सेटिंग", "logout": "लॉगआउट", "panel": "पैनल", "online": "ऑनलाइन", "offline": "ऑफ़लाइन", "new booking request!": "नई बुकिंग रिक्वेस्ट!", "a customer is waiting for your response.": "एक ग्राहक आपके जवाब का इंतज़ार कर रहा है।", "view": "देखें", "total bookings": "कुल बुकिंग", "pending": "बाकी", "accepted": "स्वीकार", "declined": "अस्वीकार", "cancelled": "रद्द", "completed": "पूरी", "est. earnings": "अनुमानित कमाई", "earnings*": "कमाई · पिछले 7 दिन", "booking status": "बुकिंग की स्थिति", "recent bookings": "हाल की बुकिंग", "last 14 days": "पिछले 14 दिन", "completed rides": "पूरी हुई सवारियाँ", "all": "सभी", "today": "आज", "last 7 days": "पिछले 7 दिन", "this month": "इस महीने", "all time": "कुल", "rides done": "पूरी सवारियाँ", "rating": "रेटिंग", "status:": "स्थिति:", "no active ride": "कोई सवारी चालू नहीं", "booking:": "बुकिंग:", "gps:": "GPS:", "updated:": "अपडेट:", "live tracking & navigation": "लाइव ट्रैकिंग और नेविगेशन", "select accepted booking": "स्वीकार की गई बुकिंग चुनें", "choose an accepted booking": "बुकिंग चुनें", "navigation": "नेविगेशन", "to pickup": "पिकअप तक", "to drop-off": "ड्रॉप तक", "google maps": "Google Maps", "other map app": "दूसरा मैप ऐप", "recalculate": "दोबारा निकालें", "enter customer otp to start ride": "सफ़र शुरू करने के लिए ग्राहक का OTP डालें", "ask the customer for their 4-digit otp*": "ग्राहक से 4 अंकों का OTP पूछें और नीचे डालकर सफ़र शुरू करें।", "verify & start ride": "जाँचें और सफ़र शुरू करें", "start gps tracking (my location)": "GPS ट्रैकिंग शुरू करें (मेरी लोकेशन)", "mark ride ended (reached destination)": "सफ़र पूरा करें (मंज़िल पर पहुँचे)", "stop gps tracking": "GPS ट्रैकिंग बंद करें", "cancel accepted ride": "स्वीकार की सवारी रद्द करें", "share live location with passenger": "सवारी को लाइव लोकेशन भेजें", "gps active": "GPS चालू", "your location is being sent every 4 seconds.": "आपकी लोकेशन हर 4 सेकंड में भेजी जा रही है।", "customer can see your*": "ग्राहक अपनी स्क्रीन पर आपकी गाड़ी को चलते देख सकता है!", "accept": "स्वीकार करें", "decline": "मना करें", "from you": "आपसे दूरी", "new driver": "नया ड्राइवर", "verified driver": "जाँचा-परखा ड्राइवर", "waiting for driver to share live location": "ड्राइवर की लाइव लोकेशन का इंतज़ार", "your driver has reached*": "आपका ड्राइवर पहुँच गया है!"};
 const _hiRe=/[\u0900-\u097F]/;
 function hiLookup(t){
   const pre=(t.match(/^[^A-Za-z0-9]*/)||[''])[0], rest=t.slice(pre.length), suf=(rest.match(/[^A-Za-z0-9.!?)\]]*$/)||[''])[0];
@@ -1646,6 +1629,50 @@ function initLang(){
   let l='hi'; try{ l=localStorage.getItem('de_lang')||'hi'; }catch(e){} window._lang=l;
   applyLang();
   new MutationObserver(ms=>ms.forEach(m=>{ if(m.type==='characterData') trNode(m.target); else m.addedNodes.forEach(trTree); })).observe(document.body,{childList:true,subtree:true,characterData:true});
+}
+
+// ============================================================
+// PWA: install banner + install button + manifest fallback
+// ============================================================
+let _dip=null;
+const _isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const _isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+function _lsGet(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
+function _lsSet(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); _dip=e; const b=document.getElementById('installBtn'); if(b) b.style.display=''; maybeShowBanner(); });
+window.addEventListener('appinstalled',()=>{ _dip=null; hideBanner(); const b=document.getElementById('installBtn'); if(b) b.style.display='none'; toast(T('✅ DriveEasy installed!','✅ DriveEasy इंस्टॉल हो गया!'),'#2ecc71'); });
+function hideBanner(){ const b=document.getElementById('installBanner'); if(b) b.classList.remove('show'); }
+function maybeShowBanner(){
+  if(_isStandalone()) return;
+  if(Date.now()-(+_lsGet('de_inst_dismiss')||0)<7*864e5) return;
+  if(!_dip&&!_isIOS()) return;
+  setTimeout(()=>{
+    const b=document.getElementById('installBanner'); if(!b||(!_dip&&!_isIOS())) return;
+    document.getElementById('instGo').style.display=_dip?'':'none';
+    document.getElementById('instText').textContent=_dip?'Faster booking, live tracking and one-tap access from your home screen.':'On iPhone: tap the Share button, then Add to Home Screen.';
+    b.classList.add('show');
+  },2500);
+}
+async function installApp(){
+  if(!_dip){ toast(T('ℹ️ Use your browser menu → Install app / Add to Home Screen','ℹ️ ब्राउज़र मेनू → ऐप इंस्टॉल करें / होम स्क्रीन पर जोड़ें का उपयोग करें')); return; }
+  _dip.prompt(); const r=await _dip.userChoice; _dip=null; hideBanner();
+  const b=document.getElementById('installBtn'); if(b) b.style.display='none';
+  if(r.outcome!=='accepted') _lsSet('de_inst_dismiss',Date.now());
+}
+function dismissInstall(){ _lsSet('de_inst_dismiss',Date.now()); hideBanner(); }
+// If manifest.json was not uploaded next to index.html, build one in the browser so the app is still installable.
+const ICON_SVG_ANY="<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"512\" height=\"512\" viewBox=\"0 0 512 512\">\n<defs><clipPath id=\"rc\"><rect width=\"512\" height=\"512\" rx=\"116\"/></clipPath>\n<linearGradient id=\"bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#34240c\"/><stop offset=\".55\" stop-color=\"#15100a\"/><stop offset=\"1\" stop-color=\"#0a0806\"/></linearGradient>\n<radialGradient id=\"glow\" cx=\".5\" cy=\".62\" r=\".55\"><stop offset=\"0\" stop-color=\"#e0a93f\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#e0a93f\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"body\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffdf8a\"/><stop offset=\".55\" stop-color=\"#e8b84b\"/><stop offset=\"1\" stop-color=\"#b8821f\"/></linearGradient>\n<linearGradient id=\"beam\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#fff2c2\" stop-opacity=\".75\"/><stop offset=\"1\" stop-color=\"#fff2c2\" stop-opacity=\"0\"/></linearGradient>\n<linearGradient id=\"glass\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#7fa6c9\"/><stop offset=\"1\" stop-color=\"#27384d\"/></linearGradient>\n<clipPath id=\"bodyClip\"><path id=\"bp\" d=\"M64 316V262Q64 238 88 232L150 218Q176 150 232 150H316Q372 150 402 208L432 224Q452 230 452 252V316Z\"/></clipPath></defs>\n<g clip-path=\"url(#rc)\">\n<rect width=\"512\" height=\"512\" fill=\"url(#bg)\"/><rect width=\"512\" height=\"512\" fill=\"url(#glow)\"/>\n<g transform=\"translate(256 256) scale(1.0) translate(-256 -256)\">\n<g stroke=\"#fff\" stroke-linecap=\"round\" stroke-width=\"7\" opacity=\".28\"><path d=\"M14 236h38\"/><path d=\"M26 262h30\"/><path d=\"M8 288h46\"/></g>\n<ellipse cx=\"256\" cy=\"366\" rx=\"205\" ry=\"11\" fill=\"#000\" opacity=\".5\"/>\n<path d=\"M40 380H472\" stroke=\"#e0a93f\" stroke-opacity=\".55\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-dasharray=\"30 20\"/>\n<path d=\"M452 240L506 214V286Z\" fill=\"url(#beam)\"/>\n<path d=\"M64 316V262Q64 238 88 232L150 218Q176 150 232 150H316Q372 150 402 208L432 224Q452 230 452 252V316Z\" fill=\"url(#body)\"/>\n<g clip-path=\"url(#bodyClip)\"><g fill=\"#15100a\" opacity=\".92\"><rect x=\"70\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"98\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"126\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"154\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"182\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"210\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"238\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"266\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"294\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"322\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"350\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"378\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"406\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"434\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"84\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"112\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"140\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"168\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"196\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"224\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"252\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"280\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"308\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"336\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"364\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"392\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"420\" y=\"282\" width=\"14\" height=\"14\"/></g>\n<path d=\"M64 238H452\" stroke=\"#fff\" stroke-opacity=\".35\" stroke-width=\"3\"/></g>\n<path d=\"M164 214Q188 164 236 163H260V214Z\" fill=\"url(#glass)\"/><path d=\"M276 163H312Q352 166 382 214H276Z\" fill=\"url(#glass)\"/>\n<path d=\"M266 216V262\" stroke=\"#15100a\" stroke-opacity=\".4\" stroke-width=\"3\"/><rect x=\"278\" y=\"226\" width=\"22\" height=\"6\" rx=\"3\" fill=\"#15100a\" opacity=\".5\"/>\n<rect x=\"236\" y=\"116\" width=\"86\" height=\"30\" rx=\"8\" fill=\"#fff\"/><rect x=\"262\" y=\"144\" width=\"34\" height=\"8\" fill=\"#9aa3ad\"/>\n<text x=\"279\" y=\"138\" font-family=\"DejaVu Sans, Arial, sans-serif\" font-weight=\"700\" font-size=\"19\" text-anchor=\"middle\" fill=\"#15100a\" letter-spacing=\"1.5\">TAXI</text>\n<ellipse cx=\"438\" cy=\"250\" rx=\"11\" ry=\"8\" fill=\"#fff6d0\"/><rect x=\"60\" y=\"246\" width=\"9\" height=\"20\" rx=\"3\" fill=\"#e74c3c\"/>\n<circle cx=\"150\" cy=\"318\" r=\"50\" fill=\"#15100a\"/><circle cx=\"362\" cy=\"318\" r=\"50\" fill=\"#15100a\"/>\n<circle cx=\"150\" cy=\"322\" r=\"40\" fill=\"#0d0b08\" stroke=\"#5a4a2a\" stroke-width=\"5\"/><circle cx=\"362\" cy=\"322\" r=\"40\" fill=\"#0d0b08\" stroke=\"#5a4a2a\" stroke-width=\"5\"/>\n<circle cx=\"150\" cy=\"322\" r=\"17\" fill=\"#e8b84b\"/><circle cx=\"362\" cy=\"322\" r=\"17\" fill=\"#e8b84b\"/><circle cx=\"150\" cy=\"322\" r=\"6\" fill=\"#15100a\"/><circle cx=\"362\" cy=\"322\" r=\"6\" fill=\"#15100a\"/>\n<text x=\"256\" y=\"456\" font-family=\"Carlito, Calibri, Arial, sans-serif\" font-weight=\"700\" font-size=\"76\" text-anchor=\"middle\" letter-spacing=\"1\"><tspan fill=\"#ffffff\">Drive</tspan><tspan fill=\"#f0c45f\">Easy</tspan></text>\n</g></g></svg>";
+const ICON_SVG_MASK="<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"512\" height=\"512\" viewBox=\"0 0 512 512\">\n<defs>\n<linearGradient id=\"bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#34240c\"/><stop offset=\".55\" stop-color=\"#15100a\"/><stop offset=\"1\" stop-color=\"#0a0806\"/></linearGradient>\n<radialGradient id=\"glow\" cx=\".5\" cy=\".62\" r=\".55\"><stop offset=\"0\" stop-color=\"#e0a93f\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#e0a93f\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"body\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffdf8a\"/><stop offset=\".55\" stop-color=\"#e8b84b\"/><stop offset=\"1\" stop-color=\"#b8821f\"/></linearGradient>\n<linearGradient id=\"beam\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#fff2c2\" stop-opacity=\".75\"/><stop offset=\"1\" stop-color=\"#fff2c2\" stop-opacity=\"0\"/></linearGradient>\n<linearGradient id=\"glass\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#7fa6c9\"/><stop offset=\"1\" stop-color=\"#27384d\"/></linearGradient>\n<clipPath id=\"bodyClip\"><path id=\"bp\" d=\"M64 316V262Q64 238 88 232L150 218Q176 150 232 150H316Q372 150 402 208L432 224Q452 230 452 252V316Z\"/></clipPath></defs>\n<g>\n<rect width=\"512\" height=\"512\" fill=\"url(#bg)\"/><rect width=\"512\" height=\"512\" fill=\"url(#glow)\"/>\n<g transform=\"translate(256 256) scale(0.72) translate(-256 -256)\">\n<g stroke=\"#fff\" stroke-linecap=\"round\" stroke-width=\"7\" opacity=\".28\"><path d=\"M14 236h38\"/><path d=\"M26 262h30\"/><path d=\"M8 288h46\"/></g>\n<ellipse cx=\"256\" cy=\"366\" rx=\"205\" ry=\"11\" fill=\"#000\" opacity=\".5\"/>\n<path d=\"M40 380H472\" stroke=\"#e0a93f\" stroke-opacity=\".55\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-dasharray=\"30 20\"/>\n<path d=\"M452 240L506 214V286Z\" fill=\"url(#beam)\"/>\n<path d=\"M64 316V262Q64 238 88 232L150 218Q176 150 232 150H316Q372 150 402 208L432 224Q452 230 452 252V316Z\" fill=\"url(#body)\"/>\n<g clip-path=\"url(#bodyClip)\"><g fill=\"#15100a\" opacity=\".92\"><rect x=\"70\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"98\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"126\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"154\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"182\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"210\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"238\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"266\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"294\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"322\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"350\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"378\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"406\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"434\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"84\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"112\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"140\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"168\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"196\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"224\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"252\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"280\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"308\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"336\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"364\" y=\"282\" width=\"14\" height=\"14\"/><rect x=\"392\" y=\"268\" width=\"14\" height=\"14\"/><rect x=\"420\" y=\"282\" width=\"14\" height=\"14\"/></g>\n<path d=\"M64 238H452\" stroke=\"#fff\" stroke-opacity=\".35\" stroke-width=\"3\"/></g>\n<path d=\"M164 214Q188 164 236 163H260V214Z\" fill=\"url(#glass)\"/><path d=\"M276 163H312Q352 166 382 214H276Z\" fill=\"url(#glass)\"/>\n<path d=\"M266 216V262\" stroke=\"#15100a\" stroke-opacity=\".4\" stroke-width=\"3\"/><rect x=\"278\" y=\"226\" width=\"22\" height=\"6\" rx=\"3\" fill=\"#15100a\" opacity=\".5\"/>\n<rect x=\"236\" y=\"116\" width=\"86\" height=\"30\" rx=\"8\" fill=\"#fff\"/><rect x=\"262\" y=\"144\" width=\"34\" height=\"8\" fill=\"#9aa3ad\"/>\n<text x=\"279\" y=\"138\" font-family=\"DejaVu Sans, Arial, sans-serif\" font-weight=\"700\" font-size=\"19\" text-anchor=\"middle\" fill=\"#15100a\" letter-spacing=\"1.5\">TAXI</text>\n<ellipse cx=\"438\" cy=\"250\" rx=\"11\" ry=\"8\" fill=\"#fff6d0\"/><rect x=\"60\" y=\"246\" width=\"9\" height=\"20\" rx=\"3\" fill=\"#e74c3c\"/>\n<circle cx=\"150\" cy=\"318\" r=\"50\" fill=\"#15100a\"/><circle cx=\"362\" cy=\"318\" r=\"50\" fill=\"#15100a\"/>\n<circle cx=\"150\" cy=\"322\" r=\"40\" fill=\"#0d0b08\" stroke=\"#5a4a2a\" stroke-width=\"5\"/><circle cx=\"362\" cy=\"322\" r=\"40\" fill=\"#0d0b08\" stroke=\"#5a4a2a\" stroke-width=\"5\"/>\n<circle cx=\"150\" cy=\"322\" r=\"17\" fill=\"#e8b84b\"/><circle cx=\"362\" cy=\"322\" r=\"17\" fill=\"#e8b84b\"/><circle cx=\"150\" cy=\"322\" r=\"6\" fill=\"#15100a\"/><circle cx=\"362\" cy=\"322\" r=\"6\" fill=\"#15100a\"/>\n<text x=\"256\" y=\"456\" font-family=\"Carlito, Calibri, Arial, sans-serif\" font-weight=\"700\" font-size=\"76\" text-anchor=\"middle\" letter-spacing=\"1\"><tspan fill=\"#ffffff\">Drive</tspan><tspan fill=\"#f0c45f\">Easy</tspan></text>\n</g></g></svg>";
+function ensureManifest(){
+  fetch('manifest.json',{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; }).catch(async()=>{
+    const png=(svg,n)=>new Promise(res=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement('canvas'); c.width=c.height=n; c.getContext('2d').drawImage(im,0,0,n,n); res(c.toDataURL('image/png')); }; im.onerror=()=>res(''); im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
+    const [i192,i512,iMask]=await Promise.all([png(ICON_SVG_ANY,192),png(ICON_SVG_ANY,512),png(ICON_SVG_MASK,512)]);
+    if(!i192||!i512) return;
+    const base=location.origin+location.pathname.replace(/[^/]*$/,'');
+    const m={name:'DriveEasy – Cab Booking',short_name:'DriveEasy',id:base,start_url:base,scope:base,display:'standalone',background_color:'#0D0D0D',theme_color:'#C9973A',
+      icons:[{src:i192,sizes:'192x192',type:'image/png',purpose:'any'},{src:i512,sizes:'512x512',type:'image/png',purpose:'any'},{src:iMask||i512,sizes:'512x512',type:'image/png',purpose:'maskable'}]};
+    const l=document.querySelector('link[rel=manifest]'); if(l) l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));
+  });
 }
 let _regBusy=false;
 const MYDRV=()=>window._driverUid||'owner';
@@ -1809,7 +1836,7 @@ function enterAdmin() {
 window.addEventListener('DOMContentLoaded', function() {
   showScreen('auth'); switchTab('login');
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-  if(typeof Chart!=='undefined') Chart.defaults.color='#aaa'; initMotion(); initBookingInputs(); initLang();
+  if(typeof Chart!=='undefined') Chart.defaults.color='#aaa'; initMotion(); initBookingInputs(); initLang(); ensureManifest(); maybeShowBanner();
 });
 
 
@@ -1852,13 +1879,24 @@ async function submitRating(){
     toast('⭐ Thanks for your feedback!','#2ecc71'); closeOverlay('ovRideEnded'); loadStats();
   }catch(e){toast('❌ Could not save rating (already rated?).');}
 }
+function rideState(b){
+  if(b.status==='completed'||b.rideStatus==='ended') return ['Completed','#2ecc71'];
+  if(b.status==='cancelled') return ['Cancelled','#e74c3c'];
+  if(b.status==='declined') return ['Declined','#e74c3c'];
+  if(b.rideStatus==='started') return ['Ride in progress','#3498db'];
+  if(b.status==='accepted') return ['Driver on the way','#C9973A'];
+  return ['Waiting for driver','#e67e22'];
+}
 function loadHistory(){
-  if(!currentUser) return;
-  db.collection('bookings').where('uid','==',currentUser.uid).get().then(q=>{
-    const L=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  if(!currentUser) return; if(window._histUnsub) window._histUnsub();
+  window._histUnsub=db.collection('bookings').where('uid','==',currentUser.uid).onSnapshot(q=>{
+    const L=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,30);
     window._hist=L;
-    document.getElementById('histList').innerHTML=L.length?L.map((b,i)=>`<div class="feat-card" style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap"><div><b>${esc(b.ref||'')}</b> · ${esc(b.date||'')}<br><small style="color:var(--muted)">${esc(b.pickup||'')} → ${esc(b.drop||'')}</small><br><small>${esc(b.fare||'')} · ${b.status||''}</small></div>${b.status==='completed'?`<button class="btn-signout" onclick="printReceipt(${i})">🧾 Receipt</button>`:''}</div>`).join(''):'<div style="text-align:center;color:var(--muted)">No rides yet.</div>';
-  }).catch(()=>{});
+    const el=document.getElementById('histList'); if(!el) return;
+    el.innerHTML=L.length?L.map((b,i)=>{ const st=rideState(b);
+      return `<div class="feat-card" style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap"><div><b>${esc(b.ref||'')}</b> · ${esc(b.date||'')}<br><small style="color:var(--muted)">${esc(b.pickup||'')} → ${esc(b.drop||'')}</small><br><span style="font-weight:700;color:var(--gold-light)">${esc(b.fare||'')}</span> <span class="hist-badge" style="color:${st[1]}">${esc(st[0])}</span></div>${st[0]==='Completed'?`<button class="btn-signout" onclick="printReceipt(${i})">🧾 Receipt</button>`:''}</div>`; }).join('')
+      :'<div style="text-align:center;color:var(--muted)">No rides yet.</div>';
+  },()=>{});
 }
 function printReceipt(i){
   const b=window._hist[i], w=window.open('','_blank');
@@ -2390,6 +2428,9 @@ async function updateDriverEta(bk,d){
 // ============================================================
 let custPrevLat = null, custPrevLng = null;
 function startCustTracking(booking) {
+  { const d=document.getElementById('rideStatusDot'),t=document.getElementById('rideStatusText'),c=document.getElementById('custCancelBtn');
+    if(d) d.className='ride-dot'; if(t) t.textContent='🚗 On the way'; if(c) c.style.display='';
+    ['rideStartedBanner','rideEndedBanner'].forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.remove('show'); }); }
   renderDriverCard(booking); window._arrToast=0; window._etaT=0; window._etaTxt='';
   document.getElementById('custTrackSec').style.display = 'block';
   document.getElementById('ctPickup').textContent = booking.pickup || '—';
@@ -3124,9 +3165,23 @@ async function markRideEnded() {
 // ============================================================
 // CUSTOMER: LISTEN RIDE STATUS CHANGES
 // ============================================================
+function finishRideUI(){
+  ['ovConfirmed','ovPending','ovRideStarted'].forEach(i=>{ const e=document.getElementById(i); if(e) e.classList.remove('show'); });
+  const sec=document.getElementById('custTrackSec'); if(sec) sec.style.display='none';
+  ['rideStartedBanner','rideEndedBanner'].forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.remove('show'); });
+  const ob=document.getElementById('custOtpBox'); if(ob) ob.style.display='none';
+  const dc=document.getElementById('drvCard'); if(dc){ dc.style.display='none'; dc.innerHTML=''; }
+  if(window._custLocUnsub){ window._custLocUnsub(); window._custLocUnsub=null; }
+  clearTimeout(window._locHint);
+  try{ if(custDriverMarker&&custTrackMap){ custTrackMap.removeLayer(custDriverMarker); } }catch(e){} custDriverMarker=null;
+  window._rate=0; document.querySelectorAll('#starRow span').forEach(e=>e.textContent='☆');
+  const rt=document.getElementById('rateTxt'); if(rt) rt.value='';
+  activeBookingFid=null;
+}
 function listenRideStatus(fid) {
   activeBookingFid = fid;
-  db.collection('bookings').doc(fid).onSnapshot(snap => {
+  if (window._rideUnsub) window._rideUnsub();
+  window._rideUnsub = db.collection('bookings').doc(fid).onSnapshot(snap => {
     if (!snap.exists) return;
     const data = snap.data();
     const rs = data.rideStatus;
@@ -3141,6 +3196,7 @@ function listenRideStatus(fid) {
       document.getElementById('custOtpBox').style.display = 'none'; // hide OTP once ride started
       const cb = document.getElementById('custCancelBtn');
       if (cb) cb.style.display = 'none';
+      closeOverlay('ovConfirmed'); closeOverlay('ovPending');
       if (!window._rideStartedShown) {
         window._rideStartedShown = true;
         showOverlay('ovRideStarted');
@@ -3167,10 +3223,11 @@ function listenRideStatus(fid) {
           <div style="margin-bottom:.4rem">🏁 <strong>To:</strong> ${esc(b.drop||data.drop||'—')}</div>
           <div style="margin-bottom:.4rem">💰 <strong>Fare:</strong> ${esc(b.fare||data.fare||'As agreed')}</div>
           <div>🔖 <strong>Ref:</strong> ${esc(b.ref||data.ref||'—')}</div>`;
-        closeOverlay('ovRideStarted');
+        closeOverlay('ovRideStarted'); closeOverlay('ovConfirmed'); closeOverlay('ovPending');
         window._ratingFid = fid; window._ratingDriver=(b.driverId||data.driverId||''); window._rate=0; showOverlay('ovRideEnded');
         toast('🏁 You have reached your destination!', '#3498db');
         activeBookingFid = null;
+        if (window._rideUnsub) { window._rideUnsub(); window._rideUnsub = null; }
       }
     }
     if (st === 'cancelled' && data.cancelledBy === 'driver') {
@@ -3222,5 +3279,10 @@ async function toggleOnline() {
   catch(e) { aToast('⚠️ Could not sync status: ' + e.message, '#e67e22'); }
 }
 </script>
+<div id="installBanner" class="install-banner" role="dialog" aria-label="Install DriveEasy">
+  <img class="ib-icon" alt="" src="icon-192.png" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ib-icon',textContent:'🚗'}))">
+  <div class="ib-text"><b>Install DriveEasy app</b><span id="instText">Faster booking, live tracking and one-tap access from your home screen.</span></div>
+  <div class="ib-actions"><button class="ib-go" id="instGo" onclick="installApp()">Install</button><button class="ib-no" onclick="dismissInstall()">Not now</button></div>
+</div>
 </body>
 </html>
