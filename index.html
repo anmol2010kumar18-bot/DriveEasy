@@ -10,8 +10,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C9973A' stroke='%23E8B84B' stroke-width='2'/%3E%3Ctext x='50' y='72' font-size='52' text-anchor='middle' fill='%230D0D0D' font-family='monospace'%3E🚗%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -656,6 +656,34 @@ header.scrolled{box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .lang-top:hover{background:rgba(201,151,58,.18)}
 html[lang="hi"] body,html[lang="hi"] button,html[lang="hi"] input,html[lang="hi"] select,html[lang="hi"] textarea,html[lang="hi"] h1,html[lang="hi"] h2,html[lang="hi"] h3,html[lang="hi"] .logo-text,html[lang="hi"] .fare-amt{font-family:'Noto Sans Devanagari','DM Sans',sans-serif}
 html[lang="hi"] .fare-amt{font-family:'Playfair Display','Noto Sans Devanagari',serif}
+
+/* ===== LOGIN: autofill fix + fit-to-screen ===== */
+.auth-field input:-webkit-autofill,.auth-field input:-webkit-autofill:hover,.auth-field input:-webkit-autofill:focus,.auth-field input:-webkit-autofill:active{-webkit-text-fill-color:var(--text);caret-color:var(--text);border-color:var(--gold);transition:background-color 600000s 0s,color 600000s 0s}
+.auth-field input:autofill{color:var(--text);caret-color:var(--text);transition:background-color 600000s 0s,color 600000s 0s}
+.auth-field input,.auth-field select,.auth-field textarea{color-scheme:dark}
+.auth-field input[id*="Pass" i],.auth-field input[id*="Confirm" i]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9973a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")}
+.map-dark{filter:invert(1) hue-rotate(180deg) brightness(.93) contrast(.9) saturate(.75)}
+#authScreen{height:100%}
+.auth-hero{min-height:100%}
+.hero-copy{margin-top:clamp(.6rem,4vh,2.2rem)}
+.hero-scene{flex:1 1 0;min-height:90px;display:flex;align-items:flex-end;margin:.6rem -3rem -1.6rem}
+.hero-scene svg{width:100%;height:100%;display:block}
+@media(min-width:901px) and (max-height:780px){.auth-hero{padding-top:1.5rem}.hero-copy p{display:none}.hero-copy h2{font-size:clamp(1.8rem,3vw,2.6rem)}.auth-card{margin:1rem auto}}
+@media(min-width:901px) and (max-height:560px){.hero-chips{display:none}.hero-copy{margin-top:.4rem}}
+@media(max-width:900px){.hero-scene{display:none}.auth-hero{min-height:0}}
+
+/* ===== MAP PICKER: local-area tools ===== */
+.map-layers{position:absolute;top:.6rem;right:.6rem;z-index:1100;display:flex;background:rgba(0,0,0,.65);border:1px solid var(--border);border-radius:10px;overflow:hidden;backdrop-filter:blur(6px)}
+.map-layers button{border:none;background:none;color:#ddd;font:600 .76rem 'DM Sans',sans-serif;padding:.5rem .75rem;cursor:pointer}
+.map-layers button.on{background:var(--gold);color:#1a1204}
+.place-suggest{display:none;position:absolute;top:.5rem;left:.6rem;right:.6rem;z-index:1200;background:#1b1a17;border:1px solid var(--border);border-radius:12px;max-height:250px;overflow:auto;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+.sug-item{display:flex;gap:.6rem;padding:.7rem .9rem;cursor:pointer;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.sug-item:hover{background:rgba(201,151,58,.12)}
+.sug-foot{padding:.6rem .9rem;font-size:.76rem;color:var(--muted)}
+.map-name-row{padding:.6rem 1rem 0;background:var(--dark3);display:flex;flex-direction:column;gap:.4rem}
+.map-name-row input[type=text]{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.6rem .9rem;color:var(--text);font-family:inherit;font-size:.86rem;outline:none}
+.map-name-row input[type=text]:focus{border-color:var(--gold)}
+.map-name-row label{font-size:.78rem;color:var(--muted);display:flex;gap:.45rem;align-items:center;cursor:pointer}
 </style>
 </head>
 <body></body>
@@ -667,7 +695,7 @@ html[lang="hi"] .fare-amt{font-family:'Playfair Display','Noto Sans Devanagari',
   <aside class="auth-hero">
     <div class="hero-brand"><div class="auth-logo-icon">🚗</div><div class="auth-logo-text">Drive<span>Easy</span></div></div>
     <div class="hero-copy"><h2>Your ride,<br><em>one tap</em> away.</h2><p>Book safe cabs in Siwan with live tracking, OTP-verified pickup and drivers verified by our admin.</p><div class="hero-chips"><span>🔐 OTP-safe rides</span><span>📍 Live tracking</span><span>✅ Verified drivers</span></div></div>
-    <div class="hero-scene"><svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <div class="hero-scene"><svg viewBox="0 0 560 300" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
 <linearGradient id="hgR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26201a"/><stop offset="1" stop-color="#14110d"/></linearGradient>
 <radialGradient id="hgM"><stop offset="0" stop-color="#f6d27a"/><stop offset=".55" stop-color="#c9973a" stop-opacity=".3"/><stop offset="1" stop-color="#c9973a" stop-opacity="0"/></radialGradient>
 <linearGradient id="hgB"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".5"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></linearGradient></defs>
@@ -1001,7 +1029,7 @@ html[lang="hi"] .fare-amt{font-family:'Playfair Display','Noto Sans Devanagari',
         <button class="map-close" onclick="closeMap()">✕</button>
       </div>
       <div style="padding:.7rem 1rem;border-bottom:1px solid var(--border);display:flex;gap:.5rem;background:var(--dark3)">
-        <input type="text" id="mapSearchInp" placeholder="Search area, street, landmark…"
+        <input type="text" id="mapSearchInp" placeholder="Search place, paste map link or code" oninput="showPlaceSuggest()"
           style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.6rem .9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none"
           onkeydown="if(event.key==='Enter')searchMapAddr()">
         <button onclick="searchMapAddr()" style="background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:.6rem 1rem;font-weight:700;font-size:.84rem;cursor:pointer;white-space:nowrap">🔍 Search</button>
@@ -1009,10 +1037,13 @@ html[lang="hi"] .fare-amt{font-family:'Playfair Display','Noto Sans Devanagari',
           style="background:rgba(52,152,219,.15);color:var(--blue);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:.6rem .8rem;font-size:1rem;cursor:pointer;flex-shrink:0">📡</button>
       </div>
       <div style="position:relative">
-        <div class="map-tip">Tap the map to pin your location, or search above</div>
+        <div class="map-tip">Tap the map, drag the pin to the exact spot, or paste a Google Maps link / coordinates above</div>
+<div class="map-layers"><button id="lyMap" class="on" onclick="setMapLayer('map')">🗺️ Map</button><button id="lySat" onclick="setMapLayer('sat')">🛰️ Satellite</button></div>
+<div id="placeSuggest" class="place-suggest"></div>
         <div id="leafletMap"></div>
       </div>
-      <div class="map-modal-ftr">
+      <div class="map-name-row"><input type="text" id="mapPlaceName" maxlength="80" placeholder="Name this place – e.g. near Shiv Mandir, Ward 5" oninput="applyMapAddr()"><label><input type="checkbox" id="mapSavePlace"> Save this place so others can find it</label></div>
+<div class="map-modal-ftr">
         <div class="map-addr-display" id="mapAddrDisplay">Search or tap on map</div>
         <button class="map-confirm" onclick="confirmMap()">✅ Confirm</button>
       </div>
@@ -1576,7 +1607,7 @@ function initBookingInputs(){
   });
 }
 
-const HI={"welcome back": "वापसी पर स्वागत है", "log in to book your ride": "सवारी बुक करने के लिए लॉगिन करें", "login": "लॉगिन", "sign up": "नया खाता", "email address": "ईमेल", "email": "ईमेल", "password": "पासवर्ड", "login & book a ride": "लॉगिन करें और सवारी बुक करें", "new here?": "नए हैं?", "create free account": "मुफ़्त खाता बनाएँ", "first name": "पहला नाम", "last name": "सरनेम", "phone number": "मोबाइल नंबर", "phone": "मोबाइल", "min 6 chars)": "कम से कम 6 अक्षर)", "confirm password": "पासवर्ड दोबारा लिखें", "create account": "खाता बनाएँ", "already have an account?": "पहले से खाता है?", "customer": "ग्राहक", "driver": "ड्राइवर", "admin": "एडमिन", "driver portal": "ड्राइवर पोर्टल", "register your vehicle and get verified*": "अपनी गाड़ी रजिस्टर करें, वेरिफ़ाई होकर कमाई शुरू करें", "register": "रजिस्टर", "driver login": "ड्राइवर लॉगिन", "full name": "पूरा नाम", "your full name": "आपका पूरा नाम", "10-digit mobile": "10 अंकों का मोबाइल", "password (min 6)": "पासवर्ड (कम से कम 6)", "vehicle type": "गाड़ी का प्रकार", "hatchback": "हैचबैक", "sedan": "सेडान", "suv": "एसयूवी", "auto": "ऑटो", "vehicle number": "गाड़ी नंबर", "driving licence no.": "ड्राइविंग लाइसेंस नंबर", "city": "शहर", "register as driver": "ड्राइवर के रूप में रजिस्टर करें", "verification status": "वेरिफ़िकेशन की स्थिति", "check status": "स्थिति देखें", "sign out": "साइन आउट", "are you a driver?": "क्या आप ड्राइवर हैं?", "driver login / register": "ड्राइवर लॉगिन / रजिस्टर", "continue with google": "Google से जारी रखें", "back to customer login": "ग्राहक लॉगिन पर वापस", "drive with us": "हमारे साथ गाड़ी चलाएँ", "register your vehicle, get verified, start earning": "गाड़ी रजिस्टर करें, वेरिफ़ाई हों, कमाई शुरू करें", "almost there": "बस थोड़ा इंतज़ार", "your driver account is being reviewed": "आपके ड्राइवर खाते की जाँच हो रही है", "owner access": "मालिक का प्रवेश", "join driveeasy in under a minute": "एक मिनट में DriveEasy से जुड़ें", "owner / admin": "मालिक / एडमिन", "restricted to the verified owner account": "सिर्फ़ मालिक के खाते के लिए", "your details are under review. you can start taking rides once the admin verifies you.": "आपकी जानकारी की जाँच हो रही है। एडमिन के वेरिफ़ाई करते ही आप सवारी ले सकेंगे।", "your ride": "आपकी सवारी", "one tap": "बस एक टैप", "away.": "पर हाज़िर।", "your journey": "आपका सफ़र", "our": "हमारा", "promise.": "वादा।", "book safe cabs in siwan*": "सीवान में सुरक्षित कैब बुक करें — लाइव ट्रैकिंग, OTP से सुरक्षित पिकअप और जाँचे-परखे ड्राइवर।", "safe, comfortable rides*": "किसी भी जगह के लिए सुरक्षित और आरामदायक सफ़र। अपनी जगह चुनें, तारीख़ चुनें, पक्की बुकिंग पाएँ।", "otp-safe rides": "OTP से सुरक्षित सफ़र", "live tracking": "लाइव ट्रैकिंग", "verified drivers": "जाँचे-परखे ड्राइवर", "verified drivers*": "जाँचे-परखे ड्राइवर · 24 घंटे उपलब्ध", "pricing": "किराया", "book": "बुक करें", "how it works": "कैसे काम करता है", "user": "यूज़र", "book a ride": "सवारी बुक करें", "see how it works": "देखें कैसे काम करता है", "rides completed": "पूरी हुई सवारी", "average rating": "औसत रेटिंग", "km travelled": "किमी का सफ़र", "available": "उपलब्ध", "why choose us": "हमें क्यों चुनें", "ride with confidence": "भरोसे के साथ सफ़र करें", "safe & verified driver": "सुरक्षित और जाँचा-परखा ड्राइवर", "every driver registers*": "हर ड्राइवर लाइसेंस और गाड़ी की जानकारी देता है और एडमिन की जाँच के बाद ही सवारी लेता है।", "map-based pickup": "नक्शे से पिकअप", "pin your exact pickup*": "नक्शे पर अपनी सही पिकअप और ड्रॉप जगह चुनें। पता समझाने की झंझट नहीं।", "transparent fare": "साफ़ किराया", "fare estimated before booking*": "बुकिंग से पहले ही किराया पता चल जाता है। कोई छुपा चार्ज नहीं।", "otp-verified start": "OTP से सफ़र शुरू", "you receive a 4-digit otp*": "ड्राइवर के स्वीकार करते ही आपको 4 अंकों का OTP मिलता है। इसे सिर्फ़ पिकअप पर ही बताएँ।", "live driver tracking": "ड्राइवर की लाइव लोकेशन", "watch the driver's*": "पक्का होने के बाद नक्शे पर ड्राइवर की गाड़ी को अपनी ओर आते देखें।", "no drivers are online right now*": "अभी कोई ड्राइवर ऑनलाइन नहीं है। कृपया थोड़ी देर बाद देखें।", "clear & honest": "साफ़ और ईमानदार", "our pricing": "हमारा किराया", "city / local": "शहर के अंदर", "per km": "प्रति किमी", "min ₹80*": "कम से कम ₹80 · 15 मिनट इंतज़ार मुफ़्त", "most booked": "सबसे ज़्यादा बुक", "outstation": "शहर के बाहर", "min 80 km*": "कम से कम 80 किमी · टोल व पार्किंग अलग", "airport drop": "एयरपोर्ट ड्रॉप", "flat base": "शुरुआती किराया", "12/km beyond 10 km": "12/किमी (10 किमी के बाद)", "hourly": "घंटे के हिसाब से", "per hour": "प्रति घंटा", "min 2 hrs*": "कम से कम 2 घंटे · 10 किमी/घंटा शामिल", "book your ride": "अपनी सवारी बुक करें", "fill in your details": "अपनी जानकारी भरें", "no drivers are online right now.": "अभी कोई ड्राइवर ऑनलाइन नहीं है।", "booking is temporarily unavailable. please check back soon.": "बुकिंग अभी बंद है। कृपया थोड़ी देर बाद देखें।", "e.g. rahul sharma": "जैसे राहुल शर्मा", "e.g. 9876543210": "जैसे 9876543210", "pickup location": "पिकअप की जगह (कहाँ से)", "drop location": "ड्रॉप की जगह (कहाँ तक)", "type or use map)": "लिखें या नक्शे से चुनें)", "type address or click*": "पता लिखें या 📍 नक्शा बटन दबाएँ", "map": "नक्शा", "travel date": "सफ़र की तारीख़", "travel time": "सफ़र का समय", "trip type": "सफ़र का प्रकार", "city / local (₹12/km)": "शहर के अंदर (₹12/किमी)", "outstation (₹10/km)": "शहर के बाहर (₹10/किमी)", "round trip": "आना-जाना (राउंड ट्रिप)", "airport transfer (from ₹500)": "एयरपोर्ट (₹500 से शुरू)", "hourly use (₹150/hr)": "घंटे के हिसाब से (₹150/घंटा)", "no. of passengers": "सवारियों की संख्या", "estimated fare": "अनुमानित किराया", "choose pickup and drop on the map to see your fare": "किराया देखने के लिए नक्शे पर पिकअप और ड्रॉप चुनें", "distance (km) – filled automatically, you can change it": "दूरी (किमी) – अपने आप भरती है, बदल भी सकते हैं", "additional notes": "अन्य जानकारी", "luggage, special stops*": "सामान, बीच में रुकना आदि", "book ride now": "अभी सवारी बुक करें", "your request goes to nearby verified drivers first.": "आपकी रिक्वेस्ट सबसे पहले पास के जाँचे-परखे ड्राइवरों को जाती है।", "this screen updates automatically when a driver accepts.": "ड्राइवर के स्वीकार करते ही यह स्क्रीन अपने आप बदल जाएगी।", "live ride tracking": "सवारी की लाइव ट्रैकिंग", "waiting for driver to start": "ड्राइवर के शुरू करने का इंतज़ार", "your ride otp*": "आपका सवारी OTP — पिकअप पर ड्राइवर को बताएँ", "this 4-digit otp will be entered*": "यह 4 अंकों का OTP ड्राइवर सफ़र शुरू करने के लिए डालेगा। किसी और को न बताएँ।", "waiting for driver": "ड्राइवर का इंतज़ार", "cancel ride": "सवारी रद्द करें", "ride has started!": "सवारी शुरू हो गई!", "driver picked you up*": "ड्राइवर ने आपको बैठा लिया। आपका सफ़र लाइव ट्रैक हो रहा है।", "ride completed!": "सवारी पूरी हुई!", "you have reached your destination.": "आप अपनी मंज़िल पर पहुँच गए।", "share trip with family": "परिवार को सफ़र की जानकारी भेजें", "pickup": "पिकअप", "drop": "ड्रॉप", "on the way": "रास्ते में", "your account": "आपका खाता", "my rides": "मेरी सवारियाँ", "receipt": "रसीद", "call driver": "ड्राइवर को कॉल करें", "whatsapp": "व्हाट्सऐप", "simple & safe": "आसान और सुरक्षित", "how driveeasy works": "DriveEasy कैसे काम करता है", "pin your route": "अपना रास्ता चुनें", "drop two pins on the map.*": "नक्शे पर दो पिन लगाएँ। दूरी, समय और किराया तुरंत दिखेगा।", "nearby driver accepts": "पास का ड्राइवर स्वीकार करता है", "verified drivers close to you*": "आपके पास के जाँचे-परखे ड्राइवरों को सबसे पहले आपकी रिक्वेस्ट मिलती है।", "track live": "लाइव ट्रैक करें", "see the car*": "नक्शे पर गाड़ी, नंबर प्लेट और पहुँचने का समय देखें।", "ride safe": "सुरक्षित सफ़र", "share the otp*": "OTP बताएँ, आराम से सफ़र करें, फिर ड्राइवर को रेटिंग दें।", "ready when you are.": "आप तैयार, तो हम भी तैयार।", "every ride is otp-verified*": "हर सवारी OTP से सुरक्षित, ट्रैक होने वाली और परिवार से शेयर करने लायक।", "safe, trackable cab rides in siwan.": "सीवान में सुरक्षित, ट्रैक होने वाली कैब सवारी।", "why us": "हमें क्यों चुनें", "select location": "जगह चुनें", "search area, street, landmark": "इलाका, गली या पहचान की जगह खोजें", "search": "खोजें", "use my current location": "मेरी मौजूदा लोकेशन इस्तेमाल करें", "tap the map to pin your location*": "नक्शे पर टैप करके जगह चुनें, या ऊपर खोजें", "search or tap on map": "खोजें या नक्शे पर टैप करें", "confirm": "पक्का करें", "this screen will automatically update": "यह स्क्रीन अपने आप बदल जाएगी", "when the driver accepts or declines your ride.": "जब ड्राइवर आपकी सवारी स्वीकार या अस्वीकार करेगा।", "your booking has been sent to nearby verified drivers.": "आपकी बुकिंग पास के जाँचे-परखे ड्राइवरों को भेज दी गई है।", "booking reference": "बुकिंग नंबर", "cancel & go back": "रद्द करें और वापस जाएँ", "ride confirmed!": "सवारी पक्की हो गई!", "your ride has been accepted by the driver!": "ड्राइवर ने आपकी सवारी स्वीकार कर ली है!", "show this to the driver*": "सफ़र शुरू करने के लिए पिकअप पर यह ड्राइवर को बताएँ।", "view route on google maps": "Google Maps पर रास्ता देखें", "watch live tracking": "लाइव ट्रैकिंग देखें", "not available": "उपलब्ध नहीं", "sorry, the driver is not available*": "माफ़ करें, अभी ड्राइवर उपलब्ध नहीं है। कुछ मिनट बाद फिर कोशिश करें।", "try another booking": "फिर से बुक करें", "cancel your ride?": "क्या सवारी रद्द करनी है?", "please select a reason*": "कृपया कारण चुनें। इससे हम बेहतर सेवा दे पाएँगे।", "reason for cancellation": "रद्द करने का कारण", "select a reason": "कारण चुनें", "change of plans": "प्लान बदल गया", "booked by mistake": "गलती से बुक हो गया", "driver is taking too long": "ड्राइवर को बहुत देर लग रही है", "found another transport": "दूसरा साधन मिल गया", "emergency came up": "ज़रूरी काम आ गया", "other reason": "कोई और कारण", "any additional details? (optional)": "और कुछ बताना है? (ज़रूरी नहीं)", "yes, cancel ride": "हाँ, रद्द करें", "go back": "वापस जाएँ", "otp verified!*": "OTP सही है! ड्राइवर ने पहचान पक्की कर ली और सफ़र शुरू हो गया।", "driver has picked you up!": "ड्राइवर ने आपको बैठा लिया!", "sit back and enjoy*": "आराम से बैठें। लाइव ट्रैकिंग चालू है।", "watch live map": "लाइव नक्शा देखें", "you have reached your destination. thank you*": "आप मंज़िल पर पहुँच गए। DriveEasy चुनने के लिए धन्यवाद!", "rate your ride": "अपनी सवारी को रेटिंग दें", "comment (optional)": "टिप्पणी (ज़रूरी नहीं)", "submit rating": "रेटिंग भेजें", "back to home": "होम पर वापस", "ride cancelled": "सवारी रद्द हुई", "this ride has been cancelled.": "यह सवारी रद्द हो गई है।", "book a new ride": "नई सवारी बुक करें", "dashboard": "डैशबोर्ड", "bookings": "बुकिंग", "drivers": "ड्राइवर", "earnings": "कमाई", "settings": "सेटिंग", "logout": "लॉगआउट", "panel": "पैनल", "online": "ऑनलाइन", "offline": "ऑफ़लाइन", "new booking request!": "नई बुकिंग रिक्वेस्ट!", "a customer is waiting for your response.": "एक ग्राहक आपके जवाब का इंतज़ार कर रहा है।", "view": "देखें", "total bookings": "कुल बुकिंग", "pending": "बाकी", "accepted": "स्वीकार", "declined": "अस्वीकार", "cancelled": "रद्द", "completed": "पूरी", "est. earnings": "अनुमानित कमाई", "earnings*": "कमाई · पिछले 7 दिन", "booking status": "बुकिंग की स्थिति", "recent bookings": "हाल की बुकिंग", "last 14 days": "पिछले 14 दिन", "completed rides": "पूरी हुई सवारियाँ", "all": "सभी", "today": "आज", "last 7 days": "पिछले 7 दिन", "this month": "इस महीने", "all time": "कुल", "rides done": "पूरी सवारियाँ", "rating": "रेटिंग", "status:": "स्थिति:", "no active ride": "कोई सवारी चालू नहीं", "booking:": "बुकिंग:", "gps:": "GPS:", "updated:": "अपडेट:", "live tracking & navigation": "लाइव ट्रैकिंग और नेविगेशन", "select accepted booking": "स्वीकार की गई बुकिंग चुनें", "choose an accepted booking": "बुकिंग चुनें", "navigation": "नेविगेशन", "to pickup": "पिकअप तक", "to drop-off": "ड्रॉप तक", "google maps": "Google Maps", "other map app": "दूसरा मैप ऐप", "recalculate": "दोबारा निकालें", "enter customer otp to start ride": "सफ़र शुरू करने के लिए ग्राहक का OTP डालें", "ask the customer for their 4-digit otp*": "ग्राहक से 4 अंकों का OTP पूछें और नीचे डालकर सफ़र शुरू करें।", "verify & start ride": "जाँचें और सफ़र शुरू करें", "start gps tracking (my location)": "GPS ट्रैकिंग शुरू करें (मेरी लोकेशन)", "mark ride ended (reached destination)": "सफ़र पूरा करें (मंज़िल पर पहुँचे)", "stop gps tracking": "GPS ट्रैकिंग बंद करें", "cancel accepted ride": "स्वीकार की सवारी रद्द करें", "share live location with passenger": "सवारी को लाइव लोकेशन भेजें", "gps active": "GPS चालू", "your location is being sent every 4 seconds.": "आपकी लोकेशन हर 4 सेकंड में भेजी जा रही है।", "customer can see your*": "ग्राहक अपनी स्क्रीन पर आपकी गाड़ी को चलते देख सकता है!", "accept": "स्वीकार करें", "decline": "मना करें", "from you": "आपसे दूरी", "new driver": "नया ड्राइवर", "verified driver": "जाँचा-परखा ड्राइवर", "waiting for driver to share live location": "ड्राइवर की लाइव लोकेशन का इंतज़ार", "your driver has reached*": "आपका ड्राइवर पहुँच गया है!"};
+const HI={"name this place – e.g. near shiv mandir, ward 5": "इस जगह का नाम लिखें – जैसे शिव मंदिर के पास, वार्ड 5", "save this place so others can find it": "इस जगह को सेव करें ताकि दूसरे भी ढूँढ सकें", "satellite": "सैटेलाइट", "tap the map, drag the pin*": "नक्शे पर टैप करें, पिन खींचकर सही जगह लगाएँ, या ऊपर Google Maps लिंक / कोऑर्डिनेट पेस्ट करें", "search place, paste map link or code": "जगह खोजें, मैप लिंक या कोड पेस्ट करें", "fetching address": "पता निकाल रहे हैं", "search or use your current location": "खोजें या अपनी मौजूदा लोकेशन इस्तेमाल करें", "select pickup location": "पिकअप की जगह चुनें", "select drop location": "ड्रॉप की जगह चुनें", "welcome back": "वापसी पर स्वागत है", "log in to book your ride": "सवारी बुक करने के लिए लॉगिन करें", "login": "लॉगिन", "sign up": "नया खाता", "email address": "ईमेल", "email": "ईमेल", "password": "पासवर्ड", "login & book a ride": "लॉगिन करें और सवारी बुक करें", "new here?": "नए हैं?", "create free account": "मुफ़्त खाता बनाएँ", "first name": "पहला नाम", "last name": "सरनेम", "phone number": "मोबाइल नंबर", "phone": "मोबाइल", "min 6 chars)": "कम से कम 6 अक्षर)", "confirm password": "पासवर्ड दोबारा लिखें", "create account": "खाता बनाएँ", "already have an account?": "पहले से खाता है?", "customer": "ग्राहक", "driver": "ड्राइवर", "admin": "एडमिन", "driver portal": "ड्राइवर पोर्टल", "register your vehicle and get verified*": "अपनी गाड़ी रजिस्टर करें, वेरिफ़ाई होकर कमाई शुरू करें", "register": "रजिस्टर", "driver login": "ड्राइवर लॉगिन", "full name": "पूरा नाम", "your full name": "आपका पूरा नाम", "10-digit mobile": "10 अंकों का मोबाइल", "password (min 6)": "पासवर्ड (कम से कम 6)", "vehicle type": "गाड़ी का प्रकार", "hatchback": "हैचबैक", "sedan": "सेडान", "suv": "एसयूवी", "auto": "ऑटो", "vehicle number": "गाड़ी नंबर", "driving licence no.": "ड्राइविंग लाइसेंस नंबर", "city": "शहर", "register as driver": "ड्राइवर के रूप में रजिस्टर करें", "verification status": "वेरिफ़िकेशन की स्थिति", "check status": "स्थिति देखें", "sign out": "साइन आउट", "are you a driver?": "क्या आप ड्राइवर हैं?", "driver login / register": "ड्राइवर लॉगिन / रजिस्टर", "continue with google": "Google से जारी रखें", "back to customer login": "ग्राहक लॉगिन पर वापस", "drive with us": "हमारे साथ गाड़ी चलाएँ", "register your vehicle, get verified, start earning": "गाड़ी रजिस्टर करें, वेरिफ़ाई हों, कमाई शुरू करें", "almost there": "बस थोड़ा इंतज़ार", "your driver account is being reviewed": "आपके ड्राइवर खाते की जाँच हो रही है", "owner access": "मालिक का प्रवेश", "join driveeasy in under a minute": "एक मिनट में DriveEasy से जुड़ें", "owner / admin": "मालिक / एडमिन", "restricted to the verified owner account": "सिर्फ़ मालिक के खाते के लिए", "your details are under review. you can start taking rides once the admin verifies you.": "आपकी जानकारी की जाँच हो रही है। एडमिन के वेरिफ़ाई करते ही आप सवारी ले सकेंगे।", "your ride": "आपकी सवारी", "one tap": "बस एक टैप", "away.": "पर हाज़िर।", "your journey": "आपका सफ़र", "our": "हमारा", "promise.": "वादा।", "book safe cabs in siwan*": "सीवान में सुरक्षित कैब बुक करें — लाइव ट्रैकिंग, OTP से सुरक्षित पिकअप और जाँचे-परखे ड्राइवर।", "safe, comfortable rides*": "किसी भी जगह के लिए सुरक्षित और आरामदायक सफ़र। अपनी जगह चुनें, तारीख़ चुनें, पक्की बुकिंग पाएँ।", "otp-safe rides": "OTP से सुरक्षित सफ़र", "live tracking": "लाइव ट्रैकिंग", "verified drivers": "जाँचे-परखे ड्राइवर", "verified drivers*": "जाँचे-परखे ड्राइवर · 24 घंटे उपलब्ध", "pricing": "किराया", "book": "बुक करें", "how it works": "कैसे काम करता है", "user": "यूज़र", "book a ride": "सवारी बुक करें", "see how it works": "देखें कैसे काम करता है", "rides completed": "पूरी हुई सवारी", "average rating": "औसत रेटिंग", "km travelled": "किमी का सफ़र", "available": "उपलब्ध", "why choose us": "हमें क्यों चुनें", "ride with confidence": "भरोसे के साथ सफ़र करें", "safe & verified driver": "सुरक्षित और जाँचा-परखा ड्राइवर", "every driver registers*": "हर ड्राइवर लाइसेंस और गाड़ी की जानकारी देता है और एडमिन की जाँच के बाद ही सवारी लेता है।", "map-based pickup": "नक्शे से पिकअप", "pin your exact pickup*": "नक्शे पर अपनी सही पिकअप और ड्रॉप जगह चुनें। पता समझाने की झंझट नहीं।", "transparent fare": "साफ़ किराया", "fare estimated before booking*": "बुकिंग से पहले ही किराया पता चल जाता है। कोई छुपा चार्ज नहीं।", "otp-verified start": "OTP से सफ़र शुरू", "you receive a 4-digit otp*": "ड्राइवर के स्वीकार करते ही आपको 4 अंकों का OTP मिलता है। इसे सिर्फ़ पिकअप पर ही बताएँ।", "live driver tracking": "ड्राइवर की लाइव लोकेशन", "watch the driver's*": "पक्का होने के बाद नक्शे पर ड्राइवर की गाड़ी को अपनी ओर आते देखें।", "no drivers are online right now*": "अभी कोई ड्राइवर ऑनलाइन नहीं है। कृपया थोड़ी देर बाद देखें।", "clear & honest": "साफ़ और ईमानदार", "our pricing": "हमारा किराया", "city / local": "शहर के अंदर", "per km": "प्रति किमी", "min ₹80*": "कम से कम ₹80 · 15 मिनट इंतज़ार मुफ़्त", "most booked": "सबसे ज़्यादा बुक", "outstation": "शहर के बाहर", "min 80 km*": "कम से कम 80 किमी · टोल व पार्किंग अलग", "airport drop": "एयरपोर्ट ड्रॉप", "flat base": "शुरुआती किराया", "12/km beyond 10 km": "12/किमी (10 किमी के बाद)", "hourly": "घंटे के हिसाब से", "per hour": "प्रति घंटा", "min 2 hrs*": "कम से कम 2 घंटे · 10 किमी/घंटा शामिल", "book your ride": "अपनी सवारी बुक करें", "fill in your details": "अपनी जानकारी भरें", "no drivers are online right now.": "अभी कोई ड्राइवर ऑनलाइन नहीं है।", "booking is temporarily unavailable. please check back soon.": "बुकिंग अभी बंद है। कृपया थोड़ी देर बाद देखें।", "e.g. rahul sharma": "जैसे राहुल शर्मा", "e.g. 9876543210": "जैसे 9876543210", "pickup location": "पिकअप की जगह (कहाँ से)", "drop location": "ड्रॉप की जगह (कहाँ तक)", "type or use map)": "लिखें या नक्शे से चुनें)", "type address or click*": "पता लिखें या 📍 नक्शा बटन दबाएँ", "map": "नक्शा", "travel date": "सफ़र की तारीख़", "travel time": "सफ़र का समय", "trip type": "सफ़र का प्रकार", "city / local (₹12/km)": "शहर के अंदर (₹12/किमी)", "outstation (₹10/km)": "शहर के बाहर (₹10/किमी)", "round trip": "आना-जाना (राउंड ट्रिप)", "airport transfer (from ₹500)": "एयरपोर्ट (₹500 से शुरू)", "hourly use (₹150/hr)": "घंटे के हिसाब से (₹150/घंटा)", "no. of passengers": "सवारियों की संख्या", "estimated fare": "अनुमानित किराया", "choose pickup and drop on the map to see your fare": "किराया देखने के लिए नक्शे पर पिकअप और ड्रॉप चुनें", "distance (km) – filled automatically, you can change it": "दूरी (किमी) – अपने आप भरती है, बदल भी सकते हैं", "additional notes": "अन्य जानकारी", "luggage, special stops*": "सामान, बीच में रुकना आदि", "book ride now": "अभी सवारी बुक करें", "your request goes to nearby verified drivers first.": "आपकी रिक्वेस्ट सबसे पहले पास के जाँचे-परखे ड्राइवरों को जाती है।", "this screen updates automatically when a driver accepts.": "ड्राइवर के स्वीकार करते ही यह स्क्रीन अपने आप बदल जाएगी।", "live ride tracking": "सवारी की लाइव ट्रैकिंग", "waiting for driver to start": "ड्राइवर के शुरू करने का इंतज़ार", "your ride otp*": "आपका सवारी OTP — पिकअप पर ड्राइवर को बताएँ", "this 4-digit otp will be entered*": "यह 4 अंकों का OTP ड्राइवर सफ़र शुरू करने के लिए डालेगा। किसी और को न बताएँ।", "waiting for driver": "ड्राइवर का इंतज़ार", "cancel ride": "सवारी रद्द करें", "ride has started!": "सवारी शुरू हो गई!", "driver picked you up*": "ड्राइवर ने आपको बैठा लिया। आपका सफ़र लाइव ट्रैक हो रहा है।", "ride completed!": "सवारी पूरी हुई!", "you have reached your destination.": "आप अपनी मंज़िल पर पहुँच गए।", "share trip with family": "परिवार को सफ़र की जानकारी भेजें", "pickup": "पिकअप", "drop": "ड्रॉप", "on the way": "रास्ते में", "your account": "आपका खाता", "my rides": "मेरी सवारियाँ", "receipt": "रसीद", "call driver": "ड्राइवर को कॉल करें", "whatsapp": "व्हाट्सऐप", "simple & safe": "आसान और सुरक्षित", "how driveeasy works": "DriveEasy कैसे काम करता है", "pin your route": "अपना रास्ता चुनें", "drop two pins on the map.*": "नक्शे पर दो पिन लगाएँ। दूरी, समय और किराया तुरंत दिखेगा।", "nearby driver accepts": "पास का ड्राइवर स्वीकार करता है", "verified drivers close to you*": "आपके पास के जाँचे-परखे ड्राइवरों को सबसे पहले आपकी रिक्वेस्ट मिलती है।", "track live": "लाइव ट्रैक करें", "see the car*": "नक्शे पर गाड़ी, नंबर प्लेट और पहुँचने का समय देखें।", "ride safe": "सुरक्षित सफ़र", "share the otp*": "OTP बताएँ, आराम से सफ़र करें, फिर ड्राइवर को रेटिंग दें।", "ready when you are.": "आप तैयार, तो हम भी तैयार।", "every ride is otp-verified*": "हर सवारी OTP से सुरक्षित, ट्रैक होने वाली और परिवार से शेयर करने लायक।", "safe, trackable cab rides in siwan.": "सीवान में सुरक्षित, ट्रैक होने वाली कैब सवारी।", "why us": "हमें क्यों चुनें", "select location": "जगह चुनें", "search area, street, landmark": "इलाका, गली या पहचान की जगह खोजें", "search": "खोजें", "use my current location": "मेरी मौजूदा लोकेशन इस्तेमाल करें", "tap the map to pin your location*": "नक्शे पर टैप करके जगह चुनें, या ऊपर खोजें", "search or tap on map": "खोजें या नक्शे पर टैप करें", "confirm": "पक्का करें", "this screen will automatically update": "यह स्क्रीन अपने आप बदल जाएगी", "when the driver accepts or declines your ride.": "जब ड्राइवर आपकी सवारी स्वीकार या अस्वीकार करेगा।", "your booking has been sent to nearby verified drivers.": "आपकी बुकिंग पास के जाँचे-परखे ड्राइवरों को भेज दी गई है।", "booking reference": "बुकिंग नंबर", "cancel & go back": "रद्द करें और वापस जाएँ", "ride confirmed!": "सवारी पक्की हो गई!", "your ride has been accepted by the driver!": "ड्राइवर ने आपकी सवारी स्वीकार कर ली है!", "show this to the driver*": "सफ़र शुरू करने के लिए पिकअप पर यह ड्राइवर को बताएँ।", "view route on google maps": "Google Maps पर रास्ता देखें", "watch live tracking": "लाइव ट्रैकिंग देखें", "not available": "उपलब्ध नहीं", "sorry, the driver is not available*": "माफ़ करें, अभी ड्राइवर उपलब्ध नहीं है। कुछ मिनट बाद फिर कोशिश करें।", "try another booking": "फिर से बुक करें", "cancel your ride?": "क्या सवारी रद्द करनी है?", "please select a reason*": "कृपया कारण चुनें। इससे हम बेहतर सेवा दे पाएँगे।", "reason for cancellation": "रद्द करने का कारण", "select a reason": "कारण चुनें", "change of plans": "प्लान बदल गया", "booked by mistake": "गलती से बुक हो गया", "driver is taking too long": "ड्राइवर को बहुत देर लग रही है", "found another transport": "दूसरा साधन मिल गया", "emergency came up": "ज़रूरी काम आ गया", "other reason": "कोई और कारण", "any additional details? (optional)": "और कुछ बताना है? (ज़रूरी नहीं)", "yes, cancel ride": "हाँ, रद्द करें", "go back": "वापस जाएँ", "otp verified!*": "OTP सही है! ड्राइवर ने पहचान पक्की कर ली और सफ़र शुरू हो गया।", "driver has picked you up!": "ड्राइवर ने आपको बैठा लिया!", "sit back and enjoy*": "आराम से बैठें। लाइव ट्रैकिंग चालू है।", "watch live map": "लाइव नक्शा देखें", "you have reached your destination. thank you*": "आप मंज़िल पर पहुँच गए। DriveEasy चुनने के लिए धन्यवाद!", "rate your ride": "अपनी सवारी को रेटिंग दें", "comment (optional)": "टिप्पणी (ज़रूरी नहीं)", "submit rating": "रेटिंग भेजें", "back to home": "होम पर वापस", "ride cancelled": "सवारी रद्द हुई", "this ride has been cancelled.": "यह सवारी रद्द हो गई है।", "book a new ride": "नई सवारी बुक करें", "dashboard": "डैशबोर्ड", "bookings": "बुकिंग", "drivers": "ड्राइवर", "earnings": "कमाई", "settings": "सेटिंग", "logout": "लॉगआउट", "panel": "पैनल", "online": "ऑनलाइन", "offline": "ऑफ़लाइन", "new booking request!": "नई बुकिंग रिक्वेस्ट!", "a customer is waiting for your response.": "एक ग्राहक आपके जवाब का इंतज़ार कर रहा है।", "view": "देखें", "total bookings": "कुल बुकिंग", "pending": "बाकी", "accepted": "स्वीकार", "declined": "अस्वीकार", "cancelled": "रद्द", "completed": "पूरी", "est. earnings": "अनुमानित कमाई", "earnings*": "कमाई · पिछले 7 दिन", "booking status": "बुकिंग की स्थिति", "recent bookings": "हाल की बुकिंग", "last 14 days": "पिछले 14 दिन", "completed rides": "पूरी हुई सवारियाँ", "all": "सभी", "today": "आज", "last 7 days": "पिछले 7 दिन", "this month": "इस महीने", "all time": "कुल", "rides done": "पूरी सवारियाँ", "rating": "रेटिंग", "status:": "स्थिति:", "no active ride": "कोई सवारी चालू नहीं", "booking:": "बुकिंग:", "gps:": "GPS:", "updated:": "अपडेट:", "live tracking & navigation": "लाइव ट्रैकिंग और नेविगेशन", "select accepted booking": "स्वीकार की गई बुकिंग चुनें", "choose an accepted booking": "बुकिंग चुनें", "navigation": "नेविगेशन", "to pickup": "पिकअप तक", "to drop-off": "ड्रॉप तक", "google maps": "Google Maps", "other map app": "दूसरा मैप ऐप", "recalculate": "दोबारा निकालें", "enter customer otp to start ride": "सफ़र शुरू करने के लिए ग्राहक का OTP डालें", "ask the customer for their 4-digit otp*": "ग्राहक से 4 अंकों का OTP पूछें और नीचे डालकर सफ़र शुरू करें।", "verify & start ride": "जाँचें और सफ़र शुरू करें", "start gps tracking (my location)": "GPS ट्रैकिंग शुरू करें (मेरी लोकेशन)", "mark ride ended (reached destination)": "सफ़र पूरा करें (मंज़िल पर पहुँचे)", "stop gps tracking": "GPS ट्रैकिंग बंद करें", "cancel accepted ride": "स्वीकार की सवारी रद्द करें", "share live location with passenger": "सवारी को लाइव लोकेशन भेजें", "gps active": "GPS चालू", "your location is being sent every 4 seconds.": "आपकी लोकेशन हर 4 सेकंड में भेजी जा रही है।", "customer can see your*": "ग्राहक अपनी स्क्रीन पर आपकी गाड़ी को चलते देख सकता है!", "accept": "स्वीकार करें", "decline": "मना करें", "from you": "आपसे दूरी", "new driver": "नया ड्राइवर", "verified driver": "जाँचा-परखा ड्राइवर", "waiting for driver to share live location": "ड्राइवर की लाइव लोकेशन का इंतज़ार", "your driver has reached*": "आपका ड्राइवर पहुँच गया है!"};
 const _hiRe=/[\u0900-\u097F]/;
 function hiLookup(t){
   const pre=(t.match(/^[^A-Za-z0-9]*/)||[''])[0], rest=t.slice(pre.length), suf=(rest.match(/[^A-Za-z0-9.!?)\]]*$/)||[''])[0];
@@ -1687,7 +1718,7 @@ function enterCustomer(user, data) {
   if (dateEl) dateEl.min = new Date().toISOString().split('T')[0];
   renderCalendar();
   listenDriverStatus();
-  loadStats(); loadHistory();
+  loadStats(); loadHistory(); resumeActiveRide(); loadPlaces();
 }
 
 function doSignOut() {
@@ -1921,62 +1952,96 @@ function autoFare() {
 // ============================================================
 // MAP MODAL
 // ============================================================
+let _mapLy={};
+function setMapLayer(k){
+  if(!leafletMap||!_mapLy.street) return;
+  Object.values(_mapLy).forEach(l=>{ if(leafletMap.hasLayer(l)) leafletMap.removeLayer(l); });
+  if(k==='sat'){ _mapLy.sat.addTo(leafletMap); _mapLy.lab.addTo(leafletMap); } else _mapLy.street.addTo(leafletMap);
+  document.getElementById('lyMap').classList.toggle('on',k!=='sat'); document.getElementById('lySat').classList.toggle('on',k==='sat');
+}
 function openMap(field) {
-  mapFor = field;
-  selLatLng = null;
-  document.getElementById('mapModalTitle').textContent =
-    field === 'pickup' ? '📍 Select Pickup Location' : '🏁 Select Drop Location';
+  mapFor = field; selLatLng = null; window._areaAddr = null;
+  if (leafletMap && leafMarker) { leafletMap.removeLayer(leafMarker); leafMarker = null; }
+  document.getElementById('mapModalTitle').textContent = field === 'pickup' ? '📍 Select Pickup Location' : '🏁 Select Drop Location';
   document.getElementById('mapAddrDisplay').textContent = 'Search or use your current location';
-  document.getElementById('mapSearchInp').value = '';
+  document.getElementById('mapSearchInp').value = ''; document.getElementById('mapPlaceName').value = ''; document.getElementById('mapSavePlace').checked = false;
+  hideSuggest();
   document.getElementById('mapModal').classList.add('show');
   setTimeout(() => {
     if (!leafletMap) {
-      leafletMap = L.map('leafletMap', { attributionControl: false, zoomControl: true })
-                   .setView([26.2211, 84.3564], 14);
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19, attribution: 'Tiles © Esri'
-      }).addTo(leafletMap);
+      leafletMap = L.map('leafletMap', { attributionControl: false, zoomControl: true, maxZoom: 19 }).setView([26.2211, 84.3564], 14);
+      const esri = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+      _mapLy.street = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
+      let bad = 0; _mapLy.street.on('tileerror', () => { if (++bad === 4) { leafletMap.removeLayer(_mapLy.street); _mapLy.street = L.tileLayer(esri + 'World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles © Esri' }).addTo(leafletMap); } });
+      _mapLy.sat = L.tileLayer(esri + 'World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, maxNativeZoom: 17, attribution: 'Imagery © Esri' });
+      _mapLy.lab = L.tileLayer(esri + 'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, maxNativeZoom: 17 });
       L.control.attribution({ position:'bottomright', prefix:'' }).addTo(leafletMap);
-      leafletMap.on('click', e => placeMapPin(e.latlng.lat, e.latlng.lng));
-    } else {
-      leafletMap.invalidateSize();
-    }
+      leafletMap.on('click', e => { hideSuggest(); placeMapPin(e.latlng.lat, e.latlng.lng); });
+      setMapLayer('map');
+    } else { leafletMap.invalidateSize(); }
+    const f = id => parseFloat(document.getElementById(id).value);
+    const c = field === 'pickup' ? [f('bPickupLat'), f('bPickupLng')] : [f('bDropLat'), f('bDropLng')], pk = [f('bPickupLat'), f('bPickupLng')];
+    if (!isNaN(c[0]) && !isNaN(c[1])) leafletMap.setView(c, 17); else if (field === 'drop' && !isNaN(pk[0])) leafletMap.setView(pk, 15);
   }, 200);
 }
 
+function composeArea(d){
+  const a=d.address||{};
+  const p=[a.road||a.neighbourhood||a.pedestrian, a.suburb||a.hamlet||a.village||a.town||a.city_district||a.locality, a.city||a.county||a.state_district].filter(Boolean);
+  return p.length?[...new Set(p)].join(', '):(d.display_name||'');
+}
+function applyMapAddr(){
+  if(!selLatLng) return;
+  const nm=(document.getElementById('mapPlaceName').value||'').trim().slice(0,80);
+  const area=window._areaAddr||(selLatLng.lat.toFixed(5)+', '+selLatLng.lng.toFixed(5));
+  let full=(nm?nm+' — ':'')+area; if(full.length>130) full=full.slice(0,130)+'…';
+  document.getElementById('mapAddrDisplay').textContent=full;
+  document.getElementById(mapFor==='pickup'?'bPickup':'bDrop').value=full;
+}
 function placeMapPin(lat, lng) {
-  selLatLng = { lat, lng };
+  selLatLng = { lat, lng }; window._areaAddr = null;
   if (leafMarker) leafletMap.removeLayer(leafMarker);
   const emoji = mapFor === 'pickup' ? '📍' : '🏁';
   const color = mapFor === 'pickup' ? '#2ecc71' : '#e74c3c';
-  leafMarker = L.marker([lat, lng], {
+  leafMarker = L.marker([lat, lng], { draggable: true,
     icon: L.divIcon({
       html: `<div style="width:36px;height:44px;position:relative;display:flex;flex-direction:column;align-items:center">
-        <div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center">
-          <span style="transform:rotate(45deg);font-size:.95rem">${emoji}</span>
-        </div>
-        <div style="width:2px;height:8px;background:${color};margin-top:1px"></div>
-      </div>`,
-      className: '', iconSize:[36,44], iconAnchor:[18,44]
-    })
-  }).addTo(leafletMap).bindPopup(mapFor === 'pickup' ? 'Pickup Point' : 'Drop Point').openPopup();
+        <div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><span style="transform:rotate(45deg);font-size:.95rem">${emoji}</span></div>
+        <div style="width:2px;height:8px;background:${color};margin-top:1px"></div></div>`,
+      className: '', iconSize:[36,44], iconAnchor:[18,44] })
+  }).addTo(leafletMap);
+  leafMarker.on('dragend', e => { const p = e.target.getLatLng(); placeMapPin(p.lat, p.lng); });
   document.getElementById(mapFor==='pickup'?'bPickupLat':'bDropLat').value = lat;
   document.getElementById(mapFor==='pickup'?'bPickupLng':'bDropLng').value = lng;
   document.getElementById('mapAddrDisplay').textContent = 'Fetching address…';
   fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
-    .then(r => r.json())
-    .then(data => {
-      const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      const shortAddr = addr.length > 80 ? addr.substring(0,80) + '…' : addr;
-      document.getElementById('mapAddrDisplay').textContent = shortAddr;
-      document.getElementById(mapFor==='pickup'?'bPickup':'bDrop').value = shortAddr;
-    })
-    .catch(() => {
-      const fallback = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      document.getElementById('mapAddrDisplay').textContent = fallback;
-      document.getElementById(mapFor==='pickup'?'bPickup':'bDrop').value = fallback;
-    });
+    .then(r => r.json()).then(d => { window._areaAddr = composeArea(d); applyMapAddr(); })
+    .catch(() => { window._areaAddr = null; applyMapAddr(); });
 }
+const _inIndia=(a,b)=>a>5&&a<38&&b>67&&b<98;
+function olcDecode(c){
+  c=c.toUpperCase().replace('+',''); const A='23456789CFGHJMPQRVWX'; let lat=0,lng=0,res=400;
+  for(let i=0;i<Math.min(c.length,10);i+=2){ res/=20; lat+=A.indexOf(c[i])*res; lng+=A.indexOf(c[i+1])*res; }
+  return [lat-90+res/2, lng-180+res/2];
+}
+function parseLoc(q){
+  q=q.trim(); let m;
+  if((m=q.match(/^(-?\d{1,2}\.\d+)\s*[,\s]\s*(-?\d{1,3}\.\d+)$/))) return [+m[1],+m[2]];
+  if((m=q.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/))||(m=q.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/))||(m=q.match(/[?&](?:q|ll|query|destination)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/i))) return [+m[1],+m[2]];
+  if((m=q.match(/\b([23456789CFGHJMPQRVWX]{8}\+[23456789CFGHJMPQRVWX]{2,})/i))) return olcDecode(m[1]);
+  return null;
+}
+function localMatches(q){ const k=q.toLowerCase(); return (window._places||[]).filter(p=>(p.name||'').toLowerCase().includes(k)).slice(0,5).map(p=>({label:p.name,lat:p.lat,lng:p.lng,tag:'⭐',name:p.name})); }
+function renderSuggest(items){
+  window._sug=items; const el=document.getElementById('placeSuggest');
+  el.innerHTML=items.slice(0,7).map((x,i)=>`<div class="sug-item" onclick="pickSuggest(${i})"><span>${x.tag||'📍'}</span><span>${esc(x.label.length>90?x.label.slice(0,90)+'…':x.label)}</span></div>`).join('')
+    +`<div class="sug-foot">${esc(T('Not here? Tap the map or use Satellite to pin the exact spot.','यहाँ नहीं है? नक्शे पर टैप करें या सैटेलाइट से सही जगह चुनें।'))}</div>`;
+  el.style.display='block';
+}
+function hideSuggest(){ const e=document.getElementById('placeSuggest'); if(e) e.style.display='none'; }
+function pickSuggest(i){ const x=window._sug[i]; hideSuggest(); leafletMap.setView([x.lat,x.lng],17); if(x.name) document.getElementById('mapPlaceName').value=x.name; placeMapPin(x.lat,x.lng); }
+function showPlaceSuggest(){ const q=document.getElementById('mapSearchInp').value.trim(); if(q.length<2){hideSuggest();return;} const it=localMatches(q); if(it.length) renderSuggest(it); else hideSuggest(); }
+function loadPlaces(){ db.collection('places').limit(500).get().then(q=>{ window._places=q.docs.map(d=>d.data()).filter(p=>p&&p.name); }).catch(()=>{ window._places=[]; }); }
 
 function useMyLocation() {
   if (!navigator.geolocation) { toast('❌ GPS not available on this device.'); return; }
@@ -1998,25 +2063,26 @@ function useMyLocation() {
   );
 }
 
-function searchMapAddr() {
-  const q = document.getElementById('mapSearchInp').value.trim();
-  if (!q) return;
-  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=in`)
-    .then(r => r.json())
-    .then(results => {
-      if (!results.length) { toast('⚠️ Location not found. Try a more specific name.'); return; }
-      const { lat, lon } = results[0];
-      leafletMap.setView([parseFloat(lat), parseFloat(lon)], 16);
-      placeMapPin(parseFloat(lat), parseFloat(lon));
-    })
-    .catch(() => toast('⚠️ Search failed. Check internet connection.'));
+async function searchMapAddr() {
+  const q = document.getElementById('mapSearchInp').value.trim(); if (!q) return;
+  const p = parseLoc(q);
+  if (p) { if (!_inIndia(p[0],p[1])) { toast(T('⚠️ This location is outside India.','⚠️ यह जगह भारत के बाहर है।')); return; } hideSuggest(); leafletMap.setView(p, 18); placeMapPin(p[0], p[1]); return; }
+  if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(q)) { toast(T('ℹ️ Short links cannot be read. Open the link, then copy the long link or the coordinates.','ℹ️ छोटा लिंक नहीं पढ़ सकते। लिंक खोलकर लंबा लिंक या कोऑर्डिनेट कॉपी करें।')); return; }
+  const items = localMatches(q);
+  try { const r = await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=in&viewbox=83.8,26.7,84.9,25.7&q=' + encodeURIComponent(q))).json();
+    r.forEach(x => items.push({ label: x.display_name, lat: +x.lat, lng: +x.lon, tag: '🌐' })); } catch (e) {}
+  if (!items.length) { toast(T('⚠️ Place not found. Tap the map or use Satellite to pin the exact spot.','⚠️ जगह नहीं मिली। नक्शे पर टैप करें या सैटेलाइट से सही जगह चुनें।')); return; }
+  renderSuggest(items);
 }
 
 function confirmMap() {
-  if (!selLatLng) { toast('⚠️ Please tap on the map or search a location first!'); return; }
-  closeMap();
-  toast('📍 Location set!', '#C9973A');
-  fetchRoute();
+  if (!selLatLng) { toast(T('⚠️ Please tap on the map or search a location first!','⚠️ पहले नक्शे पर टैप करें या जगह खोजें!')); return; }
+  const nm=(document.getElementById('mapPlaceName').value||'').trim().slice(0,80);
+  if (nm && document.getElementById('mapSavePlace').checked && currentUser) {
+    const pl={ name:nm, lat:selLatLng.lat, lng:selLatLng.lng, by:currentUser.uid, createdAt:firebase.firestore.FieldValue.serverTimestamp() };
+    db.collection('places').add(pl).then(()=>{ (window._places=window._places||[]).push({name:nm,lat:pl.lat,lng:pl.lng}); toast(T('✅ Place saved for everyone','✅ जगह सबके लिए सेव हो गई'),'#2ecc71'); }).catch(()=>{});
+  }
+  closeMap(); toast(T('✅ Location set!','✅ जगह चुन ली गई!'), '#C9973A'); fetchRoute();
 }
 function closeMap() { document.getElementById('mapModal').classList.remove('show'); }
 
@@ -2049,7 +2115,7 @@ async function submitBooking() {
     if(bd.exists||bl.exists){
       toast('❌ This date is already taken! Please choose another date.');
       btn.disabled=false;
-      btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Send Booking via WhatsApp';
+      btn.textContent='🚗 Book Ride Now';
       return;
     }
   } catch(e){}
@@ -2086,7 +2152,7 @@ async function submitBooking() {
   } catch(e) {
     toast('❌ Could not save booking. Check internet connection.');
     btn.disabled=false;
-    btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Send Booking via WhatsApp';
+    btn.textContent='🚗 Book Ride Now';
     return;
   }
 
@@ -2120,13 +2186,26 @@ async function submitBooking() {
   listenBookingStatus(currentBooking.firestoreId);
 
   btn.disabled=false;
-  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Send Booking via WhatsApp';
+  btn.textContent='🚗 Book Ride Now';
 }
 
 // ============================================================
 // LISTEN BOOKING STATUS + OTP GENERATION ON ACCEPT
 // ============================================================
-function listenBookingStatus(fid) {
+
+// Re-attach to a ride that is still active (page reload, phone sleep, re-login)
+function resumeActiveRide(){
+  if(!currentUser||window._resumedFor===currentUser.uid) return; window._resumedFor=currentUser.uid;
+  db.collection('bookings').where('uid','==',currentUser.uid).get().then(q=>{
+    const now=Date.now()/1000;
+    const L=q.docs.map(d=>({id:d.id,...d.data()})).filter(b=>(b.status==='accepted'||(b.status==='pending'&&(!b.createdAt||now-b.createdAt.seconds<3600)))&&!['ended','cancelled'].includes(b.rideStatus))
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    if(!L.length) return; const b=L[0];
+    currentBooking=Object.assign({firestoreId:b.id},b);
+    listenBookingStatus(b.id, b.status==='accepted');
+  }).catch(()=>{});
+}
+function listenBookingStatus(fid, resume) {
   if(!fid) return;
   const unsub = db.collection('bookings').doc(fid).onSnapshot(snap => {
     if(!snap.exists) return;
@@ -2136,8 +2215,8 @@ function listenBookingStatus(fid) {
       closeOverlay('ovPending');
 
       // Generate OTP and save to Firestore
-      const otp = genOtp();
-      db.collection('bookings').doc(fid).update({ rideOtp: otp });
+      const otp = data.rideOtp || genOtp();
+      if(!data.rideOtp) db.collection('bookings').doc(fid).update({ rideOtp: otp });
 
       // Show OTP to customer
       document.getElementById('custOtpDisplay').textContent = otp;
@@ -2157,14 +2236,15 @@ function listenBookingStatus(fid) {
 
       const tl = document.getElementById('trackingLink');
       if(/^https:\/\//.test(data.mapLink||'')){ tl.href=data.mapLink; tl.style.display='flex'; } else { tl.style.display='none'; }
-      showOverlay('ovConfirmed');
-      toast('🎉 Driver accepted your ride! Your OTP: ' + otp,'#2ecc71');
-      startCustTracking(data);
+      if(!resume) showOverlay('ovConfirmed');
+      if(!resume) toast('🎉 Driver accepted your ride! Your OTP: ' + otp,'#2ecc71');
+      startCustTracking(Object.assign({firestoreId:fid},data));
       window._rideStartedShown   = false;
       window._rideEndedShown     = false;
       window._rideCancelledShown = false;
       window._autoEndTriggered   = false;
-      listenRideStatus(fid);
+      if(data.rideStatus==='started') window._rideStartedShown = true;
+    listenRideStatus(fid);
     } else if(data.status === 'declined') {
       unsub();
       closeOverlay('ovPending');
@@ -2335,10 +2415,14 @@ function startCustTracking(booking) {
     } else {
       custTrackMap.invalidateSize();
     }
-    db.collection('driverLocation').doc(booking.driverId||'none').onSnapshot(snap => {
+    if(window._custLocUnsub) window._custLocUnsub();
+    window._gotLoc=false; clearTimeout(window._locHint);
+    window._locHint=setTimeout(()=>{ const el=document.getElementById('custTrackStatus'); if(el&&!window._gotLoc) el.textContent=T('⏳ Driver has not shared live location yet — you can call the driver.','⏳ ड्राइवर ने अभी लाइव लोकेशन नहीं भेजी — आप ड्राइवर को कॉल कर सकते हैं।'); },25000);
+    window._custLocUnsub = db.collection('driverLocation').doc(booking.driverId||'none').onSnapshot(snap => {
       if (!snap.exists) return;
       const { lat, lng } = snap.data();
       if (!lat || !lng) return;
+      window._gotLoc = true;
       let heading = 0;
       if (custPrevLat !== null && custPrevLng !== null)
         heading = getBearing(custPrevLat, custPrevLng, lat, lng);
@@ -2352,7 +2436,7 @@ function startCustTracking(booking) {
       updateDriverEta(booking, snap.data());
       custTrackMap.panTo([lat, lng], { animate: true, duration: 1.5, easeLinearity: 0.25 });
       document.getElementById('custTrackStatus').textContent = '🟢 Driver is on the way — tracking live!';
-    });
+    }, err => { document.getElementById('custTrackStatus').textContent = '⚠️ ' + T('Could not read driver location: ','ड्राइवर की लोकेशन नहीं पढ़ पाए: ') + err.message; });
   }, 400);
 }
 
@@ -2402,7 +2486,7 @@ function startPresence(){
     if(Date.now()-_presT>15000){ _presT=Date.now();
       db.collection('driverLocation').doc(window._driverUid).set({lat:p.coords.latitude,lng:p.coords.longitude,presence:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{}); }
     applyBookings();
-  },()=>{},{enableHighAccuracy:true,maximumAge:10000});
+  },err=>{ if(!window._presErr){window._presErr=1;aToast('⚠️ Please allow location access so customers can see you: '+err.message,'#e67e22');} },{enableHighAccuracy:true,maximumAge:10000});
 }
 function stopPresence(){ if(_presWatch!==null){navigator.geolocation.clearWatch(_presWatch);_presWatch=null;} window._myPos=null; }
 function alertNewRide(b,n){
@@ -2431,6 +2515,7 @@ function showPage(name, el) {
   if(name==='tracking') initAdminMap();
   if(name==='calendar') renderAdminCal();
   if(name==='earnings') renderEarnings();
+  if(name==='tracking') setTimeout(()=>{ try{ if(adminMap) adminMap.invalidateSize(); }catch(e){} },250);
   document.getElementById('adminSidebar').classList.remove('open','active');
 }
 
@@ -2508,8 +2593,7 @@ async function adminAccept(fid, rawDate, phone, name, ref, dateEnc, timeEnc, far
       t.update(bref,{status:'accepted',driverId:window._driverUid,driverName:dr.name||'',driverPhone:dr.phone||'',vehicle:((dr.vehicleType||'')+' '+(dr.vehicleNo||'')).trim(),vehicleType:dr.vehicleType||'',vehicleNo:dr.vehicleNo||''});
     });
     aToast('✅ Ride accepted! Opening navigation…','#2ecc71');
-    setTimeout(()=>{ try{ populateTrackSel(); const sel=document.getElementById('trackSel'); sel.value=fid;
-      if(sel.value===fid){ showPage('tracking',[...document.querySelectorAll('.nav-item')].find(e=>(e.getAttribute('onclick')||'').includes("'tracking'"))); startGPS(); } }catch(e){} },1500);
+    autoStartTracking(fid);
     const msg=`Hi ${name}! 🎉 Your ride ${ref} is *CONFIRMED* with ${dr.name} (${dr.vehicleType||''} ${dr.vehicleNo||''}).\n\n📅 ${decodeURIComponent(dateEnc)}\n⏰ ${decodeURIComponent(timeEnc)}\n💰 Fare: ${decodeURIComponent(fareEnc)||'As discussed'}\n\nOpen the website to track live and see your OTP. – DriveEasy`;
     setTimeout(()=>window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank'),500);
   } catch(e) { aToast('❌ '+e.message,'#e74c3c'); }
@@ -2613,11 +2697,15 @@ function delNote(ds){const n=JSON.parse(localStorage.getItem('de_notes')||'{}');
 // FREE MAPS: tile fallback + OSRM navigation (no API key needed)
 // ============================================================
 function mkTiles(map){
-  let bad=0, swapped=false;
-  const dark=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap © CARTO'}).addTo(map);
-  dark.on('tileerror',()=>{ if(++bad<3||swapped) return; swapped=true; map.removeLayer(dark);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map); });
-  return dark;
+  const srcs=[
+    ['https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}],
+    ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}],
+    ['https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:19,attribution:'© OpenStreetMap, HOT'}]];
+  let i=0,layer=null;
+  const use=k=>{ if(layer) map.removeLayer(layer); let bad=0;
+    layer=L.tileLayer(srcs[k][0],Object.assign({className:'map-dark'},srcs[k][1])).addTo(map);
+    layer.on('tileerror',()=>{ if(++bad>=4&&i<srcs.length-1){ i++; use(i); } }); };
+  use(0); return layer;
 }
 function stepText(st){
   const m=st.maneuver||{}, t=m.type, mod=m.modifier||'', nm=st.name?' onto '+st.name:'';
@@ -2716,6 +2804,16 @@ function goTrack(fid) {
   setTimeout(()=>{ document.getElementById('trackSel').value=fid; loadTrackBooking(fid); },300);
 }
 
+
+function autoStartTracking(fid,tries){
+  tries=tries||0;
+  const b=allBookings.find(x=>x.firestoreId===fid);
+  if(!b||b.status!=='accepted'){ if(tries<20) setTimeout(()=>autoStartTracking(fid,tries+1),500); else aToast('⚠️ Open Live Tracking and press Start GPS so the customer can see you.','#e67e22'); return; }
+  populateTrackSel(); const sel=document.getElementById('trackSel'); sel.value=fid;
+  if(sel.value!==fid){ sel.add(new Option((b.ref||'')+' – '+(b.name||''),fid)); sel.value=fid; }
+  showPage('tracking',[...document.querySelectorAll('.nav-item')].find(e=>(e.getAttribute('onclick')||'').includes("'tracking'")));
+  startGPS();
+}
 function startGPS() {
   const fid=document.getElementById('trackSel').value;
   if(!fid){aToast('⚠️ Select an accepted booking first','#e67e22');return;}
@@ -2724,14 +2822,14 @@ function startGPS() {
   const b=allBookings.find(x=>x.firestoreId===fid);
   document.getElementById('trackStatus').textContent='🟢 Live – '+(b?b.name:'');
   document.getElementById('trackStatusBox').classList.add('show');
-  window._autoEndTriggered = false;
+  window._autoEndTriggered = false; window._locOk=0; window._locErr=0;
   if(trackInterval)clearInterval(trackInterval);
-  trackInterval=setInterval(()=>{
+  const tick=()=>{
     navigator.geolocation.getCurrentPosition(async pos=>{
       const lat=pos.coords.latitude, lng=pos.coords.longitude;
       document.getElementById('trackGps').textContent=`${lat.toFixed(4)},${lng.toFixed(4)}`;
       document.getElementById('trackTime').textContent=new Date().toLocaleTimeString('en-IN');
-      try{await db.collection('driverLocation').doc(MYDRV()).set({lat,lng,fid,ref:b?b.ref:'',rideStatus:((allBookings.find(x=>x.firestoreId===fid)||b||{}).rideStatus||'accepted'),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){ if(!window._locErr){window._locErr=1;aToast('⚠️ Could not share live location: '+e.message,'#e67e22');} }
+      try{await db.collection('driverLocation').doc(MYDRV()).set({lat,lng,fid,ref:b?b.ref:'',rideStatus:((allBookings.find(x=>x.firestoreId===fid)||b||{}).rideStatus||'accepted'),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); if(!window._locOk){window._locOk=1;aToast('📡 Sharing your live location with the customer','#2ecc71');}}catch(e){ if(!window._locErr){window._locErr=1;aToast('⚠️ Could not share live location: '+e.message,'#e67e22');} }
       if (b) checkAutoRideEnd(lat, lng, b);
       if(adminMap){
         const heading = (window._adminPrevLat!==undefined) ? getBearing(window._adminPrevLat,window._adminPrevLng,lat,lng) : 0;
@@ -2746,7 +2844,8 @@ function startGPS() {
         adminMap.panTo([lat,lng],{animate:true,duration:1.5,easeLinearity:0.25});
       }
     },err=>{aToast('⚠️ GPS error: '+err.message,'#e67e22');},{enableHighAccuracy:true,timeout:10000});
-  },4000);
+  };
+  tick(); trackInterval=setInterval(tick,4000);
   aToast('📍 GPS tracking started!','#2ecc71');
 }
 
