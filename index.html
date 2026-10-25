@@ -7,7 +7,7 @@
 <meta name="description" content="DriveEasy: book safe cab rides in Siwan with live map tracking, OTP-verified start and transparent fares.">
 <meta name="theme-color" content="#C9973A"><meta property="og:title" content="DriveEasy – Cab Booking in Siwan"><meta property="og:description" content="Live tracking, OTP-safe rides, fair fares.">
 <link rel="manifest" href="manifest.json"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="DriveEasy"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C9973A' stroke='%23E8B84B' stroke-width='2'/%3E%3Ctext x='50' y='72' font-size='52' text-anchor='middle' fill='%230D0D0D' font-family='monospace'%3E🚗%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
@@ -666,6 +666,29 @@ html[lang="hi"] .fare-amt{font-family:'Playfair Display','Noto Sans Devanagari',
 img.ib-icon{background:none;padding:0;object-fit:cover;box-shadow:0 6px 18px rgba(201,151,58,.35)}
 
 html:has(.overlay.show),body:has(.overlay.show){overflow:hidden}
+
+/* ===== VEHICLE PICKER + PAYMENT ===== */
+.veh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:.6rem;margin-top:.4rem}
+.veh-card{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.8rem .4rem;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;font-family:inherit;transition:transform .2s,border-color .2s,background .2s}
+.veh-card:hover{transform:translateY(-3px);border-color:var(--gold)}
+.veh-card.on{border-color:var(--gold);background:linear-gradient(160deg,rgba(201,151,58,.22),rgba(201,151,58,.05));box-shadow:0 8px 24px rgba(201,151,58,.18)}
+.veh-card.off{opacity:.55}
+.veh-ic{font-size:1.9rem}.veh-card b{font-size:.9rem}.veh-card small{font-size:.7rem;color:var(--muted)}.veh-card em{font-style:normal;font-size:.7rem;color:#2ecc71;min-height:1em;display:flex;align-items:center;gap:.3rem}
+.veh-card.off em{color:#e74c3c}
+.price-note{text-align:center;color:var(--muted);font-size:.86rem;margin:-.2rem auto 1.4rem;max-width:620px}
+.pay-box{border:1px solid rgba(201,151,58,.4);background:rgba(201,151,58,.07);border-radius:14px;padding:1rem;margin:0 0 1rem;text-align:center}
+.pay-lbl{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pay-amt{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;color:var(--gold-light);line-height:1.15;margin:.2rem 0 .7rem}
+.pay-opts{display:flex;gap:.6rem;justify-content:center}
+.pay-opts button{flex:1;max-width:150px;padding:.7rem;border-radius:11px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font:700 .88rem 'DM Sans',sans-serif;cursor:pointer}
+.pay-opts button.on{background:linear-gradient(135deg,#d9a548,#f0c45f);color:#1a1204;border-color:transparent}
+.pay-go{display:block;margin:.8rem 0 .5rem;padding:.8rem;border-radius:11px;background:#2563eb;color:#fff;text-decoration:none;font-weight:700;font-size:.9rem}
+#payQr{background:#fff;padding:8px;border-radius:10px;display:inline-block;margin:.4rem 0}
+.pay-upi{font-size:.8rem;color:var(--muted);margin:.3rem 0 .6rem}.pay-upi button{margin-left:.4rem;background:none;border:1px solid var(--border);color:var(--gold-light);border-radius:6px;padding:.15rem .5rem;cursor:pointer;font-size:.72rem}
+.pay-paid{width:100%;padding:.75rem;border-radius:11px;border:none;background:#27ae60;color:#fff;font:700 .9rem 'DM Sans',sans-serif;cursor:pointer}
+.pay-done{margin-top:.6rem;color:#2ecc71;font-weight:600;font-size:.88rem}
+.pay-tag{display:inline-block;padding:.2rem .6rem;border-radius:99px;font-size:.74rem;font-weight:700;border:1px solid var(--border);color:var(--muted)}
+.pay-tag.ok{color:#2ecc71;border-color:#2ecc71}.pay-tag.wait{color:#e67e22;border-color:#e67e22}
 </style>
 </head>
 <body></body>
@@ -774,6 +797,7 @@ html:has(.overlay.show),body:has(.overlay.show){overflow:hidden}
       <div id="drvRegBox" style="display:none"><div class="auth-field"><label>Full Name</label><input type="text" id="dName" placeholder="Your full name"></div><div class="auth-field"><label>Phone</label><input type="tel" id="dPhone" placeholder="10-digit mobile"></div><div class="auth-field"><label>Email</label><input type="email" id="dEmail" placeholder="driver@email.com"></div><div class="auth-field"><label>Password (min 6)</label><input type="password" id="dPass" placeholder="••••••••"></div>
         <div class="auth-field"><label>Vehicle Type</label><select id="dVType" style="width:100%;font-family:inherit;font-size:.92rem;color:var(--text);outline:none"><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>Auto</option></select></div>
         <div class="auth-field"><label>Vehicle Number</label><input type="text" id="dVNo" placeholder="BR 29 AB 1234"></div><div class="auth-field"><label>Driving Licence No.</label><input type="text" id="dLic" placeholder="e.g. BR0720200012345"></div><div class="auth-field"><label>City</label><input type="text" id="dCity" placeholder="Siwan"></div>
+        <div class="auth-field"><label>UPI ID (to receive payments – optional)</label><input type="text" id="dUpi" placeholder="name@upi"></div>
         <button class="abtn abtn-green" onclick="doDriverRegister()">📝 Register as Driver</button></div>
       <div class="auth-err" id="drvErr"></div>
       <div class="auth-link-row"><button class="auth-link" onclick="switchTab('login')">← Back to Customer Login</button></div>
@@ -857,6 +881,7 @@ html:has(.overlay.show),body:has(.overlay.show){overflow:hidden}
     <div class="pricing-wrap">
       <div class="sec-label">Clear & Honest</div>
       <h2 class="sec-title">Our Pricing</h2>
+      <p class="price-note">City rates per km — Auto ₹8 · Hatchback ₹12 · Sedan ₹15 · SUV ₹19. Prices below are for Hatchback.</p>
       <div class="price-grid">
         <div class="price-card"><div class="price-name">🏙️ City / Local</div><div class="price-amt">₹12</div><div class="price-unit">per km</div><div class="price-note">Min ₹80 · 15 min waiting free</div></div>
         <div class="price-card popular"><div class="pop-tag">Most Booked</div><div class="price-name">🛣️ Outstation</div><div class="price-amt">₹10</div><div class="price-unit">per km</div><div class="price-note">Min 80 km · Toll & parking extra</div></div>
@@ -901,7 +926,8 @@ html:has(.overlay.show),body:has(.overlay.show){overflow:hidden}
           <div class="form-grp"><label>Travel Date *</label><input type="date" id="bDate"></div>
           <div class="form-grp"><label>Travel Time *</label><input type="time" id="bTime"></div>
         </div>
-        <div class="form-row">
+        <div class="form-grp" style="margin-bottom:1rem"><label>Choose Vehicle</label><div class="veh-grid" id="vehGrid"></div><input type="hidden" id="bVeh" value="hatchback"></div>
+<div class="form-row">
           <div class="form-grp"><label>Trip Type</label>
             <select id="bTripType" onchange="autoFare()">
               <option value="City / Local">City / Local (₹12/km)</option>
@@ -1121,7 +1147,8 @@ html:has(.overlay.show),body:has(.overlay.show){overflow:hidden}
       <p class="ov-sub">You have reached your destination. Thank you for choosing DriveEasy!</p>
       <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);border-radius:10px;padding:.9rem;margin-bottom:1rem;font-size:.86rem;line-height:1.6;text-align:left" id="rideEndedDetails"></div>
       
-      <div style="text-align:center;margin:.2rem 0 1rem"><div style="font-size:.8rem;color:var(--muted);margin-bottom:.3rem">Rate your ride</div><div id="starRow" style="font-size:2rem;cursor:pointer;letter-spacing:.2rem"><span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span></div><input id="rateTxt" class="auth-field" placeholder="Comment (optional)" style="width:100%;margin-top:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:.6rem;color:var(--text)"><button class="obtn obtn-gold" style="margin-top:.5rem" onclick="submitRating()">⭐ Submit Rating</button></div>
+      <div id="payBox"></div>
+<div style="text-align:center;margin:.2rem 0 1rem"><div style="font-size:.8rem;color:var(--muted);margin-bottom:.3rem">Rate your ride</div><div id="starRow" style="font-size:2rem;cursor:pointer;letter-spacing:.2rem"><span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span></div><input id="rateTxt" class="auth-field" placeholder="Comment (optional)" style="width:100%;margin-top:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:.6rem;color:var(--text)"><button class="obtn obtn-gold" style="margin-top:.5rem" onclick="submitRating()">⭐ Submit Rating</button></div>
       <button class="obtn obtn-gold" onclick="closeOverlay('ovRideEnded');window.scrollTo({top:0,behavior:'smooth'})">🏠 Back to Home</button>
     </div>
   </div>
@@ -1288,13 +1315,11 @@ html:has(.overlay.show),body:has(.overlay.show){overflow:hidden}
         <div class="set-card" id="adminCard">
           <h3>🔐 Admin Account</h3><div class="set-row"><div class="set-lbl">Google account</div><div class="set-desc">anmol2010kumar18@gmail.com (verified)</div></div>
         </div>
-        <div class="set-card">
-          <h3>💰 Fare Rates</h3>
-          <div class="set-row"><div class="set-lbl">City Rate (₹/km)</div><input type="number" class="set-inp" id="rCity" value="12"></div>
-          <div class="set-row"><div class="set-lbl">Outstation Rate (₹/km)</div><input type="number" class="set-inp" id="rOut" value="10"></div>
-          <div class="set-row"><div class="set-lbl">Airport Base Fare (₹)</div><input type="number" class="set-inp" id="rAir" value="500"></div>
-          <div class="set-row"><div class="set-lbl">Hourly Rate (₹/hr)</div><input type="number" class="set-inp" id="rHr" value="150"></div>
-          <button class="btn-save" onclick="saveRates()">Save Rates</button>
+        <div class="set-card" id="upiCard">
+          <h3>💳 Payment (UPI)</h3>
+          <div class="set-row"><div class="set-lbl">Your UPI ID</div><input type="text" class="set-inp" id="myUpi" placeholder="name@upi" style="width:190px"></div>
+          <div class="set-desc" style="margin:.5rem 0 .9rem">Customers can pay you by UPI after the ride. Leave it empty for cash only.</div>
+          <button class="btn-save" onclick="saveUpi()">Save UPI ID</button>
         </div>
         
         <div class="set-card" id="dangerCard" style="border-color:rgba(231,76,60,.3)">
@@ -1590,7 +1615,7 @@ function initBookingInputs(){
   });
 }
 
-const HI={"install driveeasy app": "DriveEasy ऐप इंस्टॉल करें", "faster booking, live tracking and one-tap access from your home screen.": "तेज़ बुकिंग, लाइव ट्रैकिंग और होम स्क्रीन से सीधा खोलना।", "install": "इंस्टॉल करें", "not now": "अभी नहीं", "on iphone: tap the share button, then add to home screen.": "iPhone में: Share बटन दबाएँ, फिर 'Add to Home Screen' चुनें।", "ride in progress": "सवारी चल रही है", "driver on the way": "ड्राइवर रास्ते में है", "name this place – e.g. near shiv mandir, ward 5": "इस जगह का नाम लिखें – जैसे शिव मंदिर के पास, वार्ड 5", "save this place so others can find it": "इस जगह को सेव करें ताकि दूसरे भी ढूँढ सकें", "satellite": "सैटेलाइट", "tap the map, drag the pin*": "नक्शे पर टैप करें, पिन खींचकर सही जगह लगाएँ, या ऊपर Google Maps लिंक / कोऑर्डिनेट पेस्ट करें", "search place, paste map link or code": "जगह खोजें, मैप लिंक या कोड पेस्ट करें", "fetching address": "पता निकाल रहे हैं", "search or use your current location": "खोजें या अपनी मौजूदा लोकेशन इस्तेमाल करें", "select pickup location": "पिकअप की जगह चुनें", "select drop location": "ड्रॉप की जगह चुनें", "welcome back": "वापसी पर स्वागत है", "log in to book your ride": "सवारी बुक करने के लिए लॉगिन करें", "login": "लॉगिन", "sign up": "नया खाता", "email address": "ईमेल", "email": "ईमेल", "password": "पासवर्ड", "login & book a ride": "लॉगिन करें और सवारी बुक करें", "new here?": "नए हैं?", "create free account": "मुफ़्त खाता बनाएँ", "first name": "पहला नाम", "last name": "सरनेम", "phone number": "मोबाइल नंबर", "phone": "मोबाइल", "min 6 chars)": "कम से कम 6 अक्षर)", "confirm password": "पासवर्ड दोबारा लिखें", "create account": "खाता बनाएँ", "already have an account?": "पहले से खाता है?", "customer": "ग्राहक", "driver": "ड्राइवर", "admin": "एडमिन", "driver portal": "ड्राइवर पोर्टल", "register your vehicle and get verified*": "अपनी गाड़ी रजिस्टर करें, वेरिफ़ाई होकर कमाई शुरू करें", "register": "रजिस्टर", "driver login": "ड्राइवर लॉगिन", "full name": "पूरा नाम", "your full name": "आपका पूरा नाम", "10-digit mobile": "10 अंकों का मोबाइल", "password (min 6)": "पासवर्ड (कम से कम 6)", "vehicle type": "गाड़ी का प्रकार", "hatchback": "हैचबैक", "sedan": "सेडान", "suv": "एसयूवी", "auto": "ऑटो", "vehicle number": "गाड़ी नंबर", "driving licence no.": "ड्राइविंग लाइसेंस नंबर", "city": "शहर", "register as driver": "ड्राइवर के रूप में रजिस्टर करें", "verification status": "वेरिफ़िकेशन की स्थिति", "check status": "स्थिति देखें", "sign out": "साइन आउट", "are you a driver?": "क्या आप ड्राइवर हैं?", "driver login / register": "ड्राइवर लॉगिन / रजिस्टर", "continue with google": "Google से जारी रखें", "back to customer login": "ग्राहक लॉगिन पर वापस", "drive with us": "हमारे साथ गाड़ी चलाएँ", "register your vehicle, get verified, start earning": "गाड़ी रजिस्टर करें, वेरिफ़ाई हों, कमाई शुरू करें", "almost there": "बस थोड़ा इंतज़ार", "your driver account is being reviewed": "आपके ड्राइवर खाते की जाँच हो रही है", "owner access": "मालिक का प्रवेश", "join driveeasy in under a minute": "एक मिनट में DriveEasy से जुड़ें", "owner / admin": "मालिक / एडमिन", "restricted to the verified owner account": "सिर्फ़ मालिक के खाते के लिए", "your details are under review. you can start taking rides once the admin verifies you.": "आपकी जानकारी की जाँच हो रही है। एडमिन के वेरिफ़ाई करते ही आप सवारी ले सकेंगे।", "your ride": "आपकी सवारी", "one tap": "बस एक टैप", "away.": "पर हाज़िर।", "your journey": "आपका सफ़र", "our": "हमारा", "promise.": "वादा।", "book safe cabs in siwan*": "सीवान में सुरक्षित कैब बुक करें — लाइव ट्रैकिंग, OTP से सुरक्षित पिकअप और जाँचे-परखे ड्राइवर।", "safe, comfortable rides*": "किसी भी जगह के लिए सुरक्षित और आरामदायक सफ़र। अपनी जगह चुनें, तारीख़ चुनें, पक्की बुकिंग पाएँ।", "otp-safe rides": "OTP से सुरक्षित सफ़र", "live tracking": "लाइव ट्रैकिंग", "verified drivers": "जाँचे-परखे ड्राइवर", "verified drivers*": "जाँचे-परखे ड्राइवर · 24 घंटे उपलब्ध", "pricing": "किराया", "book": "बुक करें", "how it works": "कैसे काम करता है", "user": "यूज़र", "book a ride": "सवारी बुक करें", "see how it works": "देखें कैसे काम करता है", "rides completed": "पूरी हुई सवारी", "average rating": "औसत रेटिंग", "km travelled": "किमी का सफ़र", "available": "उपलब्ध", "why choose us": "हमें क्यों चुनें", "ride with confidence": "भरोसे के साथ सफ़र करें", "safe & verified driver": "सुरक्षित और जाँचा-परखा ड्राइवर", "every driver registers*": "हर ड्राइवर लाइसेंस और गाड़ी की जानकारी देता है और एडमिन की जाँच के बाद ही सवारी लेता है।", "map-based pickup": "नक्शे से पिकअप", "pin your exact pickup*": "नक्शे पर अपनी सही पिकअप और ड्रॉप जगह चुनें। पता समझाने की झंझट नहीं।", "transparent fare": "साफ़ किराया", "fare estimated before booking*": "बुकिंग से पहले ही किराया पता चल जाता है। कोई छुपा चार्ज नहीं।", "otp-verified start": "OTP से सफ़र शुरू", "you receive a 4-digit otp*": "ड्राइवर के स्वीकार करते ही आपको 4 अंकों का OTP मिलता है। इसे सिर्फ़ पिकअप पर ही बताएँ।", "live driver tracking": "ड्राइवर की लाइव लोकेशन", "watch the driver's*": "पक्का होने के बाद नक्शे पर ड्राइवर की गाड़ी को अपनी ओर आते देखें।", "no drivers are online right now*": "अभी कोई ड्राइवर ऑनलाइन नहीं है। कृपया थोड़ी देर बाद देखें।", "clear & honest": "साफ़ और ईमानदार", "our pricing": "हमारा किराया", "city / local": "शहर के अंदर", "per km": "प्रति किमी", "min ₹80*": "कम से कम ₹80 · 15 मिनट इंतज़ार मुफ़्त", "most booked": "सबसे ज़्यादा बुक", "outstation": "शहर के बाहर", "min 80 km*": "कम से कम 80 किमी · टोल व पार्किंग अलग", "airport drop": "एयरपोर्ट ड्रॉप", "flat base": "शुरुआती किराया", "12/km beyond 10 km": "12/किमी (10 किमी के बाद)", "hourly": "घंटे के हिसाब से", "per hour": "प्रति घंटा", "min 2 hrs*": "कम से कम 2 घंटे · 10 किमी/घंटा शामिल", "book your ride": "अपनी सवारी बुक करें", "fill in your details": "अपनी जानकारी भरें", "no drivers are online right now.": "अभी कोई ड्राइवर ऑनलाइन नहीं है।", "booking is temporarily unavailable. please check back soon.": "बुकिंग अभी बंद है। कृपया थोड़ी देर बाद देखें।", "e.g. rahul sharma": "जैसे राहुल शर्मा", "e.g. 9876543210": "जैसे 9876543210", "pickup location": "पिकअप की जगह (कहाँ से)", "drop location": "ड्रॉप की जगह (कहाँ तक)", "type or use map)": "लिखें या नक्शे से चुनें)", "type address or click*": "पता लिखें या 📍 नक्शा बटन दबाएँ", "map": "नक्शा", "travel date": "सफ़र की तारीख़", "travel time": "सफ़र का समय", "trip type": "सफ़र का प्रकार", "city / local (₹12/km)": "शहर के अंदर (₹12/किमी)", "outstation (₹10/km)": "शहर के बाहर (₹10/किमी)", "round trip": "आना-जाना (राउंड ट्रिप)", "airport transfer (from ₹500)": "एयरपोर्ट (₹500 से शुरू)", "hourly use (₹150/hr)": "घंटे के हिसाब से (₹150/घंटा)", "no. of passengers": "सवारियों की संख्या", "estimated fare": "अनुमानित किराया", "choose pickup and drop on the map to see your fare": "किराया देखने के लिए नक्शे पर पिकअप और ड्रॉप चुनें", "distance (km) – filled automatically, you can change it": "दूरी (किमी) – अपने आप भरती है, बदल भी सकते हैं", "additional notes": "अन्य जानकारी", "luggage, special stops*": "सामान, बीच में रुकना आदि", "book ride now": "अभी सवारी बुक करें", "your request goes to nearby verified drivers first.": "आपकी रिक्वेस्ट सबसे पहले पास के जाँचे-परखे ड्राइवरों को जाती है।", "this screen updates automatically when a driver accepts.": "ड्राइवर के स्वीकार करते ही यह स्क्रीन अपने आप बदल जाएगी।", "live ride tracking": "सवारी की लाइव ट्रैकिंग", "waiting for driver to start": "ड्राइवर के शुरू करने का इंतज़ार", "your ride otp*": "आपका सवारी OTP — पिकअप पर ड्राइवर को बताएँ", "this 4-digit otp will be entered*": "यह 4 अंकों का OTP ड्राइवर सफ़र शुरू करने के लिए डालेगा। किसी और को न बताएँ।", "waiting for driver": "ड्राइवर का इंतज़ार", "cancel ride": "सवारी रद्द करें", "ride has started!": "सवारी शुरू हो गई!", "driver picked you up*": "ड्राइवर ने आपको बैठा लिया। आपका सफ़र लाइव ट्रैक हो रहा है।", "ride completed!": "सवारी पूरी हुई!", "you have reached your destination.": "आप अपनी मंज़िल पर पहुँच गए।", "share trip with family": "परिवार को सफ़र की जानकारी भेजें", "pickup": "पिकअप", "drop": "ड्रॉप", "on the way": "रास्ते में", "your account": "आपका खाता", "my rides": "मेरी सवारियाँ", "receipt": "रसीद", "call driver": "ड्राइवर को कॉल करें", "whatsapp": "व्हाट्सऐप", "simple & safe": "आसान और सुरक्षित", "how driveeasy works": "DriveEasy कैसे काम करता है", "pin your route": "अपना रास्ता चुनें", "drop two pins on the map.*": "नक्शे पर दो पिन लगाएँ। दूरी, समय और किराया तुरंत दिखेगा।", "nearby driver accepts": "पास का ड्राइवर स्वीकार करता है", "verified drivers close to you*": "आपके पास के जाँचे-परखे ड्राइवरों को सबसे पहले आपकी रिक्वेस्ट मिलती है।", "track live": "लाइव ट्रैक करें", "see the car*": "नक्शे पर गाड़ी, नंबर प्लेट और पहुँचने का समय देखें।", "ride safe": "सुरक्षित सफ़र", "share the otp*": "OTP बताएँ, आराम से सफ़र करें, फिर ड्राइवर को रेटिंग दें।", "ready when you are.": "आप तैयार, तो हम भी तैयार।", "every ride is otp-verified*": "हर सवारी OTP से सुरक्षित, ट्रैक होने वाली और परिवार से शेयर करने लायक।", "safe, trackable cab rides in siwan.": "सीवान में सुरक्षित, ट्रैक होने वाली कैब सवारी।", "why us": "हमें क्यों चुनें", "select location": "जगह चुनें", "search area, street, landmark": "इलाका, गली या पहचान की जगह खोजें", "search": "खोजें", "use my current location": "मेरी मौजूदा लोकेशन इस्तेमाल करें", "tap the map to pin your location*": "नक्शे पर टैप करके जगह चुनें, या ऊपर खोजें", "search or tap on map": "खोजें या नक्शे पर टैप करें", "confirm": "पक्का करें", "this screen will automatically update": "यह स्क्रीन अपने आप बदल जाएगी", "when the driver accepts or declines your ride.": "जब ड्राइवर आपकी सवारी स्वीकार या अस्वीकार करेगा।", "your booking has been sent to nearby verified drivers.": "आपकी बुकिंग पास के जाँचे-परखे ड्राइवरों को भेज दी गई है।", "booking reference": "बुकिंग नंबर", "cancel & go back": "रद्द करें और वापस जाएँ", "ride confirmed!": "सवारी पक्की हो गई!", "your ride has been accepted by the driver!": "ड्राइवर ने आपकी सवारी स्वीकार कर ली है!", "show this to the driver*": "सफ़र शुरू करने के लिए पिकअप पर यह ड्राइवर को बताएँ।", "view route on google maps": "Google Maps पर रास्ता देखें", "watch live tracking": "लाइव ट्रैकिंग देखें", "not available": "उपलब्ध नहीं", "sorry, the driver is not available*": "माफ़ करें, अभी ड्राइवर उपलब्ध नहीं है। कुछ मिनट बाद फिर कोशिश करें।", "try another booking": "फिर से बुक करें", "cancel your ride?": "क्या सवारी रद्द करनी है?", "please select a reason*": "कृपया कारण चुनें। इससे हम बेहतर सेवा दे पाएँगे।", "reason for cancellation": "रद्द करने का कारण", "select a reason": "कारण चुनें", "change of plans": "प्लान बदल गया", "booked by mistake": "गलती से बुक हो गया", "driver is taking too long": "ड्राइवर को बहुत देर लग रही है", "found another transport": "दूसरा साधन मिल गया", "emergency came up": "ज़रूरी काम आ गया", "other reason": "कोई और कारण", "any additional details? (optional)": "और कुछ बताना है? (ज़रूरी नहीं)", "yes, cancel ride": "हाँ, रद्द करें", "go back": "वापस जाएँ", "otp verified!*": "OTP सही है! ड्राइवर ने पहचान पक्की कर ली और सफ़र शुरू हो गया।", "driver has picked you up!": "ड्राइवर ने आपको बैठा लिया!", "sit back and enjoy*": "आराम से बैठें। लाइव ट्रैकिंग चालू है।", "watch live map": "लाइव नक्शा देखें", "you have reached your destination. thank you*": "आप मंज़िल पर पहुँच गए। DriveEasy चुनने के लिए धन्यवाद!", "rate your ride": "अपनी सवारी को रेटिंग दें", "comment (optional)": "टिप्पणी (ज़रूरी नहीं)", "submit rating": "रेटिंग भेजें", "back to home": "होम पर वापस", "ride cancelled": "सवारी रद्द हुई", "this ride has been cancelled.": "यह सवारी रद्द हो गई है।", "book a new ride": "नई सवारी बुक करें", "dashboard": "डैशबोर्ड", "bookings": "बुकिंग", "drivers": "ड्राइवर", "earnings": "कमाई", "settings": "सेटिंग", "logout": "लॉगआउट", "panel": "पैनल", "online": "ऑनलाइन", "offline": "ऑफ़लाइन", "new booking request!": "नई बुकिंग रिक्वेस्ट!", "a customer is waiting for your response.": "एक ग्राहक आपके जवाब का इंतज़ार कर रहा है।", "view": "देखें", "total bookings": "कुल बुकिंग", "pending": "बाकी", "accepted": "स्वीकार", "declined": "अस्वीकार", "cancelled": "रद्द", "completed": "पूरी", "est. earnings": "अनुमानित कमाई", "earnings*": "कमाई · पिछले 7 दिन", "booking status": "बुकिंग की स्थिति", "recent bookings": "हाल की बुकिंग", "last 14 days": "पिछले 14 दिन", "completed rides": "पूरी हुई सवारियाँ", "all": "सभी", "today": "आज", "last 7 days": "पिछले 7 दिन", "this month": "इस महीने", "all time": "कुल", "rides done": "पूरी सवारियाँ", "rating": "रेटिंग", "status:": "स्थिति:", "no active ride": "कोई सवारी चालू नहीं", "booking:": "बुकिंग:", "gps:": "GPS:", "updated:": "अपडेट:", "live tracking & navigation": "लाइव ट्रैकिंग और नेविगेशन", "select accepted booking": "स्वीकार की गई बुकिंग चुनें", "choose an accepted booking": "बुकिंग चुनें", "navigation": "नेविगेशन", "to pickup": "पिकअप तक", "to drop-off": "ड्रॉप तक", "google maps": "Google Maps", "other map app": "दूसरा मैप ऐप", "recalculate": "दोबारा निकालें", "enter customer otp to start ride": "सफ़र शुरू करने के लिए ग्राहक का OTP डालें", "ask the customer for their 4-digit otp*": "ग्राहक से 4 अंकों का OTP पूछें और नीचे डालकर सफ़र शुरू करें।", "verify & start ride": "जाँचें और सफ़र शुरू करें", "start gps tracking (my location)": "GPS ट्रैकिंग शुरू करें (मेरी लोकेशन)", "mark ride ended (reached destination)": "सफ़र पूरा करें (मंज़िल पर पहुँचे)", "stop gps tracking": "GPS ट्रैकिंग बंद करें", "cancel accepted ride": "स्वीकार की सवारी रद्द करें", "share live location with passenger": "सवारी को लाइव लोकेशन भेजें", "gps active": "GPS चालू", "your location is being sent every 4 seconds.": "आपकी लोकेशन हर 4 सेकंड में भेजी जा रही है।", "customer can see your*": "ग्राहक अपनी स्क्रीन पर आपकी गाड़ी को चलते देख सकता है!", "accept": "स्वीकार करें", "decline": "मना करें", "from you": "आपसे दूरी", "new driver": "नया ड्राइवर", "verified driver": "जाँचा-परखा ड्राइवर", "waiting for driver to share live location": "ड्राइवर की लाइव लोकेशन का इंतज़ार", "your driver has reached*": "आपका ड्राइवर पहुँच गया है!"};
+const HI={"choose vehicle": "गाड़ी चुनें", "upi id (to receive payments – optional)": "UPI आईडी (भुगतान पाने के लिए – ज़रूरी नहीं)", "your upi id": "आपकी UPI आईडी", "payment (upi)": "भुगतान (UPI)", "customers can pay you by upi*": "सवारी के बाद ग्राहक आपको UPI से भुगतान कर सकते हैं। खाली छोड़ें तो सिर्फ़ नकद।", "save upi id": "UPI आईडी सेव करें", "via upi": "UPI से", "via cash": "नकद से", "city rates per km*": "शहर में प्रति किमी — ऑटो ₹8 · हैचबैक ₹12 · सेडान ₹15 · एसयूवी ₹19। नीचे की कीमतें हैचबैक की हैं।", "amount to pay": "चुकाने की राशि", "install driveeasy app": "DriveEasy ऐप इंस्टॉल करें", "faster booking, live tracking and one-tap access from your home screen.": "तेज़ बुकिंग, लाइव ट्रैकिंग और होम स्क्रीन से सीधा खोलना।", "install": "इंस्टॉल करें", "not now": "अभी नहीं", "on iphone: tap the share button, then add to home screen.": "iPhone में: Share बटन दबाएँ, फिर 'Add to Home Screen' चुनें।", "ride in progress": "सवारी चल रही है", "driver on the way": "ड्राइवर रास्ते में है", "name this place – e.g. near shiv mandir, ward 5": "इस जगह का नाम लिखें – जैसे शिव मंदिर के पास, वार्ड 5", "save this place so others can find it": "इस जगह को सेव करें ताकि दूसरे भी ढूँढ सकें", "satellite": "सैटेलाइट", "tap the map, drag the pin*": "नक्शे पर टैप करें, पिन खींचकर सही जगह लगाएँ, या ऊपर Google Maps लिंक / कोऑर्डिनेट पेस्ट करें", "search place, paste map link or code": "जगह खोजें, मैप लिंक या कोड पेस्ट करें", "fetching address": "पता निकाल रहे हैं", "search or use your current location": "खोजें या अपनी मौजूदा लोकेशन इस्तेमाल करें", "select pickup location": "पिकअप की जगह चुनें", "select drop location": "ड्रॉप की जगह चुनें", "welcome back": "वापसी पर स्वागत है", "log in to book your ride": "सवारी बुक करने के लिए लॉगिन करें", "login": "लॉगिन", "sign up": "नया खाता", "email address": "ईमेल", "email": "ईमेल", "password": "पासवर्ड", "login & book a ride": "लॉगिन करें और सवारी बुक करें", "new here?": "नए हैं?", "create free account": "मुफ़्त खाता बनाएँ", "first name": "पहला नाम", "last name": "सरनेम", "phone number": "मोबाइल नंबर", "phone": "मोबाइल", "min 6 chars)": "कम से कम 6 अक्षर)", "confirm password": "पासवर्ड दोबारा लिखें", "create account": "खाता बनाएँ", "already have an account?": "पहले से खाता है?", "customer": "ग्राहक", "driver": "ड्राइवर", "admin": "एडमिन", "driver portal": "ड्राइवर पोर्टल", "register your vehicle and get verified*": "अपनी गाड़ी रजिस्टर करें, वेरिफ़ाई होकर कमाई शुरू करें", "register": "रजिस्टर", "driver login": "ड्राइवर लॉगिन", "full name": "पूरा नाम", "your full name": "आपका पूरा नाम", "10-digit mobile": "10 अंकों का मोबाइल", "password (min 6)": "पासवर्ड (कम से कम 6)", "vehicle type": "गाड़ी का प्रकार", "hatchback": "हैचबैक", "sedan": "सेडान", "suv": "एसयूवी", "auto": "ऑटो", "vehicle number": "गाड़ी नंबर", "driving licence no.": "ड्राइविंग लाइसेंस नंबर", "city": "शहर", "register as driver": "ड्राइवर के रूप में रजिस्टर करें", "verification status": "वेरिफ़िकेशन की स्थिति", "check status": "स्थिति देखें", "sign out": "साइन आउट", "are you a driver?": "क्या आप ड्राइवर हैं?", "driver login / register": "ड्राइवर लॉगिन / रजिस्टर", "continue with google": "Google से जारी रखें", "back to customer login": "ग्राहक लॉगिन पर वापस", "drive with us": "हमारे साथ गाड़ी चलाएँ", "register your vehicle, get verified, start earning": "गाड़ी रजिस्टर करें, वेरिफ़ाई हों, कमाई शुरू करें", "almost there": "बस थोड़ा इंतज़ार", "your driver account is being reviewed": "आपके ड्राइवर खाते की जाँच हो रही है", "owner access": "मालिक का प्रवेश", "join driveeasy in under a minute": "एक मिनट में DriveEasy से जुड़ें", "owner / admin": "मालिक / एडमिन", "restricted to the verified owner account": "सिर्फ़ मालिक के खाते के लिए", "your details are under review. you can start taking rides once the admin verifies you.": "आपकी जानकारी की जाँच हो रही है। एडमिन के वेरिफ़ाई करते ही आप सवारी ले सकेंगे।", "your ride": "आपकी सवारी", "one tap": "बस एक टैप", "away.": "पर हाज़िर।", "your journey": "आपका सफ़र", "our": "हमारा", "promise.": "वादा।", "book safe cabs in siwan*": "सीवान में सुरक्षित कैब बुक करें — लाइव ट्रैकिंग, OTP से सुरक्षित पिकअप और जाँचे-परखे ड्राइवर।", "safe, comfortable rides*": "किसी भी जगह के लिए सुरक्षित और आरामदायक सफ़र। अपनी जगह चुनें, तारीख़ चुनें, पक्की बुकिंग पाएँ।", "otp-safe rides": "OTP से सुरक्षित सफ़र", "live tracking": "लाइव ट्रैकिंग", "verified drivers": "जाँचे-परखे ड्राइवर", "verified drivers*": "जाँचे-परखे ड्राइवर · 24 घंटे उपलब्ध", "pricing": "किराया", "book": "बुक करें", "how it works": "कैसे काम करता है", "user": "यूज़र", "book a ride": "सवारी बुक करें", "see how it works": "देखें कैसे काम करता है", "rides completed": "पूरी हुई सवारी", "average rating": "औसत रेटिंग", "km travelled": "किमी का सफ़र", "available": "उपलब्ध", "why choose us": "हमें क्यों चुनें", "ride with confidence": "भरोसे के साथ सफ़र करें", "safe & verified driver": "सुरक्षित और जाँचा-परखा ड्राइवर", "every driver registers*": "हर ड्राइवर लाइसेंस और गाड़ी की जानकारी देता है और एडमिन की जाँच के बाद ही सवारी लेता है।", "map-based pickup": "नक्शे से पिकअप", "pin your exact pickup*": "नक्शे पर अपनी सही पिकअप और ड्रॉप जगह चुनें। पता समझाने की झंझट नहीं।", "transparent fare": "साफ़ किराया", "fare estimated before booking*": "बुकिंग से पहले ही किराया पता चल जाता है। कोई छुपा चार्ज नहीं।", "otp-verified start": "OTP से सफ़र शुरू", "you receive a 4-digit otp*": "ड्राइवर के स्वीकार करते ही आपको 4 अंकों का OTP मिलता है। इसे सिर्फ़ पिकअप पर ही बताएँ।", "live driver tracking": "ड्राइवर की लाइव लोकेशन", "watch the driver's*": "पक्का होने के बाद नक्शे पर ड्राइवर की गाड़ी को अपनी ओर आते देखें।", "no drivers are online right now*": "अभी कोई ड्राइवर ऑनलाइन नहीं है। कृपया थोड़ी देर बाद देखें।", "clear & honest": "साफ़ और ईमानदार", "our pricing": "हमारा किराया", "city / local": "शहर के अंदर", "per km": "प्रति किमी", "min ₹80*": "कम से कम ₹80 · 15 मिनट इंतज़ार मुफ़्त", "most booked": "सबसे ज़्यादा बुक", "outstation": "शहर के बाहर", "min 80 km*": "कम से कम 80 किमी · टोल व पार्किंग अलग", "airport drop": "एयरपोर्ट ड्रॉप", "flat base": "शुरुआती किराया", "12/km beyond 10 km": "12/किमी (10 किमी के बाद)", "hourly": "घंटे के हिसाब से", "per hour": "प्रति घंटा", "min 2 hrs*": "कम से कम 2 घंटे · 10 किमी/घंटा शामिल", "book your ride": "अपनी सवारी बुक करें", "fill in your details": "अपनी जानकारी भरें", "no drivers are online right now.": "अभी कोई ड्राइवर ऑनलाइन नहीं है।", "booking is temporarily unavailable. please check back soon.": "बुकिंग अभी बंद है। कृपया थोड़ी देर बाद देखें।", "e.g. rahul sharma": "जैसे राहुल शर्मा", "e.g. 9876543210": "जैसे 9876543210", "pickup location": "पिकअप की जगह (कहाँ से)", "drop location": "ड्रॉप की जगह (कहाँ तक)", "type or use map)": "लिखें या नक्शे से चुनें)", "type address or click*": "पता लिखें या 📍 नक्शा बटन दबाएँ", "map": "नक्शा", "travel date": "सफ़र की तारीख़", "travel time": "सफ़र का समय", "trip type": "सफ़र का प्रकार", "city / local (₹12/km)": "शहर के अंदर (₹12/किमी)", "outstation (₹10/km)": "शहर के बाहर (₹10/किमी)", "round trip": "आना-जाना (राउंड ट्रिप)", "airport transfer (from ₹500)": "एयरपोर्ट (₹500 से शुरू)", "hourly use (₹150/hr)": "घंटे के हिसाब से (₹150/घंटा)", "no. of passengers": "सवारियों की संख्या", "estimated fare": "अनुमानित किराया", "choose pickup and drop on the map to see your fare": "किराया देखने के लिए नक्शे पर पिकअप और ड्रॉप चुनें", "distance (km) – filled automatically, you can change it": "दूरी (किमी) – अपने आप भरती है, बदल भी सकते हैं", "additional notes": "अन्य जानकारी", "luggage, special stops*": "सामान, बीच में रुकना आदि", "book ride now": "अभी सवारी बुक करें", "your request goes to nearby verified drivers first.": "आपकी रिक्वेस्ट सबसे पहले पास के जाँचे-परखे ड्राइवरों को जाती है।", "this screen updates automatically when a driver accepts.": "ड्राइवर के स्वीकार करते ही यह स्क्रीन अपने आप बदल जाएगी।", "live ride tracking": "सवारी की लाइव ट्रैकिंग", "waiting for driver to start": "ड्राइवर के शुरू करने का इंतज़ार", "your ride otp*": "आपका सवारी OTP — पिकअप पर ड्राइवर को बताएँ", "this 4-digit otp will be entered*": "यह 4 अंकों का OTP ड्राइवर सफ़र शुरू करने के लिए डालेगा। किसी और को न बताएँ।", "waiting for driver": "ड्राइवर का इंतज़ार", "cancel ride": "सवारी रद्द करें", "ride has started!": "सवारी शुरू हो गई!", "driver picked you up*": "ड्राइवर ने आपको बैठा लिया। आपका सफ़र लाइव ट्रैक हो रहा है।", "ride completed!": "सवारी पूरी हुई!", "you have reached your destination.": "आप अपनी मंज़िल पर पहुँच गए।", "share trip with family": "परिवार को सफ़र की जानकारी भेजें", "pickup": "पिकअप", "drop": "ड्रॉप", "on the way": "रास्ते में", "your account": "आपका खाता", "my rides": "मेरी सवारियाँ", "receipt": "रसीद", "call driver": "ड्राइवर को कॉल करें", "whatsapp": "व्हाट्सऐप", "simple & safe": "आसान और सुरक्षित", "how driveeasy works": "DriveEasy कैसे काम करता है", "pin your route": "अपना रास्ता चुनें", "drop two pins on the map.*": "नक्शे पर दो पिन लगाएँ। दूरी, समय और किराया तुरंत दिखेगा।", "nearby driver accepts": "पास का ड्राइवर स्वीकार करता है", "verified drivers close to you*": "आपके पास के जाँचे-परखे ड्राइवरों को सबसे पहले आपकी रिक्वेस्ट मिलती है।", "track live": "लाइव ट्रैक करें", "see the car*": "नक्शे पर गाड़ी, नंबर प्लेट और पहुँचने का समय देखें।", "ride safe": "सुरक्षित सफ़र", "share the otp*": "OTP बताएँ, आराम से सफ़र करें, फिर ड्राइवर को रेटिंग दें।", "ready when you are.": "आप तैयार, तो हम भी तैयार।", "every ride is otp-verified*": "हर सवारी OTP से सुरक्षित, ट्रैक होने वाली और परिवार से शेयर करने लायक।", "safe, trackable cab rides in siwan.": "सीवान में सुरक्षित, ट्रैक होने वाली कैब सवारी।", "why us": "हमें क्यों चुनें", "select location": "जगह चुनें", "search area, street, landmark": "इलाका, गली या पहचान की जगह खोजें", "search": "खोजें", "use my current location": "मेरी मौजूदा लोकेशन इस्तेमाल करें", "tap the map to pin your location*": "नक्शे पर टैप करके जगह चुनें, या ऊपर खोजें", "search or tap on map": "खोजें या नक्शे पर टैप करें", "confirm": "पक्का करें", "this screen will automatically update": "यह स्क्रीन अपने आप बदल जाएगी", "when the driver accepts or declines your ride.": "जब ड्राइवर आपकी सवारी स्वीकार या अस्वीकार करेगा।", "your booking has been sent to nearby verified drivers.": "आपकी बुकिंग पास के जाँचे-परखे ड्राइवरों को भेज दी गई है।", "booking reference": "बुकिंग नंबर", "cancel & go back": "रद्द करें और वापस जाएँ", "ride confirmed!": "सवारी पक्की हो गई!", "your ride has been accepted by the driver!": "ड्राइवर ने आपकी सवारी स्वीकार कर ली है!", "show this to the driver*": "सफ़र शुरू करने के लिए पिकअप पर यह ड्राइवर को बताएँ।", "view route on google maps": "Google Maps पर रास्ता देखें", "watch live tracking": "लाइव ट्रैकिंग देखें", "not available": "उपलब्ध नहीं", "sorry, the driver is not available*": "माफ़ करें, अभी ड्राइवर उपलब्ध नहीं है। कुछ मिनट बाद फिर कोशिश करें।", "try another booking": "फिर से बुक करें", "cancel your ride?": "क्या सवारी रद्द करनी है?", "please select a reason*": "कृपया कारण चुनें। इससे हम बेहतर सेवा दे पाएँगे।", "reason for cancellation": "रद्द करने का कारण", "select a reason": "कारण चुनें", "change of plans": "प्लान बदल गया", "booked by mistake": "गलती से बुक हो गया", "driver is taking too long": "ड्राइवर को बहुत देर लग रही है", "found another transport": "दूसरा साधन मिल गया", "emergency came up": "ज़रूरी काम आ गया", "other reason": "कोई और कारण", "any additional details? (optional)": "और कुछ बताना है? (ज़रूरी नहीं)", "yes, cancel ride": "हाँ, रद्द करें", "go back": "वापस जाएँ", "otp verified!*": "OTP सही है! ड्राइवर ने पहचान पक्की कर ली और सफ़र शुरू हो गया।", "driver has picked you up!": "ड्राइवर ने आपको बैठा लिया!", "sit back and enjoy*": "आराम से बैठें। लाइव ट्रैकिंग चालू है।", "watch live map": "लाइव नक्शा देखें", "you have reached your destination. thank you*": "आप मंज़िल पर पहुँच गए। DriveEasy चुनने के लिए धन्यवाद!", "rate your ride": "अपनी सवारी को रेटिंग दें", "comment (optional)": "टिप्पणी (ज़रूरी नहीं)", "submit rating": "रेटिंग भेजें", "back to home": "होम पर वापस", "ride cancelled": "सवारी रद्द हुई", "this ride has been cancelled.": "यह सवारी रद्द हो गई है।", "book a new ride": "नई सवारी बुक करें", "dashboard": "डैशबोर्ड", "bookings": "बुकिंग", "drivers": "ड्राइवर", "earnings": "कमाई", "settings": "सेटिंग", "logout": "लॉगआउट", "panel": "पैनल", "online": "ऑनलाइन", "offline": "ऑफ़लाइन", "new booking request!": "नई बुकिंग रिक्वेस्ट!", "a customer is waiting for your response.": "एक ग्राहक आपके जवाब का इंतज़ार कर रहा है।", "view": "देखें", "total bookings": "कुल बुकिंग", "pending": "बाकी", "accepted": "स्वीकार", "declined": "अस्वीकार", "cancelled": "रद्द", "completed": "पूरी", "est. earnings": "अनुमानित कमाई", "earnings*": "कमाई · पिछले 7 दिन", "booking status": "बुकिंग की स्थिति", "recent bookings": "हाल की बुकिंग", "last 14 days": "पिछले 14 दिन", "completed rides": "पूरी हुई सवारियाँ", "all": "सभी", "today": "आज", "last 7 days": "पिछले 7 दिन", "this month": "इस महीने", "all time": "कुल", "rides done": "पूरी सवारियाँ", "rating": "रेटिंग", "status:": "स्थिति:", "no active ride": "कोई सवारी चालू नहीं", "booking:": "बुकिंग:", "gps:": "GPS:", "updated:": "अपडेट:", "live tracking & navigation": "लाइव ट्रैकिंग और नेविगेशन", "select accepted booking": "स्वीकार की गई बुकिंग चुनें", "choose an accepted booking": "बुकिंग चुनें", "navigation": "नेविगेशन", "to pickup": "पिकअप तक", "to drop-off": "ड्रॉप तक", "google maps": "Google Maps", "other map app": "दूसरा मैप ऐप", "recalculate": "दोबारा निकालें", "enter customer otp to start ride": "सफ़र शुरू करने के लिए ग्राहक का OTP डालें", "ask the customer for their 4-digit otp*": "ग्राहक से 4 अंकों का OTP पूछें और नीचे डालकर सफ़र शुरू करें।", "verify & start ride": "जाँचें और सफ़र शुरू करें", "start gps tracking (my location)": "GPS ट्रैकिंग शुरू करें (मेरी लोकेशन)", "mark ride ended (reached destination)": "सफ़र पूरा करें (मंज़िल पर पहुँचे)", "stop gps tracking": "GPS ट्रैकिंग बंद करें", "cancel accepted ride": "स्वीकार की सवारी रद्द करें", "share live location with passenger": "सवारी को लाइव लोकेशन भेजें", "gps active": "GPS चालू", "your location is being sent every 4 seconds.": "आपकी लोकेशन हर 4 सेकंड में भेजी जा रही है।", "customer can see your*": "ग्राहक अपनी स्क्रीन पर आपकी गाड़ी को चलते देख सकता है!", "accept": "स्वीकार करें", "decline": "मना करें", "from you": "आपसे दूरी", "new driver": "नया ड्राइवर", "verified driver": "जाँचा-परखा ड्राइवर", "waiting for driver to share live location": "ड्राइवर की लाइव लोकेशन का इंतज़ार", "your driver has reached*": "आपका ड्राइवर पहुँच गया है!"};
 const _hiRe=/[\u0900-\u097F]/;
 function hiLookup(t){
   const pre=(t.match(/^[^A-Za-z0-9]*/)||[''])[0], rest=t.slice(pre.length), suf=(rest.match(/[^A-Za-z0-9.!?)\]]*$/)||[''])[0];
@@ -1674,6 +1699,82 @@ function ensureManifest(){
     const l=document.querySelector('link[rel=manifest]'); if(l) l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));
   });
 }
+
+// ============================================================
+// VEHICLE TYPES, UPI PAYMENT
+// ============================================================
+const VEH={
+  auto:{n:'Auto',hi:'ऑटो',ic:'🛺',seats:3,city:8,cityMin:50,out:7,outMin:600,air:350,airKm:8,hr:100},
+  hatchback:{n:'Hatchback',hi:'हैचबैक',ic:'🚗',seats:4,city:12,cityMin:80,out:10,outMin:800,air:500,airKm:12,hr:150},
+  sedan:{n:'Sedan',hi:'सेडान',ic:'🚙',seats:4,city:15,cityMin:100,out:13,outMin:1000,air:650,airKm:15,hr:190},
+  suv:{n:'SUV',hi:'एसयूवी',ic:'🚐',seats:6,city:19,cityMin:130,out:16,outMin:1300,air:850,airKm:19,hr:250}};
+const VEH_KEYS=['auto','hatchback','sedan','suv'];
+const vehName=k=>VEH[k]?T(VEH[k].n,VEH[k].hi):'';
+function updateTripLabels(v){
+  const u=T('km','किमी'), L={'City / Local':[T('City / Local','शहर के अंदर'),`₹${v.city}/${u}`],'Outstation':[T('Outstation','शहर के बाहर'),`₹${v.out}/${u}`],'Round Trip':[T('Round Trip','आना-जाना (राउंड ट्रिप)'),`₹${v.city}/${u} ×2`],
+    'Airport Transfer':[T('Airport Transfer','एयरपोर्ट'),T(`from ₹${v.air}`,`₹${v.air} से शुरू`)],'Hourly Use':[T('Hourly Use','घंटे के हिसाब से'),`₹${v.hr}/${T('hr','घंटा')}`]};
+  [...document.getElementById('bTripType').options].forEach(o=>{ const l=L[o.value]; if(l) o.textContent=l[0]+' ('+l[1]+')'; });
+}
+function renderVehicles(){
+  const g=document.getElementById('vehGrid'); if(!g) return; const cur=document.getElementById('bVeh').value, cnt=window._onlineByType||null;
+  g.innerHTML=VEH_KEYS.map(k=>{ const v=VEH[k], n=cnt?(cnt[k]||0):null;
+    return `<button type="button" class="veh-card${k===cur?' on':''}${n===0?' off':''}" onclick="pickVeh('${k}')"><span class="veh-ic">${v.ic}</span><b>${esc(vehName(k))}</b><small>${v.seats} ${esc(T('seats','सीट'))} · ₹${v.city}/${esc(T('km','किमी'))}</small><em>${n===null?'':(n>0?'<i class="live-dot"></i> '+n+' '+esc(T('online','ऑनलाइन')):esc(T('No driver','ड्राइवर नहीं')))}</em></button>`; }).join('');
+}
+function pickVeh(k){
+  document.getElementById('bVeh').value=k; const v=VEH[k], ps=document.getElementById('bPassengers'), keep=ps.value;
+  ps.innerHTML=Array.from({length:v.seats},(_,i)=>`<option>${i+1}</option>`).join(''); if(+keep>=1&&+keep<=v.seats) ps.value=keep;
+  renderVehicles(); autoFare();
+}
+const _upiOk=v=>/^[\w.\-]{2,256}@[A-Za-z]{2,64}$/.test(v);
+function saveUpi(){
+  const v=(document.getElementById('myUpi').value||'').trim();
+  if(v&&!_upiOk(v)){ aToast('⚠️ Enter a valid UPI ID like name@upi','#e67e22'); return; }
+  db.collection('drivers').doc(window._driverUid).update({upi:v}).then(()=>{ (window._drv=window._drv||{}).upi=v; aToast('✅ UPI ID saved','#2ecc71'); }).catch(e=>aToast('❌ '+e.message,'#e74c3c'));
+}
+function renderPayBox(){
+  const c=window._payCtx, el=document.getElementById('payBox'); if(!c||!el) return;
+  el.innerHTML=`<div class="pay-box"><div class="pay-lbl">${esc(T('Amount to pay','चुकाने की राशि'))}</div><div class="pay-amt">${esc(c.amt?'₹'+c.amt.toLocaleString('en-IN'):T('As agreed','तय अनुसार'))}</div>
+    <div class="pay-opts"><button type="button" id="payCash" onclick="choosePay('cash')">💵 ${esc(T('Cash','नकद'))}</button>${(c.upi&&c.amt)?'<button type="button" id="payUpi" onclick="choosePay(\'upi\')">📲 UPI</button>':''}</div>
+    <div id="payUpiBox"></div><div id="payDone" class="pay-done"></div></div>`;
+}
+async function choosePay(m){
+  const c=window._payCtx; if(!c) return;
+  document.getElementById('payCash').classList.toggle('on',m==='cash'); const ub=document.getElementById('payUpi'); if(ub) ub.classList.toggle('on',m==='upi');
+  const box=document.getElementById('payUpiBox'), done=document.getElementById('payDone');
+  if(m==='cash'){ box.innerHTML=''; try{ await db.collection('bookings').doc(c.fid).update({payMethod:'cash',payStatus:'pending'}); }catch(e){}
+    done.textContent=T('✅ Please pay the driver in cash.','✅ कृपया ड्राइवर को नकद दें।'); return; }
+  const uri=`upi://pay?pa=${encodeURIComponent(c.upi)}&pn=${encodeURIComponent(c.dname||'DriveEasy Driver')}&am=${c.amt.toFixed(2)}&cu=INR&tn=${encodeURIComponent('DriveEasy '+c.ref)}`;
+  box.innerHTML=`<a class="pay-go" href="${esc(uri)}">📲 ${esc(T('Pay with any UPI app','किसी भी UPI ऐप से भुगतान करें'))}</a><div id="payQr"></div>
+    <div class="pay-upi">${esc(c.upi)} <button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText('${ja(c.upi)}')">${esc(T('Copy','कॉपी'))}</button></div>
+    <button type="button" class="pay-paid" onclick="markUpiPaid()">✅ ${esc(T('I have paid','मैंने भुगतान कर दिया'))}</button>`;
+  done.textContent='';
+  if(typeof QRCode!=='undefined'){ try{ new QRCode(document.getElementById('payQr'),{text:uri,width:148,height:148,colorDark:'#000000',colorLight:'#ffffff'}); }catch(e){} }
+}
+async function markUpiPaid(){
+  const c=window._payCtx; if(!c) return;
+  try{ await db.collection('bookings').doc(c.fid).update({payMethod:'upi',payStatus:'claimed'});
+    document.getElementById('payUpiBox').innerHTML=''; document.getElementById('payDone').textContent=T('✅ Noted — the driver will confirm your payment.','✅ ठीक है — ड्राइवर आपका भुगतान पक्का करेंगे।');
+  }catch(e){ toast('❌ '+e.message); }
+}
+function payBadge(b){
+  const amt='₹'+(typeof fareNum==='function'?fareNum(b):0).toLocaleString('en-IN'), id=esc(b.firestoreId||'');
+  if(b.payStatus==='confirmed') return `<span class="pay-tag ok">✅ ${esc(T('Paid','चुकाया'))} · ${b.payMethod==='upi'?'UPI':esc(T('Cash','नकद'))}</span>`;
+  const btn=`<button class="btn-sm acc" onclick="confirmPay('${id}')">${esc(T('Confirm received','पैसे मिल गए'))}</button>`;
+  if(b.payMethod==='upi') return `<span class="pay-tag wait">📲 ${esc(T('UPI – customer says paid','UPI – ग्राहक ने भुगतान किया'))} ${amt}</span> ${btn}`;
+  if(b.payMethod==='cash') return `<span class="pay-tag wait">💵 ${esc(T('Cash – collect','नकद – लेना है'))} ${amt}</span> ${btn}`;
+  return `<span class="pay-tag">⏳ ${esc(T('Payment not chosen yet','भुगतान का तरीका अभी नहीं चुना'))}</span> ${btn}`;
+}
+function payTagHist(b){
+  if(b.payStatus==='confirmed') return ' <span class="hist-badge" style="color:#2ecc71">✅ '+esc(T('Paid','चुकाया'))+'</span>';
+  if(b.payMethod==='upi') return ' <span class="hist-badge" style="color:#e67e22">⏳ '+esc(T('UPI – driver will confirm','UPI – ड्राइवर पक्का करेंगे'))+'</span>';
+  if(b.payMethod==='cash') return ' <span class="hist-badge" style="color:#e67e22">💵 '+esc(T('Cash','नकद'))+'</span>';
+  return '';
+}
+function confirmPay(fid){
+  const b=allBookings.find(x=>x.firestoreId===fid)||{};
+  db.collection('bookings').doc(fid).update({payStatus:'confirmed',payMethod:b.payMethod||'cash',paidAt:firebase.firestore.FieldValue.serverTimestamp()})
+    .then(()=>aToast('✅ Payment confirmed','#2ecc71')).catch(e=>aToast('❌ '+e.message,'#e74c3c'));
+}
 let _regBusy=false;
 const MYDRV=()=>window._driverUid||'owner';
 function routeUser(user){
@@ -1704,14 +1805,15 @@ function doDriverLogin(){
 }
 async function doDriverRegister(){
   const g=i=>(document.getElementById(i).value||'').trim();
-  const name=g('dName'),phone=g('dPhone'),email=g('dEmail').toLowerCase(),pass=document.getElementById('dPass').value,vt=g('dVType'),vn=g('dVNo').toUpperCase(),lic=g('dLic').toUpperCase(),city=g('dCity');
+  const name=g('dName'),phone=g('dPhone'),email=g('dEmail').toLowerCase(),pass=document.getElementById('dPass').value,vt=g('dVType'),vn=g('dVNo').toUpperCase(),lic=g('dLic').toUpperCase(),city=g('dCity'),upi=g('dUpi');
   if(!name||!/^\d{10}$/.test(phone)||!email||pass.length<6||!vn||!lic||!city){showErr('drvErr','⚠️ Fill all fields (10-digit phone, password min 6).');return;}
   if (fbBlocked('drvErr')) return;
+  if(upi&&!_upiOk(upi)){ showErr('drvErr','⚠️ Enter a valid UPI ID like name@upi, or leave it empty.'); return; }
   _regBusy=true;
   try{
     const cr=await auth.createUserWithEmailAndPassword(email,pass);
     await cr.user.updateProfile({displayName:name});
-    await db.collection('drivers').doc(cr.user.uid).set({name,phone,email,vehicleType:vt,vehicleNo:vn,city,status:'pending',online:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('drivers').doc(cr.user.uid).set({name,phone,email,vehicleType:vt,vehicleNo:vn,city,upi,status:'pending',online:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
     await db.collection('driverPrivate').doc(cr.user.uid).set({licenceNo:lic});
     _regBusy=false; routeUser(cr.user);
   }catch(e){ _regBusy=false; showErr('drvErr','❌ '+friendlyErr(e.code||'')); }
@@ -1811,20 +1913,17 @@ function enterAdmin() {
   document.getElementById('navDrivers').style.display = isOwner ? '' : 'none';
   document.getElementById('dangerCard').style.display = isOwner ? '' : 'none';
   document.getElementById('adminCard').style.display  = isOwner ? '' : 'none';
+  const uc=document.getElementById('upiCard'); if(uc) uc.style.display = isOwner ? 'none' : '';
   db.collection('drivers').doc(window._driverUid||'x').get().then(snap => {
     const online = snap.exists ? !!snap.data().online : false;
     if(online&&window._role==='driver') startPresence();
+    const myU=document.getElementById('myUpi'); if(myU&&snap.exists) myU.value=snap.data().upi||'';
     driverOn = online;
     const dot = document.getElementById('statusDot');
     const lbl = document.getElementById('statusLbl');
     if(dot) dot.className = 'status-dot' + (driverOn ? '' : ' offline');
     if(lbl) lbl.textContent = driverOn ? 'Online' : 'Offline';
   }).catch(() => {});
-  const rates = JSON.parse(localStorage.getItem('de_rates')||'{}');
-  if (rates.city) document.getElementById('rCity').value = rates.city;
-  if (rates.outstation) document.getElementById('rOut').value = rates.outstation;
-  if (rates.airport) document.getElementById('rAir').value = rates.airport;
-  if (rates.hourly) document.getElementById('rHr').value = rates.hourly;
   const nd = document.getElementById('noteDate');
   if (nd) nd.min = new Date().toISOString().split('T')[0];
   renderNotes();
@@ -1836,7 +1935,7 @@ function enterAdmin() {
 window.addEventListener('DOMContentLoaded', function() {
   showScreen('auth'); switchTab('login');
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-  if(typeof Chart!=='undefined') Chart.defaults.color='#aaa'; initMotion(); initBookingInputs(); initLang(); ensureManifest(); maybeShowBanner();
+  if(typeof Chart!=='undefined') Chart.defaults.color='#aaa'; initMotion(); initBookingInputs(); initLang(); ensureManifest(); maybeShowBanner(); pickVeh('hatchback');
 });
 
 
@@ -1894,13 +1993,13 @@ function loadHistory(){
     window._hist=L;
     const el=document.getElementById('histList'); if(!el) return;
     el.innerHTML=L.length?L.map((b,i)=>{ const st=rideState(b);
-      return `<div class="feat-card" style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap"><div><b>${esc(b.ref||'')}</b> · ${esc(b.date||'')}<br><small style="color:var(--muted)">${esc(b.pickup||'')} → ${esc(b.drop||'')}</small><br><span style="font-weight:700;color:var(--gold-light)">${esc(b.fare||'')}</span> <span class="hist-badge" style="color:${st[1]}">${esc(st[0])}</span></div>${st[0]==='Completed'?`<button class="btn-signout" onclick="printReceipt(${i})">🧾 Receipt</button>`:''}</div>`; }).join('')
+      return `<div class="feat-card" style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap"><div><b>${esc(b.ref||'')}</b> · ${esc(b.date||'')}<br><small style="color:var(--muted)">${esc(b.pickup||'')} → ${esc(b.drop||'')}</small><br><span style="font-weight:700;color:var(--gold-light)">${esc(b.fare||'')}</span> <span class="hist-badge" style="color:${st[1]}">${esc(st[0])}</span>${st[0]==='Completed'?payTagHist(b):''}</div>${st[0]==='Completed'?`<button class="btn-signout" onclick="printReceipt(${i})">🧾 Receipt</button>`:''}</div>`; }).join('')
       :'<div style="text-align:center;color:var(--muted)">No rides yet.</div>';
   },()=>{});
 }
 function printReceipt(i){
   const b=window._hist[i], w=window.open('','_blank');
-  w.document.write(`<title>Receipt ${esc(b.ref)}</title><body style="font-family:sans-serif;max-width:480px;margin:2rem auto"><h2>🚗 DriveEasy – Ride Receipt</h2><hr><p><b>Ref:</b> ${esc(b.ref)}<br><b>Passenger:</b> ${esc(b.name)}<br><b>Date:</b> ${esc(b.date)} ${esc(b.time||'')}<br><b>From:</b> ${esc(b.pickup)}<br><b>To:</b> ${esc(b.drop)}<br><b>Distance:</b> ${esc(b.km||'–')} km<br><b>Fare:</b> ${esc(b.fare||'As agreed')}</p><hr><p>Thank you for riding with DriveEasy!</p><script>print()<\/script></body>`);
+  w.document.write(`<title>Receipt ${esc(b.ref)}</title><body style="font-family:sans-serif;max-width:480px;margin:2rem auto"><h2>🚗 DriveEasy – Ride Receipt</h2><hr><p><b>Ref:</b> ${esc(b.ref)}<br><b>Passenger:</b> ${esc(b.name)}<br><b>Date:</b> ${esc(b.date)} ${esc(b.time||'')}<br><b>From:</b> ${esc(b.pickup)}<br><b>To:</b> ${esc(b.drop)}<br><b>Distance:</b> ${esc(b.km||'–')} km<br><b>Fare:</b> ${esc(b.fare||'As agreed')}</p><p><b>Payment:</b> ${esc(b.payMethod?b.payMethod.toUpperCase():'—')} (${esc(b.payStatus||'pending')})</p><hr><p>Thank you for riding with DriveEasy!</p><script>print()<\/script></body>`);
   w.document.close();
 }
 function shareTrip(){
@@ -1970,17 +2069,19 @@ function changeMonth(dir) { calDate.setMonth(calDate.getMonth()+dir); renderCale
 // FARE ESTIMATOR
 // ============================================================
 function autoFare() {
+  const key=(document.getElementById('bVeh')||{}).value||'hatchback', v=VEH[key]||VEH.hatchback;
+  updateTripLabels(v);
   const km=parseFloat(document.getElementById('bKm').value)||0, t=document.getElementById('bTripType').value;
   const amt=document.getElementById('fareAmt'), br=document.getElementById('fareBreak');
   if(!km){ document.getElementById('bFare').value=''; amt.textContent='₹ —'; br.textContent=T('Choose pickup and drop on the map to see your fare','किराया देखने के लिए नक्शे पर पिकअप और ड्रॉप चुनें'); return; }
-  let fare,line; const u=T('km','किमी');
-  if(t.includes('City')){ fare=Math.max(km*12,80); line=`${km} ${u} × ₹12/${u}`+(km*12<80?` · ${T('minimum fare','न्यूनतम किराया')} ₹80`:''); }
-  else if(t.includes('Outstation')){ fare=Math.max(km*10,800); line=`${km} ${u} × ₹10/${u}`+(km*10<800?` · ${T('minimum fare','न्यूनतम किराया')} ₹800`:''); }
-  else if(t.includes('Airport')){ fare=500+Math.max(0,km-10)*12; line=T('Base ₹500 (first 10 km)','शुरुआती ₹500 (पहले 10 किमी)')+(km>10?` + ${Math.round((km-10)*10)/10} ${u} × ₹12`:''); }
-  else if(t.includes('Round')){ fare=km*2*12; line=`${km} ${u} × 2 (${T('return','वापसी')}) × ₹12/${u}`; }
-  else if(t.includes('Hourly')){ fare=km*150; line=`${km} ${T('hours','घंटे')} × ₹150/${T('hr','घंटा')}`; }
-  else { fare=km*12; line=`${km} ${u} × ₹12/${u}`; }
-  fare=Math.round(fare);
+  let fare,line; const u=T('km','किमी'), mn=T('minimum fare','न्यूनतम किराया');
+  if(t.includes('City')){ fare=Math.max(km*v.city,v.cityMin); line=`${km} ${u} × ₹${v.city}/${u}`+(km*v.city<v.cityMin?` · ${mn} ₹${v.cityMin}`:''); }
+  else if(t.includes('Outstation')){ fare=Math.max(km*v.out,v.outMin); line=`${km} ${u} × ₹${v.out}/${u}`+(km*v.out<v.outMin?` · ${mn} ₹${v.outMin}`:''); }
+  else if(t.includes('Airport')){ fare=v.air+Math.max(0,km-10)*v.airKm; line=T(`Base ₹${v.air} (first 10 km)`,`शुरुआती ₹${v.air} (पहले 10 किमी)`)+(km>10?` + ${Math.round((km-10)*10)/10} ${u} × ₹${v.airKm}`:''); }
+  else if(t.includes('Round')){ fare=km*2*v.city; line=`${km} ${u} × 2 (${T('return','वापसी')}) × ₹${v.city}/${u}`; }
+  else if(t.includes('Hourly')){ fare=km*v.hr; line=`${km} ${T('hours','घंटे')} × ₹${v.hr}/${T('hr','घंटा')}`; }
+  else { fare=km*v.city; line=`${km} ${u} × ₹${v.city}/${u}`; }
+  fare=Math.round(fare); line+=` · ${v.ic} ${vehName(key)}`;
   document.getElementById('bFare').value=`₹${fare.toLocaleString('en-IN')} (est.)`;
   countMoney(amt,fare); br.textContent=line;
   document.getElementById('fareDist').textContent=km+' '+u;
@@ -2141,6 +2242,8 @@ async function submitBooking() {
   if(!drop)  { toast('⚠️ Please enter drop location.'); return; }
   if(!date)  { toast('⚠️ Please select a travel date.'); return; }
   if(!time)  { toast('⚠️ Please select a travel time.'); return; }
+  const vKey=document.getElementById('bVeh').value, vcnt=window._onlineByType;
+  if(vcnt&&!(vcnt[vKey]>0)){ toast(T('⚠️ No '+VEH[vKey].n+' driver is online right now. Please choose another vehicle.','⚠️ अभी कोई '+VEH[vKey].hi+' ड्राइवर ऑनलाइन नहीं है। कृपया दूसरी गाड़ी चुनें।')); return; }
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = 'Saving booking…';
@@ -2176,7 +2279,7 @@ async function submitBooking() {
   const bookingData = {
     ref, name, phone, pickup, drop,
     date:fDate, rawDate:date, time:fTime,
-    triptype, passengers, km, fare, notes,
+    triptype, passengers, km, fare, notes, reqVehicle:vKey,
     pickupLat:pLat, pickupLng:pLng, dropLat:dLat, dropLng:dLng, mapLink,
     status:'pending',
     uid: currentUser ? currentUser.uid : 'guest',
@@ -2505,6 +2608,7 @@ function applyBookings(){
     L=L.filter(b=>{
       if(b.status!=='pending') return true;
       if(window._skipped&&window._skipped.has(b.firestoreId)) return false;
+      const myV=((window._drv&&window._drv.vehicleType)||'').toLowerCase(); if(b.reqVehicle&&myV&&b.reqVehicle!==myV) return false;
       if(!driverOn) return false;
       b._dist=(me&&b.pickupLat&&b.pickupLng)?hav(me[0],me[1],parseFloat(b.pickupLat),parseFloat(b.pickupLng))/1000:null;
       const age=b.createdAt&&b.createdAt.seconds?Date.now()/1000-b.createdAt.seconds:0;
@@ -2614,6 +2718,8 @@ function buildCard(b) {
       <div class="bk-field"><span class="fl">Time</span><span class="fv">${b.time||'—'}</span></div>
       <div class="bk-field"><span class="fl">Trip Type</span><span class="fv">${b.triptype||'—'}</span></div>
       <div class="bk-field"><span class="fl">Fare</span><span class="fv gold">${b.fare||'—'}</span></div>
+      ${o.reqVehicle&&VEH[o.reqVehicle]?`<div class="bk-field"><span class="fl">Vehicle</span><span class="fv">${VEH[o.reqVehicle].ic} ${VEH[o.reqVehicle].n}</span></div>`:''}
+      ${o.status==='completed'?`<div class="bk-field" style="grid-column:1/-1"><span class="fl">Payment</span><span class="fv">${payBadge(o)}</span></div>`:''}
       ${o._dist!=null&&s==='pending'?`<div class="bk-field"><span class="fl">From you</span><span class="fv gold">${o._dist.toFixed(1)} km</span></div>`:''}
       ${b.notes?`<div class="bk-field" style="grid-column:1/-1"><span class="fl">Notes</span><span class="fv">${b.notes}</span></div>`:''}
     </div>
@@ -2631,7 +2737,7 @@ async function adminAccept(fid, rawDate, phone, name, ref, dateEnc, timeEnc, far
     await db.runTransaction(async t=>{
       const sn=await t.get(bref);
       if(!sn.exists||sn.data().status!=='pending') throw new Error('Already taken by another driver');
-      t.update(bref,{status:'accepted',driverId:window._driverUid,driverName:dr.name||'',driverPhone:dr.phone||'',vehicle:((dr.vehicleType||'')+' '+(dr.vehicleNo||'')).trim(),vehicleType:dr.vehicleType||'',vehicleNo:dr.vehicleNo||''});
+      t.update(bref,{status:'accepted',driverId:window._driverUid,driverName:dr.name||'',driverPhone:dr.phone||'',vehicle:((dr.vehicleType||'')+' '+(dr.vehicleNo||'')).trim(),vehicleType:dr.vehicleType||'',vehicleNo:dr.vehicleNo||'',driverUpi:dr.upi||''});
     });
     aToast('✅ Ride accepted! Opening navigation…','#2ecc71');
     autoStartTracking(fid);
@@ -2814,11 +2920,11 @@ async function renderEarnings(){
   const today=lk(new Date()), mon=today.slice(0,7);
   const days=[...Array(14)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-13+i);return lk(d);});
   const sum=f=>done.filter(f).reduce((t,b)=>t+fareNum(b),0), week=days.slice(7);
-  const cards=[['Today','₹'+sum(b=>key(b)===today)],['Last 7 days','₹'+sum(b=>week.includes(key(b)))],['This month','₹'+sum(b=>key(b).startsWith(mon))],['All time','₹'+sum(()=>true)],['Rides done',done.length]];
+  const cards=[['Today','₹'+sum(b=>key(b)===today)],['Last 7 days','₹'+sum(b=>week.includes(key(b)))],['This month','₹'+sum(b=>key(b).startsWith(mon))],['All time','₹'+sum(()=>true)],['Rides done',done.length],['Via UPI','₹'+sum(b=>b.payMethod==='upi')],['Via Cash','₹'+sum(b=>b.payMethod==='cash')]];
   if(!owner&&uid){ let r='—'; try{const x=await db.collection('driverStats').doc(uid).get(); if(x.exists&&x.data().count) r='⭐ '+(x.data().sum/x.data().count).toFixed(1)+' ('+x.data().count+')';}catch(e){} cards.push(['Rating',r]); }
   document.getElementById('earnCards').innerHTML=cards.map(c=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.9rem"><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">${esc(c[0])}</div><div style="font-size:1.35rem;font-weight:800;color:var(--gold-light);margin-top:.2rem">${esc(c[1])}</div></div>`).join('');
   if(typeof Chart!=='undefined'){ if(_eCh)_eCh.destroy(); _eCh=new Chart(document.getElementById('chDaily'),{type:'bar',data:{labels:days.map(d=>d.slice(5)),datasets:[{data:days.map(d=>sum(b=>key(b)===d)),backgroundColor:'#C9973A',borderRadius:6}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}}}}); }
-  document.getElementById('earnList').innerHTML=done.length?done.slice(0,30).map(b=>`<div class="bk-item accepted"><div class="bk-top"><div><div class="bk-ref">${esc(b.ref)}</div><div class="bk-time">${esc(key(b))}</div></div><div class="bk-badge accepted">₹${fareNum(b)}</div></div><div class="bk-info"><div class="bk-field" style="grid-column:1/-1"><span class="fl">Route</span><span class="fv">${esc(b.pickup)} → ${esc(b.drop)}</span></div></div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">💰</div>No completed rides yet.</div>';
+  document.getElementById('earnList').innerHTML=done.length?done.slice(0,30).map(b=>`<div class="bk-item accepted"><div class="bk-top"><div><div class="bk-ref">${esc(b.ref)}</div><div class="bk-time">${esc(key(b))}</div></div><div class="bk-badge accepted">₹${fareNum(b)}</div></div><div class="bk-info"><div class="bk-field" style="grid-column:1/-1"><span class="fl">Route</span><span class="fv">${esc(b.pickup)} → ${esc(b.drop)}</span></div></div><div class="bk-actions" style="padding:.2rem .1rem 0">${payBadge(b)}</div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">💰</div>No completed rides yet.</div>';
 }
 
 // ============================================================
@@ -2967,22 +3073,14 @@ async function resetEverything() {
     aToast('✅ Everything has been reset!', '#2ecc71');
   } catch(e) { aToast('❌ Error: ' + e.message, '#e74c3c'); }
 }
-function saveRates() {
-  localStorage.setItem('de_rates',JSON.stringify({
-    city:document.getElementById('rCity').value,
-    outstation:document.getElementById('rOut').value,
-    airport:document.getElementById('rAir').value,
-    hourly:document.getElementById('rHr').value
-  }));
-  aToast('💰 Rates saved!','#2ecc71');
-}
 
 // ============================================================
 // DRIVER ONLINE / OFFLINE STATUS
 // ============================================================
 function listenDriverStatus() {
   db.collection('drivers').where('online','==',true).onSnapshot(q => {
-    applyDriverStatus(q.size>0);
+    const cc={}; q.docs.forEach(d=>{ const t=(d.data().vehicleType||'').toLowerCase(); cc[t]=(cc[t]||0)+1; }); window._onlineByType=cc;
+    applyDriverStatus(q.size>0); renderVehicles();
     const bd=document.querySelector('.hero .badge');
     if(bd) bd.innerHTML=q.size?`<span class="live-dot"></span> ${q.size} driver${q.size>1?'s':''} online now`:'🕒 Drivers are offline — check back soon';
   }, () => applyDriverStatus(true));
@@ -3224,7 +3322,8 @@ function listenRideStatus(fid) {
           <div style="margin-bottom:.4rem">💰 <strong>Fare:</strong> ${esc(b.fare||data.fare||'As agreed')}</div>
           <div>🔖 <strong>Ref:</strong> ${esc(b.ref||data.ref||'—')}</div>`;
         closeOverlay('ovRideStarted'); closeOverlay('ovConfirmed'); closeOverlay('ovPending');
-        window._ratingFid = fid; window._ratingDriver=(b.driverId||data.driverId||''); window._rate=0; showOverlay('ovRideEnded');
+        window._ratingFid = fid; window._ratingDriver=(b.driverId||data.driverId||''); window._rate=0;
+        window._payCtx={fid:fid,amt:fareNum(data),upi:data.driverUpi||'',dname:data.driverName||'',ref:data.ref||''}; renderPayBox(); showOverlay('ovRideEnded');
         toast('🏁 You have reached your destination!', '#3498db');
         activeBookingFid = null;
         if (window._rideUnsub) { window._rideUnsub(); window._rideUnsub = null; }
